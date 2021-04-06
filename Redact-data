@@ -1,0 +1,46 @@
+/**
+  Redact Data
+
+    This will hide an element from step screenshots 
+    by attemptiang to place a covering div over the element 
+    and setting both text and background color to black
+
+  	Parameters
+  		element (HTML) : Element to be redacted
+		
+    Notes:
+        To hide the value from a set text screenshot, you will need to call this BEFORE the set text
+
+    Installation:
+        Create a new shared custom action
+        Add an HTML param named 'element' (It defaults to this name)
+        Set the custom step's function body to this file
+        And Bob's your uncle
+
+**/
+
+function cover(el, filling) {
+    var c = document.createElement('div');
+    c.style.background = filling;
+    var els = window.getComputedStyle(el)
+    c.style.position = els.position == 'fixed' ? 'fixed' : 'absolute';
+    c.style.zIndex = parseInt(els.zIndex) + 1;
+    el.appendChild(c);
+
+    var place = function () {
+        c.style.width = el.offsetWidth + 'px';
+        c.style.height = el.offsetHeight + 'px';
+        c.style.left = el.offsetLeft + 'px';
+        c.style.top = el.offsetTop + 'px';
+    };
+    place();
+    window.addEventListener('resize', place);
+}
+
+// Set element fore/background color to black
+element.style.color           = "black";
+element.style.backgroundColor = "black";
+
+// create a covering element
+cover(element, 'black');
+
