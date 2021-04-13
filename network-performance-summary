@@ -1,0 +1,119 @@
+/**
+ * Network Performance Summary
+ * 
+ *      Creates a summary of network requests with min/max/avg duration and request size
+ *          count, 
+ *          minDuration, maxDuration, aveDuration, totDuration
+ *          minResponseSize, maxResponseSize, aveResponseSize, totResponseSize
+ * 
+ * Parameters
+ * 
+ *      networkRequestURLs  (JS) [optional] : Array of response urls to validate
+ *              Example: ["www.amazon.com", "www.google.com"]
+ *      networkRequestTypes (JS) [optional] : Array of response types to validate
+ *              Example: ["Image", "Media", "Document", "Stylesheet", "Script", "Font", "XHR"]
+ * 
+ *  Notes
+ *      networkRequest fields
+ *         isBlocked
+ *         isDone
+ *         method
+ *         isCancelled
+ *         url
+ *         source
+ *         tab
+ *         type
+ *         statusCode
+ *         statusText
+ *         startTime
+ *         protocol
+ *         responseSize
+ *         endTime
+ *      
+ *      Output to console is done using a console.table command and is best visualized in the chrome debugger
+ * 
+ *  Returns
+ *      networkPerformanceSummaryIndex - Index of last networkRequests entry checked.  
+ *   
+ *  Base Step
+ *      Network Validation
+ * 
+ *  Installation
+ *      Create a new "Network Performance Summary"
+ *      Name it "Network Performance Check"
+ *      Optional - add optional parameters
+ *          networkRequestURLs  (JS) 
+ *          networkRequestTypes (JS)  
+ *      Set the new custom action's function body to this javascript
+ *      Override timeout => Step timeout (milliseconds) = 2000
+ *      Exit the step editor
+ *      Share the step if not already done so
+ *      Save the test
+ *      Bob's your uncle
+ **/
+
+/*  Used for debugging.  Enable/disable writing interim data to the console
+ */
+var verbose = true;
+
+let network_request_types = null;
+if (typeof networkRequestTypes !== 'undefined' && networkRequestTypes !== null)
+    network_request_types = networkRequestTypes;
+
+let network_request_urls = null;
+if (typeof networkRequestURLs !== 'undefined' && networkRequestURLs !== null)
+    network_request_urls = networkRequestURLs;
+
+exportsTest.networkPerformanceSummaryIndex = networkRequests.length;
+
+var _networkRequests = networkRequests.filter((request, index) => {
+
+    /* Filter requests to only those types that are interesting
+    */
+    if (network_request_types !== null && !network_request_types.includes(request.type)) {
+        if (verbose)
+            console.log("skipping request.type: ", request.type);
+        return false;
+    }
+
+    /* Only consider requests from certain domains/subdomains 
+     */
+    if (network_request_urls !== null && !network_request_urls.some((network_request_url) => request.url.includes(network_request_url))) {
+        if (verbose)
+            console.log("skipping request.url: ", request.url);
+        return false;
+    }
+
+    request.count = (request.count !== undefined) ? request.count + 1 : 1;
+
+    request.totDuration = (request.endTime !== undefined && request.startTime != undefined) ? request.endTime - request.startTime : 0;
+    request.minDuration = request.totDuration;
+    request.maxDuration = request.totDuration;
+    request.aveDuration = request.totDuration;
+
+    request.totResponseSize = (request.responseSize !== undefined) ? request.responseSize : 0;
+    request.minResponseSize = request.totResponseSize;
+    request.maxResponseSize = request.totResponseSize;
+    request.aveResponseSize = request.totResponseSize;
+
+    var i = networkRequests.findIndex(r => r.url == request.url);
+    if (i !== index) {
+        networkRequests[i].count += 1;
+        networkRequests[i].totDuration += request.totDuration;
+        networkRequests[i].totResponseSize += request.totResponseSize;
+        networkRequests[i].minDuration = Math.min(request.minDuration, networkRequests[i].minDuration);
+        networkRequests[i].maxDuration = Math.max(request.maxDuration, networkRequests[i].maxDuration);
+        networkRequests[i].aveDuration = networkRequests[i].totDuration / networkRequests[i].count;
+        networkRequests[i].minResponseSize = Math.min(request.minResponseSize, networkRequests[i].minResponseSize);
+        networkRequests[i].maxResponseSize = Math.max(request.maxResponseSize, networkRequests[i].maxResponseSize);
+        networkRequests[i].aveResponseSize = networkRequests[i].totResponseSize / networkRequests[i].count;
+    }
+    return i === index;
+})
+var networkRequestStats = _networkRequests.map(({ url, count, minDuration, maxDuration, aveDuration, totDuration, minResponseSize, maxResponseSize, aveResponseSize, totResponseSize, ...theRest }) => ({ url, count, minDuration, maxDuration, aveDuration, totDuration, minResponseSize, maxResponseSize, aveResponseSize, totResponseSize }));
+                            
+console.table(networkRequestStats.sort((a,b) => a.maxDuration < b.maxDuration ? 1 : -1));
+console.table(JSON.stringify(networkRequestStats.sort((a,b) => a.maxDuration < b.maxDuration ? 1 : -1)));
+
+// console.table(networkRequestStats);
+// console.table(JSON.stringify(networkRequestStats));
