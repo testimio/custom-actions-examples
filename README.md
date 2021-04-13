@@ -25,4 +25,4 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Validate Select Items/Options Order](https://github.com/testimio/custom-actions-examples/blob/main/select-order-validate) - Validates that the items in a list are sorted properly.
 
-Validate Element Computed Style(s) - Validate a superset/subset of style for an element
+[Validate Element Computed Style(s)](https://github.com/testimio/custom-actions-examples/blob/main/validate-computed-style) - Validate a superset/subset of style for an element
