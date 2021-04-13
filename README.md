@@ -19,10 +19,10 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Select Item/Option by Text/Value](https://github.com/testimio/custom-actions-examples/blob/main/select-by-text) - Select an item by value or text (select/option, ul/li. table/tr)
 
-[Select Items/Options Order Validate](https://github.com/testimio/custom-actions-examples/blob/main/select-order-validate) - Validates that the items in a list are sorted properly.
-
 [Set Text](https://github.com/testimio/custom-actions-examples/blob/main/set-text-encrypted) (Encrypted) - Takes encrypted data, decrypts it and sets the text of a target field and optionally redacts it.
 
 [Validate Select Items/Options](https://github.com/testimio/custom-actions-examples/blob/main/validate-select-items) - Validate that expected items are in a list/select.
+
+[Validate Select Items/Options Order](https://github.com/testimio/custom-actions-examples/blob/main/select-order-validate) - Validates that the items in a list are sorted properly.
 
 Validate Element Computed Style(s) - Validate a superset/subset of style for an element
