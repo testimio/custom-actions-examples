@@ -1,7 +1,7 @@
 # custom-actions-examples
 This is a repository of custom action steps that work with Testim.io
 
-Initially it includes custom action steps (JavaScript) that we have created for customers. The code can be copied from here and added to a custom step in a Testim test. 
+Initially it includes custom action steps (JavaScript) that we have created for customers. The code can be copied from here and added to a custom step in a Testim test. Instructions on how to use each example are included in the linked file with the JavaScript code needed. Typically it will involve copying the file and code into a custom step, making a change or two to the properties panel, checking your variables, and perhaps pointing to the correct element. 
 
 [Generate Faked Data](https://github.com/testimio/custom-actions-examples/blob/main/Generate-Faked-Data) (faker.js) - Uses the faker.js library to create fake test data. 
 
