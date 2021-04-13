@@ -21,9 +21,7 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Select Items/Options Order Validate](https://github.com/testimio/custom-actions-examples/blob/main/select-order-validate) - Validates that the items in a list are sorted properly.
 
-[Set Text]() (Encrypted) - Takes encrypted data, decrypts it and sets the text of a target field and optionally redacts it.
-
-[Validate Select Item/Option](https://github.com/testimio/custom-actions-examples/blob/main/validate-select-item) - Validate that an expected item is in selected.
+[Set Text](https://github.com/testimio/custom-actions-examples/blob/main/set-text-encrypted) (Encrypted) - Takes encrypted data, decrypts it and sets the text of a target field and optionally redacts it.
 
 [Validate Select Items/Options](https://github.com/testimio/custom-actions-examples/blob/main/validate-select-items) - Validate that expected items are in a list/select.
 
