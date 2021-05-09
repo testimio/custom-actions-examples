@@ -1,7 +1,7 @@
 /**
  * Network Performance Check
  * 
- *      Validates that all network requests are completed under maxResponseTime millisecods
+ *      Validates that all network requests are completed under maxResponseTime milliseconds
  * 
  * Parameters
  * 
@@ -59,22 +59,25 @@
 /*  Used for debugging.  Enable/disable writing interim data to the console
  *      WARNING: Setting this true may affect performance of the run and more importantly loading of test results!
  */
-var verbose = false;
+
+/* global maxResponseTime, networkRequestTypes, networkRequestURLs, networkRequests */
+let verbose = false;
 
 if (typeof maxResponseTime == 'undefined' || maxResponseTime == null)
     throw new Error("maxResponseTime is undefined");
 
-let network_request_types = null;
+let wantedRequestTypes = null;
 if (typeof networkRequestTypes !== 'undefined' && networkRequestTypes !== null)
-    network_request_types = networkRequestTypes;
+    wantedRequestTypes = networkRequestTypes;
 
-let network_request_urls = null;
+let wantedRequestUrls = null;
 if (typeof networkRequestURLs !== 'undefined' && networkRequestURLs !== null)
-    network_request_urls = networkRequestURLs;
+    wantedRequestUrls = networkRequestURLs;
 
 console.log("Network Performance Check: maxResponseTime(" + maxResponseTime + ")");
 
-var networkPerformanceCheckIndexLast = 0;
+let networkPerformanceCheckIndexLast = 0;
+let networkPerformanceCheckIndex = null;
 if (typeof networkPerformanceCheckIndex !== 'undefined' && networkPerformanceCheckIndex !== null) {
     networkPerformanceCheckIndexLast = networkPerformanceCheckIndex;
 }
@@ -89,11 +92,11 @@ if (verbose) {
 
 /* Find all slow network requests and return them in _networkRequestsSlow
  */
-var _networkRequestsSlow = networkRequests.filter((request, index) => {
+let _networkRequestsSlow = networkRequests.filter((request, index) => {
 
     /* Filter requests to only those types that are interesting
     */
-    if (network_request_types !== null && !network_request_types.includes(request.type)) {
+    if (wantedRequestTypes !== null && !wantedRequestTypes.includes(request.type)) {
         if (verbose)
             console.log("skipping request.type: ", request.type);
         return false;
@@ -101,7 +104,7 @@ var _networkRequestsSlow = networkRequests.filter((request, index) => {
 
     /* Only consider requests from certain domains/subdomains 
      */
-    if (network_request_urls !== null && !network_request_urls.some((network_request_url) => request.url.includes(network_request_url))) {
+    if (wantedRequestUrls !== null && !wantedRequestUrls.some((networkRequestUrl) => request.url.includes(networkRequestUrl))) {
         if (verbose)
             console.log("skipping request.url: ", request.url);
         return false;
@@ -125,13 +128,13 @@ var _networkRequestsSlow = networkRequests.filter((request, index) => {
 
 });
 
-//var slowNetworkRequests = _networkRequestsSlow.map(({ url, duration, responseSize, protocol, method, statusCode, statusText, source, isBlocked, isDone, isCancelled, type, ...theRest }) => ({ url, duration, responseSize, protocol, method, statusCode, statusText, source, isBlocked, isDone, isCancelled, type }));
-var slowNetworkRequests = _networkRequestsSlow.map(({ url, duration, responseSize, protocol, method, statusCode, statusText, isBlocked, isDone, isCancelled, type, ...theRest }) => ({ url, duration, responseSize, protocol, method, statusCode, statusText, isBlocked, isDone, isCancelled, type }));
+//let slowNetworkRequests = _networkRequestsSlow.map(({ url, duration, responseSize, protocol, method, statusCode, statusText, source, isBlocked, isDone, isCancelled, type, ...theRest }) => ({ url, duration, responseSize, protocol, method, statusCode, statusText, source, isBlocked, isDone, isCancelled, type }));
+let slowNetworkRequests = _networkRequestsSlow.map(({ url, duration, responseSize, protocol, method, statusCode, statusText, isBlocked, isDone, isCancelled, type }) => ({ url, duration, responseSize, protocol, method, statusCode, statusText, isBlocked, isDone, isCancelled, type }));
 exportsTest.slowNetworkRequests = slowNetworkRequests;
 
 if (slowNetworkRequests !== null && slowNetworkRequests.length > 0) {
     console.error('There were ' + slowNetworkRequests.length + ' slow requests: [duration > ' + maxResponseTime + '] found.');  
-    for (r in slowNetworkRequests)
-        console.error(` ==>`, JSON.stringify(slowNetworkRequests[r]));
+    for (const request of slowNetworkRequests)
+        console.error(` ==>`, JSON.stringify(request));
     throw new Error('There were ' + slowNetworkRequests.length + ' slow requests: [duration > ' + maxResponseTime + '] found.  See Console Log for details');
 }

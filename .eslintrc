@@ -1,0 +1,16 @@
+{
+    "extends": "eslint:recommended",
+    "parserOptions": {
+        "ecmaVersion": 11
+    },
+    "globals": {
+        "exports": false,
+        "exportsTest": false,
+        "exportsGlobal": false,
+        "console": false,
+    },
+    "rules": {
+        "camelcase": 2,
+        "no-var": 2
+    }
+}

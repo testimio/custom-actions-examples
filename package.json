@@ -1,0 +1,23 @@
+{
+  "name": "custom-actions-examples",
+  "version": "1.0.0",
+  "description": "Testim custom actions",
+  "main": "index.js",
+  "scripts": {
+      "lint": "eslint \"testim-created/*.js\"",
+      "lint-fix": "eslint --fix \"testim-created/*.js\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/testimio/custom-actions-examples.git"
+  },
+  "author": "Testim.io",
+  "license": "AGPL-3.0-only",
+  "bugs": {
+    "url": "https://github.com/testimio/custom-actions-examples/issues"
+  },
+  "homepage": "https://github.com/testimio/custom-actions-examples#readme",
+  "devDependencies": {
+    "eslint": "^7.26.0"
+  }
+}

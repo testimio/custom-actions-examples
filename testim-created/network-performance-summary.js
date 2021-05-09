@@ -54,23 +54,25 @@
 
 /*  Used for debugging.  Enable/disable writing interim data to the console
  */
-var verbose = true;
 
-let network_request_types = null;
+/* global networkRequestTypes, networkRequestURLs, networkRequests */
+let verbose = true;
+
+let wantedRequestTypes = null;
 if (typeof networkRequestTypes !== 'undefined' && networkRequestTypes !== null)
-    network_request_types = networkRequestTypes;
+    wantedRequestTypes = networkRequestTypes;
 
-let network_request_urls = null;
+let wantedRequestUrls = null;
 if (typeof networkRequestURLs !== 'undefined' && networkRequestURLs !== null)
-    network_request_urls = networkRequestURLs;
+    wantedRequestUrls = networkRequestURLs;
 
 exportsTest.networkPerformanceSummaryIndex = networkRequests.length;
 
-var _networkRequests = networkRequests.filter((request, index) => {
+const filteredNetworkRequests = networkRequests.filter((request, index) => {
 
     /* Filter requests to only those types that are interesting
     */
-    if (network_request_types !== null && !network_request_types.includes(request.type)) {
+    if (wantedRequestTypes !== null && !wantedRequestTypes.includes(request.type)) {
         if (verbose)
             console.log("skipping request.type: ", request.type);
         return false;
@@ -78,42 +80,43 @@ var _networkRequests = networkRequests.filter((request, index) => {
 
     /* Only consider requests from certain domains/subdomains 
      */
-    if (network_request_urls !== null && !network_request_urls.some((network_request_url) => request.url.includes(network_request_url))) {
+    if (wantedRequestUrls !== null && !wantedRequestUrls.some((requestUrl) => request.url.includes(requestUrl))) {
         if (verbose)
             console.log("skipping request.url: ", request.url);
         return false;
     }
 
-    request.count = (request.count !== undefined) ? request.count + 1 : 1;
+    request.count = (request.count || 0) + 1;
 
     request.totDuration = (request.endTime !== undefined && request.startTime != undefined) ? request.endTime - request.startTime : 0;
     request.minDuration = request.totDuration;
     request.maxDuration = request.totDuration;
     request.aveDuration = request.totDuration;
 
-    request.totResponseSize = (request.responseSize !== undefined) ? request.responseSize : 0;
+    request.totResponseSize = request.responseSize || 0;
     request.minResponseSize = request.totResponseSize;
     request.maxResponseSize = request.totResponseSize;
     request.aveResponseSize = request.totResponseSize;
 
-    var i = networkRequests.findIndex(r => r.url == request.url);
+    const i = networkRequests.findIndex(r => r.url == request.url);
     if (i !== index) {
-        networkRequests[i].count += 1;
-        networkRequests[i].totDuration += request.totDuration;
-        networkRequests[i].totResponseSize += request.totResponseSize;
-        networkRequests[i].minDuration = Math.min(request.minDuration, networkRequests[i].minDuration);
-        networkRequests[i].maxDuration = Math.max(request.maxDuration, networkRequests[i].maxDuration);
-        networkRequests[i].aveDuration = networkRequests[i].totDuration / networkRequests[i].count;
-        networkRequests[i].minResponseSize = Math.min(request.minResponseSize, networkRequests[i].minResponseSize);
-        networkRequests[i].maxResponseSize = Math.max(request.maxResponseSize, networkRequests[i].maxResponseSize);
-        networkRequests[i].aveResponseSize = networkRequests[i].totResponseSize / networkRequests[i].count;
+        const previousRequest = networkRequests[i];
+        previousRequest.count += 1;
+        previousRequest.totDuration += request.totDuration;
+        previousRequest.totResponseSize += request.totResponseSize;
+        previousRequest.minDuration = Math.min(request.minDuration, previousRequest.minDuration);
+        previousRequest.maxDuration = Math.max(request.maxDuration, previousRequest.maxDuration);
+        previousRequest.aveDuration = previousRequest.totDuration / previousRequest.count;
+        previousRequest.minResponseSize = Math.min(request.minResponseSize, previousRequest.minResponseSize);
+        previousRequest.maxResponseSize = Math.max(request.maxResponseSize, previousRequest.maxResponseSize);
+        previousRequest.aveResponseSize = previousRequest.totResponseSize / previousRequest.count;
     }
     return i === index;
 })
-var networkRequestStats = _networkRequests.map(({ url, count, minDuration, maxDuration, aveDuration, totDuration, minResponseSize, maxResponseSize, aveResponseSize, totResponseSize, ...theRest }) => ({ url, count, minDuration, maxDuration, aveDuration, totDuration, minResponseSize, maxResponseSize, aveResponseSize, totResponseSize }));
+const networkRequestStats = filteredNetworkRequests.map(({ url, count, minDuration, maxDuration, aveDuration, totDuration, minResponseSize, maxResponseSize, aveResponseSize, totResponseSize }) => ({ url, count, minDuration, maxDuration, aveDuration, totDuration, minResponseSize, maxResponseSize, aveResponseSize, totResponseSize }));
                             
-console.table(networkRequestStats.sort((a,b) => a.maxDuration < b.maxDuration ? 1 : -1));
-console.table(JSON.stringify(networkRequestStats.sort((a,b) => a.maxDuration < b.maxDuration ? 1 : -1)));
+console.table(networkRequestStats.sort((a, b) => b.maxDuration - a.maxDuration));
+console.table(JSON.stringify(networkRequestStats.sort((a, b) => b.maxDuration - a.maxDuration)));
 
 // console.table(networkRequestStats);
 // console.table(JSON.stringify(networkRequestStats));
