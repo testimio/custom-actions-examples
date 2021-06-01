@@ -4,8 +4,8 @@
   "description": "Testim custom actions",
   "main": "index.js",
   "scripts": {
-      "lint": "eslint \"testim-created/*.js\"",
-      "lint-fix": "eslint --fix \"testim-created/*.js\""
+    "lint": "eslint \"testim-created/*.js\"",
+    "lint-fix": "eslint --fix \"testim-created/*.js\""
   },
   "repository": {
     "type": "git",

@@ -8,9 +8,9 @@
  * 
  * Parameters
  * 
- *      networkRequestURLs  (JS) [optional] : Array of response urls to validate
+ *      networkRequestURLs  (JS) [optional] : Array of response urls to include
  *              Example: ["www.amazon.com", "www.google.com"]
- *      networkRequestTypes (JS) [optional] : Array of response types to validate
+ *      networkRequestTypes (JS) [optional] : Array of response types to include
  *              Example: ["Image", "Media", "Document", "Stylesheet", "Script", "Font", "XHR"]
  * 
  *  Notes
@@ -52,19 +52,19 @@
  *      Bob's your uncle
  **/
 
+/* global networkRequestTypes, networkRequestURLs, networkRequests */
+
 /*  Used for debugging.  Enable/disable writing interim data to the console
  */
+let verbose = false;
 
-/* global networkRequestTypes, networkRequestURLs, networkRequests */
-let verbose = true;
-
-let wantedRequestTypes = null;
+let targetRequestTypes = null;
 if (typeof networkRequestTypes !== 'undefined' && networkRequestTypes !== null)
-    wantedRequestTypes = networkRequestTypes;
+    targetRequestTypes = networkRequestTypes;
 
-let wantedRequestUrls = null;
+let targetRequestUrls = null;
 if (typeof networkRequestURLs !== 'undefined' && networkRequestURLs !== null)
-    wantedRequestUrls = networkRequestURLs;
+    targetRequestUrls = networkRequestURLs;
 
 exportsTest.networkPerformanceSummaryIndex = networkRequests.length;
 
@@ -72,7 +72,7 @@ const filteredNetworkRequests = networkRequests.filter((request, index) => {
 
     /* Filter requests to only those types that are interesting
     */
-    if (wantedRequestTypes !== null && !wantedRequestTypes.includes(request.type)) {
+    if (targetRequestTypes !== null && !targetRequestTypes.includes(request.type)) {
         if (verbose)
             console.log("skipping request.type: ", request.type);
         return false;
@@ -80,7 +80,7 @@ const filteredNetworkRequests = networkRequests.filter((request, index) => {
 
     /* Only consider requests from certain domains/subdomains 
      */
-    if (wantedRequestUrls !== null && !wantedRequestUrls.some((requestUrl) => request.url.includes(requestUrl))) {
+    if (targetRequestUrls !== null && !targetRequestUrls.some((requestUrl) => request.url.includes(requestUrl))) {
         if (verbose)
             console.log("skipping request.url: ", request.url);
         return false;
@@ -98,9 +98,9 @@ const filteredNetworkRequests = networkRequests.filter((request, index) => {
     request.maxResponseSize = request.totResponseSize;
     request.aveResponseSize = request.totResponseSize;
 
-    const i = networkRequests.findIndex(r => r.url == request.url);
-    if (i !== index) {
-        const previousRequest = networkRequests[i];
+    const prevIndex = networkRequests.findIndex(r => r.url == request.url);
+    if (prevIndex < index) {
+        const previousRequest = networkRequests[prevIndex];
         previousRequest.count += 1;
         previousRequest.totDuration += request.totDuration;
         previousRequest.totResponseSize += request.totResponseSize;
@@ -111,12 +111,9 @@ const filteredNetworkRequests = networkRequests.filter((request, index) => {
         previousRequest.maxResponseSize = Math.max(request.maxResponseSize, previousRequest.maxResponseSize);
         previousRequest.aveResponseSize = previousRequest.totResponseSize / previousRequest.count;
     }
-    return i === index;
+    return prevIndex === index;
 })
 const networkRequestStats = filteredNetworkRequests.map(({ url, count, minDuration, maxDuration, aveDuration, totDuration, minResponseSize, maxResponseSize, aveResponseSize, totResponseSize }) => ({ url, count, minDuration, maxDuration, aveDuration, totDuration, minResponseSize, maxResponseSize, aveResponseSize, totResponseSize }));
                             
 console.table(networkRequestStats.sort((a, b) => b.maxDuration - a.maxDuration));
 console.table(JSON.stringify(networkRequestStats.sort((a, b) => b.maxDuration - a.maxDuration)));
-
-// console.table(networkRequestStats);
-// console.table(JSON.stringify(networkRequestStats));

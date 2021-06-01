@@ -30,7 +30,9 @@
  *      Bob's your uncle
  */
 
-var options = {
+/* globals nlc, url */
+
+let options = {
     schemes: ["http:", "https:"],
     userAgent: "W3C node linkchecker",
     fragments: false

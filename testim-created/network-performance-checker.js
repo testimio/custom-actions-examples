@@ -40,7 +40,7 @@
  *      Network Validation
  * 
  *  Installation
- *      Create a new "Network Validation"
+ *      Create a new "Network Validation" step
  *      Name it "Network Performance Check"
  *      Create parameters
  *          maxResponseTime (JS)
@@ -56,11 +56,11 @@
  *
  **/
 
+/* global maxResponseTime, networkRequestTypes, networkRequestURLs, networkRequests */
+
 /*  Used for debugging.  Enable/disable writing interim data to the console
  *      WARNING: Setting this true may affect performance of the run and more importantly loading of test results!
  */
-
-/* global maxResponseTime, networkRequestTypes, networkRequestURLs, networkRequests */
 let verbose = false;
 
 if (typeof maxResponseTime == 'undefined' || maxResponseTime == null)
@@ -81,7 +81,6 @@ let networkPerformanceCheckIndex = null;
 if (typeof networkPerformanceCheckIndex !== 'undefined' && networkPerformanceCheckIndex !== null) {
     networkPerformanceCheckIndexLast = networkPerformanceCheckIndex;
 }
-
 exportsTest.networkPerformanceCheckIndex = networkRequests.length;
 
 if (verbose) {

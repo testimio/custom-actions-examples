@@ -37,8 +37,12 @@
  *      And Bob's your uncle * 
  */
 
+/* eslint-disable no-prototype-builtins */
+/* eslint-disable no-global-assign */
+/* globals document, window, element, expectedStyles */
+
 // Used for debugging.  Enable/disable writing interim data to the console
-var verbose = false;
+let verbose = false;
 
 const supportedStyles = {
     computedStyles: {
@@ -105,7 +109,7 @@ if (typeof expectedStyles === 'string') {
 
 // Get Expected Values.  Use default (all known if undefined)
 //
-var expected_styles;
+let expected_styles;
 if (typeof expectedStyles !== 'undefined' && expectedStyles !== null)
     expected_styles = expectedStyles;
 
@@ -114,9 +118,9 @@ if (verbose)
 
 // Get Actual Computed Styles
 //
-var actual_styles = {};
-var elementStyles = window.getComputedStyle(element, null)
-for (var key in elementStyles) {
+let actual_styles = {};
+let elementStyles = window.getComputedStyle(element, null)
+for (let key in elementStyles) {
     if (isNaN(key) && key != "cssText") {
         if (key.length > 0 && elementStyles[key] !== null && elementStyles[key].length > 0) {
             actual_styles[key] = elementStyles[key];
@@ -132,10 +136,10 @@ if (verbose)
 
 // Validate
 //
-var result = true;
-var differences = { "Type": element.tagName, "Text": element.innerText };
+let result = true;
+let differences = { "Type": element.tagName, "Text": element.innerText };
 if (typeof expected_styles !== 'undefined') {
-    for (var key in expected_styles) {
+    for (let key in expected_styles) {
         if (verbose)
             console.log("Validate " + key + "Expected: [" + expected_styles[key] + "], Actual:[" + actual_styles[key] + "]");
 

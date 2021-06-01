@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 /**
  *   Generate Data
  *
@@ -28,7 +27,7 @@
  *  Returns
  * 
  *      generatedData
- *      X variables with the same name as the data schema elements requested
+ *      named variables with the same name as the data schema elements requested (firstName, lastName, etc)
  * 
  *   NOTES: 
  *
@@ -36,12 +35,12 @@
  *		
  *      The first set of generated data is stored in test level variable(s) using the name of the schema elements generated 
  *			
- *		For example, if you request 3 ["firstName", "lastName"] sets of data, 
+ *		  For example, if you request 3 ["firstName", "lastName"] sets of data, 
  *
- *		  generatedData will have 3 entries [["firstName", "lastName"], ["firstName", "lastName"], ["firstName" ,"lastName"]]
+ *		    generatedData will have 3 entries [["firstName", "lastName"], ["firstName", "lastName"], ["firstName" ,"lastName"]]
  *
  *        Two variables will be created: "firstName" and "lastName" with values that match the first set of data generated
- *				firstName === generatedData[0].firstName 
+ *				  firstName === generatedData[0].firstName 
  *			    lastName  === generatedData[0].lastName
  *
  *  Base Step

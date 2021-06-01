@@ -1,16 +1,16 @@
 /**
- *  Select Items/Options --> function f(element, itemId, [checkState, matchType])
+ *  Select Items/Options
  * 
  *      Select an item or items from a listbox, dropdown, multi-select or table.  Optionally can support check list items
  *
  *  Parameters: 
  *
- *      element   : Target element (or parent/child of) a <select>, <ol>, <ul> or <table>
+ *     element  : Target element (or parent/child of) a <select>, <ol>, <ul> or <table>
  *
- *	    itemId    : String and/or Integer index (0-based) of target <option>, <li>, <tr>, <td> or any child of the aforementioned
+ *	    itemId   : String and/or Integer index (0-based) of target <option>, <li>, <tr>, <td> or any child of the aforementioned
  *    			  Can be an array for selecting multiple items ["Item 1", "Item 2", 3, 4, 5]
  *
- *      checkState [optional] : Only select item(s) if not checked/selected		
+ *     checkState [optional] : Only select item(s) if not checked/selected		
  *		    Examples: 	true    - Check
  *            			false   - Uncheck
  *                      <unset> - Toggle
@@ -41,6 +41,8 @@
  *
 **/
 
+/* globals element, matchType, checkState, Event, setTimeout, document, itemId */
+
 if (typeof element === 'undefined' || element === null) {
   throw new Error("Target element is undefined.  Please set element parameter and try again");
 }
@@ -49,12 +51,12 @@ if (typeof element === 'undefined' || element === null) {
  */
 function selectItem (element, itemId, tagname, matchType) 
 {
-  var matchtype = matchType.toLowerCase();
+  let matchtype = matchType.toLowerCase();
   if (typeof stringMatch[matchtype] === 'undefined' || stringMatch[matchtype] === null)
     matchtype = "exact";
 
-  var target_item_index = -1;
-  var items;
+  let target_item_index = -1;
+  let items;
   switch (tagname) {
     case "ol":
     case "ul":
@@ -85,7 +87,7 @@ function selectItem (element, itemId, tagname, matchType)
     case "string":
     default:
 
-      for (var i = 0; i < items.length; i++) 
+      for (let i = 0; i < items.length; i++) 
       {
         switch (tagname) {
           case "select":
@@ -121,14 +123,14 @@ function selectItem (element, itemId, tagname, matchType)
    */
   if (target_item_index >= 0) {
 
-    var is_selected = false;
-    var select_item = true;
-
+    let is_selected = false;
+    let check_state;
+    let headers;
+    
     switch (tagname) {
 
       case "select":
 
-        var check_state;
         if (typeof checkState !== 'undefined' && checkState != null) {
           check_state = checkState;
           console.log("is_selected", is_selected);
@@ -172,15 +174,16 @@ function selectItem (element, itemId, tagname, matchType)
  
         if (typeof is_selected_logic !== 'undefined') {
           try {
-          	is_selected = eval('(' + "items[target_item_index]." + is_selected_logic + ')');
-          	console.log("is_selected", is_selected);
+            is_selected = eval('(' + "items[target_item_index]." + is_selected_logic + ')');
+            console.log("is_selected", is_selected);
           }
           catch (err) {
+            console.log("err", err);
           }
         }
         
-        var headers = element.getElementsByTagName("th");
- 		if (typeof headers !== 'undefined' && headers.length > 0 && typeof itemId === "number")
+        headers = element.getElementsByTagName("th");
+        if (typeof headers !== 'undefined' && headers.length > 0 && typeof itemId === "number")
            target_item_index = target_item_index + 1;   
         
         if (!is_selected) {
@@ -211,13 +214,13 @@ function selectItem (element, itemId, tagname, matchType)
  */
 function selectListFind(startingElement) 
 {
-  var select_list = startingElement;
-  var tagname     = select_list.tagName.toLowerCase();
+  let select_list = startingElement;
+  let tagname     = select_list.tagName.toLowerCase();
 
   /* First search down the DOM tree 
    */
   //console.log("First search down the DOM tree");
-  var select_tags = ["select", "ul", "table"];
+  let select_tags = ["select", "ul", "table"];
   if (!select_tags.includes(tagname))
   {
     select_list = startingElement.getElementsByTagName('select')[0];
@@ -233,7 +236,7 @@ function selectListFind(startingElement)
  /* Search up the DOM tree
   */
   //console.log("Search up the DOM tree"); 
-  var stop_tags = ["select", "ul", "ol", "table", "html"];
+  let stop_tags = ["select", "ul", "ol", "table", "html"];
   if (!stop_tags.includes(tagname)) {
     select_list = startingElement;
     while (!stop_tags.includes(tagname))
@@ -249,7 +252,7 @@ function selectListFind(startingElement)
 /* Utility function
  */
 function contains(selector, text) {
-  var elements = document.querySelectorAll(selector);
+  let elements = document.querySelectorAll(selector);
   return Array.prototype.filter.call(elements, function(element){
     return RegExp(text).test(element.textContent);
   });
@@ -287,10 +290,10 @@ if (typeof element === 'undefined' || element === null) {
 /* If user pointed at a list item or for the target element then be nice
  *	try to find the parent element <select> or <ul>
  */
-var select_list = selectListFind(element);
-var tagname     = select_list.tagName.toLowerCase();
+let select_list = selectListFind(element);
+let tagname     = select_list.tagName.toLowerCase();
 
-var select_tags = ["select", "ol", "ul", "table"];
+let select_tags = ["select", "ol", "ul", "table"];
 if (!select_tags.includes(tagname))
 {
   throw new Error("Select Option(s) ==> Target element must be a select, ol, ul, option, li, tr or td");
@@ -298,7 +301,7 @@ if (!select_tags.includes(tagname))
 
 /* Validate/Process checkState
  */
-var is_selected_logic;
+let is_selected_logic;
 if (typeof checkState !== 'undefined') {
   if (checkState == true)
     is_selected_logic = "querySelector(\"input[type='checkbox']\").checked === true";
@@ -316,14 +319,14 @@ stringMatch['startswith'] = function (str1, str2) { return str1.trim().startsWit
 stringMatch['endswith']   = function (str1, str2) { return str1.trim().endsWith(str2.trim()); };
 stringMatch['includes']   = function (str1, str2) { return str1.trim().includes(str2.trim()); };
 
-var match_type = 'exact';
+let match_type = 'exact';
 if (typeof matchType !== 'undefined' && matchType !== null) {
   match_type = matchType;
 }
 
 /* Normalize items to select
  */
-var items_to_select = [];
+let items_to_select = [];
 if (typeof itemId !== 'object')
   items_to_select.push(itemId);
 else
@@ -336,118 +339,3 @@ items_to_select.forEach(function (item_to_select) {
   selectItem(select_list, item_to_select, tagname, match_type, is_selected_logic);
 
 }); 
-
-** Validate selected item
-/**
-  Validate Selected Item
-
-  Parameters
-
-  	element              : Target element (or child of) either a <select>, <ul> or <table>
-
-	selectedItemText     : String of expected target <option>, <li>, <tr>, <td> or any child of the aforementioned
-    			Can be an array for selecting multiple items
-                    
-	matchType [optional] : Text match type when searching for text in lists/selects
-		Examples: 	exact (default), 
-					startswith, 
-					endswith, 
-					includes
-**/
-
-/* If user pointed at a list item or for the target element then be nice
- *	try to find the parent element <select> or <ul>
- */
-var select_list = selectListFind(element);
-var tagname = select_list.tagName.toLowerCase();
-
-var select_tags = ["select", "ul", "ol"];
-if (!select_tags.includes(tagname)) {
-    throw new Error("Select Option(s) ==> Target element must be a select, ul, option or li");
-}
-
-/* Validate/Process matchType
- */
-const stringMatch = {};
-stringMatch['exact']      = function (str1, str2) { return (str1.trim() === str2.trim()); };
-stringMatch['startswith'] = function (str1, str2) { return str1.trim().startsWith(str2.trim()); };
-stringMatch['endswith']   = function (str1, str2) { return str1.trim().endsWith(str2.trim()); };
-stringMatch['includes']   = function (str1, str2) { return str1.trim().includes(str2.trim()); };
-
-var match_type = 'exact';
-if (typeof matchType !== 'undefined' && matchType !== null) {
-  match_type = matchType;
-}
-
-/* Find a target select/listbox 
- */
-function selectListFind(startingElement) {
-    var select_list = startingElement;
-    var tagname = select_list.tagName.toLowerCase();
-
-    /* First search down the DOM tree 
-     */
-    console.log("First search down the DOM tree");
-    var select_tags = ["select", "ul", "ol", "table"];
-    if (!select_tags.includes(tagname)) {
-        select_list = startingElement.getElementsByTagName('select')[0];
-        if (typeof select_list === 'undefined' || select_list === null)
-            select_list = startingElement.getElementsByTagName('ul')[0];
-        if (typeof select_list === 'undefined' || select_list === null)
-            select_list = startingElement.getElementsByTagName('ol')[0];
-        if (typeof select_list === 'undefined' || select_list === null)
-            select_list = startingElement.getElementsByTagName('table')[0];
-        tagname = (typeof select_list === 'undefined' || select_list == null) ? "" : select_list.tagName.toLowerCase();
-    }
-
-    /* Search up the DOM tree
-     */
-    console.log("Search up the DOM tree");
-
-    var stop_tags = ["select", "ul", "ol", "html"];
-    if (!stop_tags.includes(tagname)) {
-        select_list = startingElement;
-        while (!stop_tags.includes(tagname)) {
-            select_list = select_list.parentNode;
-            tagname = (typeof select_list === 'undefined' || select_list == null) ? "" : select_list.tagName.toLowerCase();
-        }
-    }
-
-    return select_list;
-}
-
-function validateSelectedItem (selectList, itemText, matchType) 
-{
-  var tagname   = selectList.tagName.toLowerCase();
-  var matchtype = matchType.toLowerCase();
-  
-  if (stringMatch[matchtype] === undefined)
-    matchtype = "exact";
-      
-  var items = (["ul", "ol"].includes(tagname)) ? selectList.getElementsByTagName("li") : selectList.options; 
-  switch (tagname) {
-      
-    case "select":
-      if (stringMatch[matchtype](items[selectList.selectedIndex].text, itemText)) {
-    	return true;
-      }
-      else {
-        throw new Error("Mismatch: Expected (" + itemText + "), Actual (" + items[selectList.selectedIndex].text + ")");    
-      }
-     break;
-      
-    case "ol":
-    case "ul":
-      if (stringMatch[matchtype](items[selectList.selectedIndex].textContent, itemText)) {
-    	return true;
-      }
-      else {
-        throw new Error("Mismatch: Expected (" + itemText + "), Actual (" + items[selectList.selectedIndex].textContent + ")");    
-      }
-     break;
-      
-  }
-}
-
-validateSelectedItem (select_list, selectedItemText, match_type);
-

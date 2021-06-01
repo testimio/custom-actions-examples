@@ -48,16 +48,18 @@
  *      Bob's your uncle
  */
 
+/* globals networkRequests, requestUrl, statusCode, maxDuration, networkValidationCheckIndex, networkValidationCheckIndexLast */
+
 /*  Used for debugging.  Enable/disable writing interim data to the console
  */
-var verbose = false;
+let verbose = false;
 
 // Validate that expectedNetworkRequest is defined
 //
 if (typeof requestUrl === 'undefined' || requestUrl === null)
     throw new Error("requestUrl is undefined");
 
-expectedNetworkRequest = {
+let expectedNetworkRequest = {
     "url": requestUrl,
     "statusCode": statusCode,
     "maxDuration": maxDuration,
@@ -65,7 +67,7 @@ expectedNetworkRequest = {
 
 // Only consider requests since last time 
 //
-var networkPerformanceCheckIndexLast = 0;
+let networkPerformanceCheckIndexLast = 0;
 if (typeof networkValidationCheckIndex !== 'undefined' && networkValidationCheckIndex !== null)
     networkPerformanceCheckIndexLast = networkValidationCheckIndex;
 
@@ -76,7 +78,7 @@ if (verbose)
 
 // Result object
 //
-var networkValidationResults = {
+let networkValidationResults = {
     success: false,
     numMatchedURLs: 0,
     errorDetails: {
@@ -88,7 +90,7 @@ var networkValidationResults = {
 
 // Loop all requests and look for matches/status
 //
-var _networkRequestMatches = networkRequests.filter((request, index) => {
+let _networkRequestMatches = networkRequests.filter((request, index) => {
 
     if (verbose)
         console.log("networkRequests.filter", index);
@@ -99,7 +101,7 @@ var _networkRequestMatches = networkRequests.filter((request, index) => {
         return false;
     }
 
-    var match = request.url.includes(expectedNetworkRequest.url);
+    let match = request.url.includes(expectedNetworkRequest.url);
     if (match) {
 
         // Calculate call duration
@@ -135,7 +137,7 @@ var _networkRequestMatches = networkRequests.filter((request, index) => {
     return (match);
 
 });
-networkValidationResults.matchingRequests = _networkRequestMatches.map(({ url, validateStatusCode, validateMaxDuration, duration, responseSize, protocol, method, statusCode, statusText, source, isBlocked, isDone, isCancelled, type, ...theRest }) => ({ url, validateStatusCode, validateMaxDuration, duration, responseSize, protocol, method, statusCode, statusText, source, isBlocked, isDone, isCancelled, type }));
+networkValidationResults.matchingRequests = _networkRequestMatches.map(({ url, validateStatusCode, validateMaxDuration, duration, responseSize, protocol, method, statusCode, statusText, source, isBlocked, isDone, isCancelled, type }) => ({ url, validateStatusCode, validateMaxDuration, duration, responseSize, protocol, method, statusCode, statusText, source, isBlocked, isDone, isCancelled, type }));
 
 if (verbose)
     console.table(networkValidationResults.matchingRequests)

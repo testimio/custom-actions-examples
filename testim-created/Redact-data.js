@@ -26,6 +26,8 @@
  *
 **/
 
+/* globals element, window, document */
+
 //
 // Set element fore/background color to black
 //
@@ -37,9 +39,9 @@ element.style.backgroundColor = "black";
 // create an opaque black div element to cover the target element
 //
 
-var element_computed_style = window.getComputedStyle(element);
+let element_computed_style = window.getComputedStyle(element);
 
-var div = document.createElement('div');
+let div = document.createElement('div');
 
 div.style.background = 'black';
 

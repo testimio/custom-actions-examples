@@ -47,6 +47,8 @@
  * 
  **/
 
+/* globals MutationObserver, observer, targetElementCSS, TARGET_ELEMENT_SELECTORS, document */
+
 // Only add the observer once
 //
 if (typeof observer === 'undefined' || observer === null) {
@@ -62,7 +64,7 @@ if (typeof observer === 'undefined' || observer === null) {
         });
     });
 
-    var observerConfig = {
+    let observerConfig = {
         attributes: true,
         attributeFilter: ['style'],
         // childList: true, 
