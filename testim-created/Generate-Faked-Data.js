@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 /**
  *   Generate Data
  *
@@ -5,7 +6,7 @@
  *
  *  Parameters
  *
- * 	    faker (NPM) : Faker NodeJS Package
+ *	    faker (NPM) : Faker NodeJS Package
  *
  *	    dataSchema (JS) : String array of data items to generate
  *               Supported data schema types:
@@ -63,15 +64,17 @@
  *
 **/
 
+/* global faker, dataSchema, numDataSets, dataVariableName */
+
 let generatedData = [];
 let generatedDataInstance = {};
 
-function generateDatum (value, index, array) {
+function generateDatum (value) {
   
   let dataType     = value;
   let variableName = value;
   
-  var datum = "";
+  let datum = "";
   switch (dataType) {
 
     case "firstName":
@@ -100,7 +103,7 @@ function generateDatum (value, index, array) {
     case "ssn":
       datum = faker.phone.phoneNumber('###-##-####');
       break;
-	  
+
     case "company":
     case "companyName":
       datum = faker.company.companyName();
@@ -113,7 +116,7 @@ function generateDatum (value, index, array) {
     case "phoneMobile":
       datum = faker.phone.phoneNumber();
       break;
-	  
+	
     case "email":
     case "emailWork":
     case "emailAddr":
@@ -146,7 +149,7 @@ function generateDatum (value, index, array) {
     case "country":
       datum= faker.address.country();
       break;
-	    }
+  }
   
   generatedDataInstance[variableName] = datum;
   
@@ -174,7 +177,7 @@ console.log("Generated " + generatedData.length + " instances of data for dataSc
 
 // Store all instances of faked data in a global/test variable (generatedData)
 //
-var faked_data_variable_name = "generatedData";
+let faked_data_variable_name = "generatedData";
 if (typeof dataVariableName !== 'undefined' && dataVariableName !== null)
     faked_data_variable_name = dataVariableName;
 
@@ -184,7 +187,7 @@ console.log("Faked data stored in exportsTest." + faked_data_variable_name + " a
 // Take an index and store generatedData[0]'s values as naked top level variables
 //
 let naked_variable_index = 0;
-function storeFirstAsGlobalNakedVariables(value, index, array) {
+function storeFirstAsGlobalNakedVariables(value) {
   
   let variableName  = value;
   let variableValue = generatedData[naked_variable_index][variableName];
@@ -197,4 +200,3 @@ function storeFirstAsGlobalNakedVariables(value, index, array) {
 Object.keys(generatedData[naked_variable_index]).forEach(storeFirstAsGlobalNakedVariables);
 
 console.log("generatedData = " + JSON.stringify(generatedData));
-
