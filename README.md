@@ -7,7 +7,7 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Link Checker](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/link-checker.js) (CLI) - Finds links at the given URL and validates that they are working. 
 
-[Network Performance Checker](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/Network-performance-checker.js) - Validate that all network requests are completed under maxResponseTime milliseconds. 
+[Network Performance Checker](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/network-performance-checker.js) - Validate that all network requests are completed under maxResponseTime milliseconds. 
 
 [Network Performance Summary](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/network-performance-summary.js) - Creates a summary of network requests with min/max/avg duration and request size. 
 
