@@ -1,12 +1,13 @@
 /**
- *  Validate Select Items/Options Order
+ *  Select Items Order Validate
  *  
- *      Validate that items in a list are sorted properly
+ *    Validate that items in a list are sorted properly
  *  
  *  Parameters
  *  
  *    element (HTML) : Target element (or child of) either a <select>, <ul> or <ol>
  *    sortOrder (JS) [optional] : "ASCENDING" (Default), "DESCENDING"  
+ *                                 As a convenience: true == "ASCENDING", false == "DESCENDING"
  * 
  *  Base Step
  *    Custom Validation
@@ -40,7 +41,7 @@ if (typeof element === 'undefined' || element === null) {
  */
 let order_direction = "ASCENDING";
 if (typeof sortOrder !== 'undefined' && sortOrder !== null) {
-  order_direction = sortOrder.toUpperCase();
+  order_direction = (sortOrder != false && sortOrder.toString().toUpperCase() !== 'DESCENDING') ? 'ASCENDING' : 'DESCENDING';
 }
 
 /* If user pointed at a list item or for the target element then be nice
