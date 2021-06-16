@@ -1,6 +1,10 @@
 # custom-actions-examples
 This is a repository of custom action steps that work with Testim.io
 
+These are not officially supported by Testim, but rather examples to try and modify to fit your specific test cases. 
+
+If you have an idea for a custom action example feel free to submit a GitHub issue. 
+
 Initially it includes custom action steps (JavaScript) that we have created for customers. The code can be copied from here and added to a custom step in a Testim test. Instructions on how to use each example are included in the linked file with the JavaScript code needed. Typically it will involve copying the file and code into a custom step, making a change or two to the properties panel, checking your variables, and perhaps pointing to the correct element. 
 
 [Generate Faked Data](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/Generate-Faked-Data.js) (faker.js) - Uses the faker.js library to create fake test data. 
@@ -18,8 +22,6 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 [Redact data](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/Redact-data.js) - This custom step creates an overlay element to prevent screenshot capture of private data.
 
 [Select Item/Option by Text/Value](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/select-by-text.js) - Select an item by value or text (select/option, ul/li. table/tr)
-
-[Set Text](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/set-text-encrypted.js) (Encrypted) - Takes encrypted data, decrypts it and sets the text of a target field and optionally redacts it.
 
 [Validate Select Items/Options](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validate-select-items.js) - Validate that expected items are in a list/select.
 
