@@ -28,3 +28,9 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 [Validate Select Items/Options Order](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/select-order-validate.js) - Validates that the items in a list are sorted properly.
 
 [Validate Element Computed Style(s)](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validate-computed-style.js) - Validate a superset/subset of style for an element
+
+[SQL Server Query](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/sqlserver-query.js) - Execute a SQL Server Query and return results
+
+[MongoDB Query](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/mongodb-query.js) - Execute a MongoDB Query and return results
+
+[MySQL Server Query](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/mysql-query.js) - Execute a MySQL Query and return results
