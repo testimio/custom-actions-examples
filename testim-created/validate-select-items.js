@@ -47,12 +47,6 @@ if (typeof element === 'undefined' || element === null) {
     throw new Error("Target List/Select not found or not visible");
 }
 
-/* Validate expectedOptions is defined
- */
-if (typeof expectedOptions === 'undefined' || expectedOptions === null) {
-    throw new Error("expectedOptions is not defined");
-}
-
 let match_type = 'exact';
 if (typeof matchType !== 'undefined' && matchType !== null) {
     match_type = matchType.toLowerCase();
@@ -62,11 +56,13 @@ if (typeof matchType !== 'undefined' && matchType !== null) {
  *	try to find the parent element <select> or <ul>
  */
 let select_list = selectListFind(element);
-let tagname = select_list.tagName.toLowerCase();
+let tagname = select_list?.tagName.toLowerCase();
+if (tagname === 'div' && select_list.attributes['role']?.nodeValue === 'rowgroup')
+    tagname = "rowgroup";
 
-let select_tags = ["select", "ol", "ul"];
+let select_tags = ["select", "ol", "ul", "rowgroup"];
 if (!select_tags.includes(tagname)) {
-    throw new Error("Select Option(s) ==> Target element must be a select, ol, ul, option or li");
+    throw new Error("Select Option(s) ==> Target element must be a select, ol, ul, option, li or rowgroup");
 }
 
 /* Convenience functions used for matching
@@ -76,6 +72,8 @@ stringMatch['exact'] = function (str1, str2) { return (str1 === str2); };
 stringMatch['startswith'] = function (str1, str2) { return str1.startsWith(str2); };
 stringMatch['endswith'] = function (str1, str2) { return str1.endsWith(str2); };
 stringMatch['includes'] = function (str1, str2) { return str1.includes(str2); };
+
+const copyToClipboard = str => { const el = document.createElement('textarea'); el.value = str; el.setAttribute('readonly', ''); el.style.position = 'absolute'; el.style.left = '-9999px'; document.body.appendChild(el); const selected = document.getSelection().rangeCount > 0 ? document.getSelection().getRangeAt(0) : false; el.select(); document.execCommand('copy'); document.body.removeChild(el); if (selected) { document.getSelection().removeAllRanges(); document.getSelection().addRange(selected); } };
 
 /* Find a target select/listbox 
  */
@@ -92,22 +90,103 @@ function selectListFind(startingElement) {
             select_list = startingElement.getElementsByTagName('ul')[0];
         if (typeof select_list === 'undefined' || select_list === null)
             select_list = startingElement.getElementsByTagName('ol')[0];
-        tagname = (typeof select_list === 'undefined' || select_list == null) ? "" : select_list.tagName.toLowerCase();
+        if (typeof select_list === 'undefined' || select_list === null) {
+            select_list = startingElement.querySelectorAll('div[role="rowgroup"]')[0];
+            if (typeof select_list !== 'undefined' && select_list !== null)
+                tagname = (select_list !== null) ? "rowgroup" : "";
+        }
+        else
+            tagname = (typeof select_list == 'undefined' || select_list == null) ? "" : select_list.tagName.toLowerCase();
     }
 
     /* Search up the DOM tree
      */
-    let stop_tags = ["select", "ul", "ol", "html"];
+    let stop_tags = ["select", "ul", "ol", "rowgroup", "html"];
     if (!stop_tags.includes(tagname)) {
         select_list = startingElement;
         while (!stop_tags.includes(tagname)) {
             select_list = select_list.parentNode;
             tagname = (typeof select_list === 'undefined' || select_list == null) ? "" : select_list.tagName.toLowerCase();
+            if (tagname === 'div' && select_list.attributes['role']?.nodeValue === 'rowgroup')
+                tagname = 'rowgroup';
         }
     }
 
     return select_list;
 }
+
+/* Get select/listbox items
+ */
+function getSelectOptions(element, returnType) {
+    var tagname = element.tagName.toLowerCase();
+
+    let listSelectOptions = [];
+    let return_item_entry = null;
+
+    for (var i = 0; i < items.length; i++) {
+
+        switch (tagname) {
+            case "select":
+                let items = element.getElementsByTagName("li");
+                switch (returnType) {
+                    case "ITEM":
+                        return_item_entry = { "index": i, "text": items[i].text, "value": items[i].value };
+                        break;
+                    case "VALUE":
+                        return_item_entry = items[i].value;
+                        break;
+                    case "TEXT":
+                        return_item_entry = items[i].text;
+                        break;
+                    default:
+                        return_item_entry = { "index": i, "text": items[i].text };
+                        return_item_entry[returnType] = items[i].attributes[returnType].value;
+                        break;
+                }
+                break;
+            case "ul":
+            case "ol":
+                let items = element.options;
+                switch (returnType) {
+                    case "ITEM":
+                        return_item_entry = { "index": i, "text": items[i].textContent }; //, "value": items[i].value };
+                        break;
+                    case "VALUE":
+                        return_item_entry = items[i].value;
+                        break;
+                    case "TEXT":
+                        return_item_entry = items[i].textContent;
+                        break;
+                    default:
+                        return_item_entry = { "index": i, "text": items[i].textContent };
+                        return_item_entry[returnType] = items[i].attributes[returnType].value;
+                        break;
+                }
+                break;
+
+            case "ol":
+
+                let rows = element.querySelectorAll('div[role="row"]');
+                console.log("rows.length", rows.length);
+
+                let cells = rows[0].getElementsByTagName("gridcell");
+                console.log("cells.length", cells.length);
+
+                break;
+
+        }
+        listSelectOptions.push(return_item_entry);
+    }
+
+    return listSelectOptions;
+}
+
+let return_type = 'STRING';
+if (typeof returnType !== 'undefined' && returnType !== null) {
+    return_type = returnType;
+}
+exportsTest.actualOptions = getSelectOptions(element, return_type);
+copyToClipboard(JSON.stringify(exportsTest.actualOptions, null, 1));
 
 /* Validate select/listbox items
  */
@@ -148,7 +227,11 @@ function validateSelectOptions(element, expectedOptions, matchType) {
     }
 
 }
-validateSelectOptions(element, expectedOptions, match_type);
+/* Validate if expectedOptions is defined
+ */
+if (typeof expectedOptions !== 'undefined' && expectedOptions !== null) {
+    validateSelectOptions(element, expectedOptions, match_type);
+}
 
 /* Validate Select/List Order if sortOrder is defined
  */

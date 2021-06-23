@@ -6,6 +6,7 @@
  *  Parameters
  *
  *      element (HTML) : Target element (or child of) either a <select>, <ol>, <ul>, <table> or <ag-grid> 
+ *      returnVariableName (JS)
  *
  *  Notes
  * 
@@ -17,11 +18,11 @@
  * 
  *  Installation
  *      Create a new "Custom Action"
- *      Name it "Items/Options/Cells - Get"
+ *      Name it "Items/Options/Cells - Validate"
  *      Create parameters
  *          element (HTML)
+ *          returnVariableName (JS) [optional]
  *      Set the new custom action's function body to this javascript
- *      Override timeout => Step timeout (milliseconds) = 2000
  *      Exit the step editor
  *      Share the step if not already done so
  *      Save the test
@@ -258,44 +259,3 @@ if (typeof returnVariableName !== 'undefined' && returnVariableName !== null)
 let actualValues = getSelectOptions(select_list, return_type);
 copyToClipboard(JSON.stringify(actualValues, null, 1));
 exportsTest[return_variable_name] = actualValues;
-
-// Validate
-//
-let result = true;
-let differences = { };
-
-let actual_values   = actualValues[0];
-
-if (typeof expectedValues !== 'undefined' && expectedValues !== null) {
-
-    let expected_values = expectedValues[0];
-
-    for (let key in expected_values) {
-        if (verbose)
-            console.log("Validate " + key + "Expected: [" + expected_values[key] + "], Actual:[" + actual_values[key] + "]");
-
-        if (actual_values.hasOwnProperty(key)) {
-
-            if (actual_values[key] != expected_values[key]) {
-                differences[key] = { "Actual": actual_values[key], "Expected": expected_values[key] };
-                if (result)
-                    result = false;
-                if (verbose)
-                    console.log("    MISMATCH:: " + key + " => \nExpected: [" + expected_values[key] + "], \nActual: [" + actual_values[key] + "]");
-            }
-        }
-    }
-    
-}
-
-// If failed, echo to console and report an error
-//
-if (!result) {
-    if (verbose) {
-        console.log("expected_values", JSON.stringify(expectedValues));
-        console.log("actual_values", JSON.stringify(actual_values));
-    }
-    console.log("Validate Computed Style(s): ", JSON.stringify(differences, null, 2));
-    throw new Error("Validate Computed Style(s)\n" + JSON.stringify(differences, null, 2));
-}
-

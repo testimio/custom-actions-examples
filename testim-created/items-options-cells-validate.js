@@ -1,11 +1,13 @@
 /**
- *  Items/Options/Cells - Get
+ *  Select/List/Table Options/Items/Cells - Validate
  *
- *      Return select/ol/ul/table items in a structured format
+ *      Return and optionally validate select/ol/ul/table items
  * 
  *  Parameters
  *
  *      element (HTML) : Target element (or child of) either a <select>, <ol>, <ul>, <table> or <ag-grid> 
+ *      returnVariableName (JS)
+ *      expectedValues (JS)
  *
  *  Notes
  * 
@@ -17,11 +19,12 @@
  * 
  *  Installation
  *      Create a new "Custom Action"
- *      Name it "Items/Options/Cells - Get"
+ *      Name it "Items/Options/Cells - Validate"
  *      Create parameters
  *          element (HTML)
+ *          returnVariableName (JS) [optional]
+ *          expectedValues (JS)
  *      Set the new custom action's function body to this javascript
- *      Override timeout => Step timeout (milliseconds) = 2000
  *      Exit the step editor
  *      Share the step if not already done so
  *      Save the test
@@ -29,7 +32,7 @@
  *
 **/
 
-/* globals element, matchType, expectedOptions, sortOrder */
+/* globals document, element, returnType, expectedValues, returnVariableName */
 
 let verbose = true;
 
@@ -111,6 +114,7 @@ function getSelectOptions(element, returnType) {
     let columnheader_row;
     let columnheader_nodes;
     let columnheaders;
+    let data_rows;
 
     let items = null;
     switch (tagname) {
@@ -155,7 +159,7 @@ function getSelectOptions(element, returnType) {
                 });
             }
 
-            let data_rows = element.querySelectorAll('div[role="rowgroup"]')[1];
+            data_rows = element.querySelectorAll('div[role="rowgroup"]')[1];
             items = data_rows.querySelectorAll('div[role="row"]');
 
             break;
@@ -164,8 +168,9 @@ function getSelectOptions(element, returnType) {
 
     let return_item_entry = null;
     let _return_item_entry;
+    let row_cells;
 
-    for (var i = 0; i < items.length; i++) {
+    for (let i = 0; i < items.length; i++) {
 
         switch (tagname) {
 
@@ -212,7 +217,7 @@ function getSelectOptions(element, returnType) {
 
             case "table":
 
-                var row_cells = items[i].querySelectorAll('td');
+                row_cells = items[i].querySelectorAll('td');
                 if (row_cells.length > 0) {
                     _return_item_entry = {};
                     let row_cell_id = 0;
@@ -228,7 +233,7 @@ function getSelectOptions(element, returnType) {
 
             case "grid":
 
-                var row_cells = items[i].querySelectorAll('div[role="gridcell"]');
+                row_cells = items[i].querySelectorAll('div[role="gridcell"]');
                 if (row_cells.length > 0) {
                     _return_item_entry = {};
                     let row_cell_id = 0;
@@ -261,41 +266,74 @@ exportsTest[return_variable_name] = actualValues;
 
 // Validate
 //
-let result = true;
-let differences = { };
+function validateItems(actualValues, expectedValues) {
 
-let actual_values   = actualValues[0];
+    let result = true;
+    let expected_values;
+    let actual_values;
+    let row_differences;
+    let differences = [];
+
+    for (let evid = 0; evid < expectedValues.length; evid++) {
+
+        expected_values = expectedValues[evid];
+
+        let row_id    = Object.keys(expected_values).includes("index") ? expected_values["index"] : evid;
+        actual_values = (actualValues[row_id] !== null) ? actualValues[row_id] : ""; 
+        
+        row_differences = {};
+
+        if (typeof expected_values === 'string' && typeof actual_values === 'string') 
+        {
+            if (expected_values != actual_values) {
+                row_differences[evid] = { "row": evid, "Actual": actual_values, "Expected": expected_values };
+                if (result)
+                    result = false;
+            }
+        }
+        else {
+            
+            for (let key in expected_values) {
+
+                if (key === 'index')
+                    continue;
+
+                if (verbose)
+                    console.log("Validate " + key + "Expected: [" + expected_values[key] + "], Actual:[" + actual_values[key] + "]");
+
+                if (Object.keys(actual_values).includes(key)) {
+
+                    if (actual_values[key] != expected_values[key]) {
+                        row_differences[key] = { "row": row_id, "Actual": actual_values[key], "Expected": expected_values[key] };
+                        if (result)
+                            result = false;
+                        if (verbose)
+                            console.log("    MISMATCH:: " + key + " => \nExpected: [" + expected_values[key] + "], \nActual: [" + actual_values[key] + "]");
+                    }
+                }
+            }
+        }
+        if (Object.keys(row_differences).length > 0)
+            differences.push(row_differences);
+    }
+
+    // If failed, echo to console and report an error
+    //
+    if (!result) {
+        if (verbose) {
+            console.log("expected_values", JSON.stringify(expectedValues));
+            console.log("actual_values", JSON.stringify(actual_values));
+        }
+        console.log("Validate Select/List/Table Options/Items/Cells(s): ", JSON.stringify(differences, null, 2));
+        throw new Error("Validate Select/List/Table Options/Items/Cells\n" + JSON.stringify(differences, null, 2));
+    }
+
+    return result;
+}
 
 if (typeof expectedValues !== 'undefined' && expectedValues !== null) {
 
-    let expected_values = expectedValues[0];
+    validateItems(actualValues, expectedValues);
 
-    for (let key in expected_values) {
-        if (verbose)
-            console.log("Validate " + key + "Expected: [" + expected_values[key] + "], Actual:[" + actual_values[key] + "]");
-
-        if (actual_values.hasOwnProperty(key)) {
-
-            if (actual_values[key] != expected_values[key]) {
-                differences[key] = { "Actual": actual_values[key], "Expected": expected_values[key] };
-                if (result)
-                    result = false;
-                if (verbose)
-                    console.log("    MISMATCH:: " + key + " => \nExpected: [" + expected_values[key] + "], \nActual: [" + actual_values[key] + "]");
-            }
-        }
-    }
-    
-}
-
-// If failed, echo to console and report an error
-//
-if (!result) {
-    if (verbose) {
-        console.log("expected_values", JSON.stringify(expectedValues));
-        console.log("actual_values", JSON.stringify(actual_values));
-    }
-    console.log("Validate Computed Style(s): ", JSON.stringify(differences, null, 2));
-    throw new Error("Validate Computed Style(s)\n" + JSON.stringify(differences, null, 2));
 }
 
