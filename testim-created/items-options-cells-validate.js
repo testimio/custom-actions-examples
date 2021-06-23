@@ -6,9 +6,15 @@
  *  Parameters
  *
  *      element (HTML) : Target element (or child of) either a <select>, <ol>, <ul>, <table> or <ag-grid> 
- *      returnVariableName (JS)
- *      expectedValues (JS)
+ *      returnVariableName (JS) : string name of variable to store actual values in that can be used for setting expetedValues
+ *      expectedValues (JS) : expected data example can be gotten by running this step with no expectedValue.  
+ *                            The data will be in the clipboard and the variable actualItems (or returnVariableName if specified)
+ *	                          If you set index:x key/value of an expected value node it validates that entry in that row of actual values.
  *
+ *  Returns
+ * 
+ *      actualItems - unless returnVariableName is set whereby data will be in that variable name instead
+ * 
  *  Notes
  * 
  *      ag-grid example - https://www.ag-grid.com/javascript-grid/cell-rendering/#example-dynamic-rendering-component
