@@ -30,9 +30,7 @@
  *
 **/
 
-/* globals element, matchType, expectedOptions, sortOrder */
-
-let verbose = true;
+/* globals document, element, returnType, returnVariableName */
 
 /* Validate the target element is defined
  */
@@ -112,6 +110,7 @@ function getSelectOptions(element, returnType) {
     let columnheader_row;
     let columnheader_nodes;
     let columnheaders;
+    let data_rows;
 
     let items = null;
     switch (tagname) {
@@ -156,7 +155,7 @@ function getSelectOptions(element, returnType) {
                 });
             }
 
-            let data_rows = element.querySelectorAll('div[role="rowgroup"]')[1];
+            data_rows = element.querySelectorAll('div[role="rowgroup"]')[1];
             items = data_rows.querySelectorAll('div[role="row"]');
 
             break;
@@ -165,8 +164,9 @@ function getSelectOptions(element, returnType) {
 
     let return_item_entry = null;
     let _return_item_entry;
+    let row_cells;
 
-    for (var i = 0; i < items.length; i++) {
+    for (let i = 0; i < items.length; i++) {
 
         switch (tagname) {
 
@@ -213,7 +213,7 @@ function getSelectOptions(element, returnType) {
 
             case "table":
 
-                var row_cells = items[i].querySelectorAll('td');
+                row_cells = items[i].querySelectorAll('td');
                 if (row_cells.length > 0) {
                     _return_item_entry = {};
                     let row_cell_id = 0;
@@ -229,7 +229,7 @@ function getSelectOptions(element, returnType) {
 
             case "grid":
 
-                var row_cells = items[i].querySelectorAll('div[role="gridcell"]');
+                row_cells = items[i].querySelectorAll('div[role="gridcell"]');
                 if (row_cells.length > 0) {
                     _return_item_entry = {};
                     let row_cell_id = 0;
