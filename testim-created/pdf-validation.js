@@ -21,10 +21,11 @@
  *      This Custom CLI Action is provided "AS IS".  It is for instructional purposes only and is not officially supported by Testim
  * 
  *  Base Step
- *      CLI Action
+ * 
+ *      Validate Download 
  * 
  *  Installation
- *      Create a new "CLI action" step
+ *      Create a new "Validate Download" step
  *      Name it "Download-Process-Validate PDF"
  *      Create parameters
  *          fieldsToValidate (JS) 

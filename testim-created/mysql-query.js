@@ -10,7 +10,15 @@
  * 
  *  Returns
  *      queryResults or returnVariableName if defined
- * 
+ *      
+ *      Automatically created variables created from the first row of values in the recordset where each variable name equals a column name
+ * 			
+ *		    For example, if the recordset contains data with the columns ["firstName", "lastName"], 
+ *
+ *          Two variables will be created: "firstName" and "lastName" with values that match the first set of data generated
+ *				    firstName === queryResults[0].firstName 
+ *			      lastName  === queryResults[0].lastName
+ *
  *  Base Step
  *      CLI Action
  * 
@@ -30,37 +38,51 @@
  *      Bob's your uncle
  */
 
- var dbName   = "testdata";
+
+ var dbName = "testdata";
  var userName = "barry";
  var password = "P@$$w0rdMS";
- var host     = "localhost";
- var port     = 3306;
+ var host = "localhost";
+ var port = 3306;
  
  /* if returnVariableName is defined then use it else use 'queryResults' as the return variable
   */
  var return_variable_name = (typeof returnVariableName !== 'undefined' && returnVariableName !== null) ? returnVariableName : 'queryResults';
  
  const sequelize = new Sequelize(dbName, userName, password, {
-     select:  "mysql",
+     select: "mysql",
      dialect: 'mysql',
      host,
      port,
  });
  
  return sequelize
-   .query(query, {
-     plain: true,
-     raw: true,
-     type: Sequelize.QueryTypes.SELECT,
-   })
-   .then(myTableRows => {
+     .query(query, {
+         type: Sequelize.QueryTypes.SELECT,
+     })
+     .then(myTableRows => {
  
-     const result = myTableRows && JSON.stringify(myTableRows);
+         const result = myTableRows && JSON.stringify(myTableRows);
  
-     console.log("Query result", result);
-     exportsTest[return_variable_name] = result;
-     
-     if (!myTableRows) {
-       return Promise.reject(new Error("Failed to find raw"));
-     }
-   });
+         console.log("myTableRows", JSON.stringify(myTableRows));
+         console.log("Query result", result);
+         exportsTest[return_variable_name] = result;
+ 
+         // Take an index and store generatedData[0]'s values as naked top level variables
+         //
+         let naked_variable_index = 0;
+         function storeFirstAsGlobalNakedVariables(value) {
+ 
+             let variableName = value;
+             let variableValue = myTableRows[naked_variable_index][variableName];
+ 
+             exportsTest[variableName] = variableValue;
+             console.log(variableName + " = " + variableValue);
+ 
+         }
+         Object.keys(myTableRows[naked_variable_index]).forEach(storeFirstAsGlobalNakedVariables);
+ 
+         if (!myTableRows) {
+             return Promise.reject(new Error("Failed to find raw"));
+         }
+     });
