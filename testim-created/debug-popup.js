@@ -1,12 +1,36 @@
 /**
-  Debug Popup
-
-  Parameters:
-
-  	message (JS) : Test/JSON/HTML to display
-
-	timeout (JS) [optional] : Time to display popup
-    
+ *  Debug Popup
+ *
+ *    Displays <message> in a modal popup window for debugging purposes
+ * 
+ *  Parameters:
+ *
+ *  	message (JS) : Message to display (String or HTML)
+ *                     Can even use JSON.stringify() to unwind a JSON object
+ *      timeout (JS) [optional] : Time to display popup
+ *                    If unset then popup will not go away by itself and test will continue
+ *                    If set then popup (and step) will block until timeout has expired.
+ *     
+ *  Note
+ * 
+ *    You can add a subsequesnt step that dismisses the popup to capture a screenshot
+ * 
+ *  Base Step
+ * 
+ *      Custom Action
+ * 
+ *  Installation
+ *      Create a new "Custom Action"
+ *      Name it "Debug Popup"
+ *      Create parameters
+ *          message (JS)
+ *          timeout (JS)
+ *      Set the new custom action's function body to this javascript
+ *      Exit the step editor
+ *      Share the step if not already done so
+ *      Save the test
+ *      Bob's your uncle
+ *
 **/
 
 var script_jquery  = document.createElement('script');
