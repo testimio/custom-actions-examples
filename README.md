@@ -37,3 +37,5 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Debug Popup](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/debug-popup.js) - Displays <message> in a modal popup window for debugging purposes
 
+[graphQL Query](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/graphQL-query.js) - Execute a graphQL Query and return results
+
