@@ -6,7 +6,6 @@
  *  Parameters
  *
  *      element (HTML) : Target element (or child of) either a <table> or <ag-grid> 
- *      returnVariableName (JS) : string name of variable to store actual values in that can be used for setting expetedValues
  *      expectedValues (JS) : expected cell values in the following format:
  *                              [{"<column name>":"<column value>", "<column name>":"<column value>", "index":0}
  *                              ,{"<column name>":"<column value>", "<column name>":"<column value>", "index":1}
@@ -17,6 +16,8 @@
  *                                 The data will be in the clipboard and the variable actualItems (or returnVariableName if specified)
  *
  *                            If you set index:x of an expected row then validation of that entry will be row specific
+ *      
+ *      returnVariableName (JS) : string name of variable to store actual values in that can be used for setting expetedValues
  * 
  * Returns
  * 
@@ -37,8 +38,8 @@
  *      Name it "Items/Options/Cells - Validate"
  *      Create parameters
  *          element (HTML)
- *          returnVariableName (JS) [optional]
  *          expectedValues (JS)
+ *          returnVariableName (JS) [optional]
  *      Set the new custom action's function body to this javascript
  *      Exit the step editor
  *      Share the step if not already done so
