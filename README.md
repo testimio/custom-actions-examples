@@ -46,3 +46,5 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 [Table Cells - Get](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/table-cells-get.js) - Return table cell values in a structured format
 
 [Table Cells - Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/table-cells-validate.js) - Validate table cell content
+
+[Download-Process-Validate PDF](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/pdf-validation.js) - Download, parse and validate a PDF document
