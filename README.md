@@ -48,3 +48,7 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 [Table Cells - Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/table-cells-validate.js) - Validate table cell content
 
 [Download-Process-Validate PDF](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/pdf-validation.js) - Download, parse and validate a PDF document
+
+[AzureDevOps wiQL Query](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/azure-devops-wiql-query.js) - Execute a wiQL (Work Item Query Language) query in Azure DevOps and return results
+
+[AzureDevOps WorkItem Create/Update](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/azure-devops-workitem-create-update.js) - Create or Update a Work Item in Azure DevOps
