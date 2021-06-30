@@ -95,9 +95,7 @@
  /* if returnVariableName is defined then use it else use 'queryResults' as the return variable
   */
  var return_variable_name = (typeof returnVariableName !== 'undefined' && returnVariableName !== null) ? returnVariableName : 'queryResults';
- 
- const copyToClipboard = str => { const el = document.createElement('textarea'); el.value = str; el.setAttribute('readonly', ''); el.style.position = 'absolute'; el.style.left = '-9999px'; document.body.appendChild(el); const selected = document.getSelection().rangeCount > 0 ? document.getSelection().getRangeAt(0) : false; el.select(); document.execCommand('copy'); document.body.removeChild(el); if (selected) { document.getSelection().removeAllRanges(); document.getSelection().addRange(selected); } };
- 
+  
  /* Convenience functions used for matching
   */
  const stringMatch = {};
@@ -217,8 +215,6 @@
          expected_results["expectedValues"] = actual_results;
          exportsTest['expectedResults'] = expected_results;
          console.log('expectedResults', JSON.stringify(expected_results, null, 2));
- 
-         copyToClipboard(JSON.stringify(expected_results));
  
          // Take an index and store generatedData[0]'s values as naked top level variables
          //
