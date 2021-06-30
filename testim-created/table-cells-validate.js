@@ -6,19 +6,27 @@
  *  Parameters
  *
  *      element (HTML) : Target element (or child of) either a <table> or <ag-grid> 
+ *      returnVariableName (JS) : string name of variable to store actual values in that can be used for setting expetedValues
  *      expectedValues (JS) : expected cell values in the following format:
- *                              [{"<column name>":"<column value>", "<column name>":"<column value>", "index":0}
- *                              ,{"<column name>":"<column value>", "<column name>":"<column value>", "index":1}
- *                              ,{"<column name>":"<column value>", "<column name>":"<column value>", "index":2}
+ * 
+ *                              [{"<column name>":"<column value>", "<column name>":"<column value>", ...}
+ *                              ,{"<column name>":"<column value>", "<column name>":"<column value>", ...}
+ *                              ,{"<column name>":"<column value>", "<column name>":"<column value>", ...}
  *                              ]
  * 
- *                            expectedValues can be retrieved by running this step with or without expectedValues being set
- *                                 The data will be in the clipboard and the variable actualItems (or returnVariableName if specified)
- *
- *                            If you set index:x of an expected row then validation of that entry will be row specific
- *      
- *      returnVariableName (JS) : string name of variable to store actual values in that can be used for setting expetedValues
+ *                            or for more advanced options
  * 
+ *                              {
+ *                               "options": {
+ *                                   "PK": null,
+ *                                   "matchType": "exact"
+ *                               },
+ *                               "expectedValues": [{"<column name>":"<column value>", "<column name>":"<column value>", ...}
+ *                                                  ,{"<column name>":"<column value>", "<column name>":"<column value>", ...}
+ *                                                  ,{"<column name>":"<column value>", "<column name>":"<column value>", ...}
+ *                                                 ]
+ *                              }
+ *      
  * Returns
  * 
  *      actualItems (or returnVariableName if specified) will contain actual cell values
@@ -28,6 +36,8 @@
  *      Supports both html tables and ag-grid
  *          ag-grid example - https://www.ag-grid.com/javascript-grid/cell-rendering/#example-dynamic-rendering-component
  *      When run without expectedValues being set the step will pass and simply return the actual values
+ *          The data will be in the clipboard and the variable actualItems (or returnVariableName if specified)
+ *      If you set PK then validation of that entry will be row specific by PK
  *                      
  *  Base Step
  * 
@@ -38,8 +48,8 @@
  *      Name it "Items/Options/Cells - Validate"
  *      Create parameters
  *          element (HTML)
- *          expectedValues (JS)
  *          returnVariableName (JS) [optional]
+ *          expectedValues (JS)
  *      Set the new custom action's function body to this javascript
  *      Exit the step editor
  *      Share the step if not already done so
@@ -48,7 +58,7 @@
  *
 **/
 
-/* globals document, element, expectedValues, returnVariableName */
+/* globals document, element, returnType, expectedValues, returnVariableName */
 
 let verbose = true;
 
@@ -72,6 +82,15 @@ if (!select_tags.includes(tagname)) {
 }
 
 const copyToClipboard = str => { const el = document.createElement('textarea'); el.value = str; el.setAttribute('readonly', ''); el.style.position = 'absolute'; el.style.left = '-9999px'; document.body.appendChild(el); const selected = document.getSelection().rangeCount > 0 ? document.getSelection().getRangeAt(0) : false; el.select(); document.execCommand('copy'); document.body.removeChild(el); if (selected) { document.getSelection().removeAllRanges(); document.getSelection().addRange(selected); } };
+
+/* Convenience functions used for matching
+ */
+const stringMatch = {};
+stringMatch['exact'] = function (str1, str2) { return (str1 === str2); };
+stringMatch['startswith'] = function (str1, str2) { return str1.startsWith(str2); };
+stringMatch['endswith'] = function (str1, str2) { return str1.endsWith(str2); };
+stringMatch['includes'] = function (str1, str2) { return str1.includes(str2); };
+stringMatch['contains'] = function (str1, str2) { return str1.includes(str2); };
 
 /* Find a target table 
  */
@@ -169,10 +188,10 @@ function getTableRows(element) {
 
             case "table":
 
-                row_cells    = rows[i].querySelectorAll('td');
+                row_cells = rows[i].querySelectorAll('td');
                 if (row_cells.length > 0) {
                     _return_item_entry = {};
-                    let row_cell_id = 0;              
+                    let row_cell_id = 0;
                     _return_item_entry["index"] = i - ((typeof columnheader_row === 'undefined') ? 0 : 1);
                     [].forEach.call(row_cells, function (cell) {
                         let column_name = columnheaders[row_cell_id++ % columnheaders.length];
@@ -213,12 +232,22 @@ if (typeof returnVariableName !== 'undefined' && returnVariableName !== null)
     return_variable_name = returnVariableName;
 
 let actualValues = getTableRows(table);
-copyToClipboard(JSON.stringify(actualValues, null, 1));
 exportsTest[return_variable_name] = actualValues;
+
+let expected_results = {};
+expected_results["options"] = { "PK": null, "matchType": "exact" };
+expected_results["expectedValues"] = actualValues;
+exportsTest['expected_results'] = expected_results;
+console.log('expected_results', JSON.stringify(expected_results, null, 2));
+
+copyToClipboard(JSON.stringify(expected_results));
 
 // Validate
 //
-function validateItems(actualValues, expectedValues) {
+function validateDataSet(actualValues, options, expectedValues) {
+
+    if (verbose)
+        console.log("validateItems called");
 
     let result = true;
     let expected_values;
@@ -226,28 +255,43 @@ function validateItems(actualValues, expectedValues) {
     let row_differences;
     let differences = [];
 
+    let pk = null;
+    let matchtype = "exact";
+    if (typeof options !== 'undefined' && options !== null) {
+        pk = options["PK"];
+        matchtype = options["matchType"];
+    }
+
     for (let evid = 0; evid < expectedValues.length; evid++) {
 
         expected_values = expectedValues[evid];
 
-        let row_id    = Object.keys(expected_values).includes("index") ? expected_values["index"] : evid;
-        actual_values = (actualValues[row_id] !== null) ? actualValues[row_id] : ""; 
+        let row_id = Object.keys(expected_values).includes("index") ? expected_values["index"] : evid;
+        actual_values = (actualValues[row_id] !== null) ? actualValues[row_id] : "";
+
+        /* if PK is defined then use it to find the target row for comparison
+         */
+        if (pk != null) {
+            let target_row = actualValues.find(row => row[pk] === expected_values[pk]);
+            actual_values = target_row;
+        }
 
         row_differences = {};
 
-        if (typeof expected_values === 'string' && typeof actual_values === 'string') 
-        {
-            if (expected_values != actual_values) {
-                row_differences[evid] = { "row": evid, "Actual": actual_values, "Expected": expected_values };
+        if (typeof expected_values === 'string' && typeof actual_values === 'string') {
+
+            if (!stringMatch[matchtype](actual_values, expected_values)) {
+                row_differences[evid] = { "row": evid, "Actual": actual_values, "Expected": expected_values, "MatchType": matchtype };
                 if (result)
                     result = false;
             }
+
         }
         else {
-            
-            if (typeof actual_values === 'undefined' || actual_values === null){
-                 console.warn("    MISMATCH:: Expected: [" + JSON.stringify(expected_values) + "], \nActual: UNDEFINED");
-                 row_differences[evid] = { "row": row_id, "Actual": "undefined", "Expected": expected_values };
+
+            if (typeof actual_values === 'undefined' || actual_values === null) {
+                console.warn("    MISMATCH:: Expected: [" + JSON.stringify(expected_values) + "], \nActual: UNDEFINED, MatchType: [" + matchtype + "]");
+                row_differences[evid] = { "row": row_id, "Actual": "undefined", "Expected": expected_values };
                 continue;
             }
 
@@ -257,16 +301,17 @@ function validateItems(actualValues, expectedValues) {
                     continue;
 
                 if (verbose)
-                    console.log("Validate " + key + "Expected: [" + expected_values[key] + "], Actual:[" + actual_values[key] + "]");
+                    console.log("Validate " + key + "Expected: [" + expected_values[key] + "], Actual:[" + actual_values[key] + "], MatchType: [" + matchtype + "]");
 
                 if (Object.keys(actual_values).includes(key)) {
 
-                    if (actual_values[key] != expected_values[key]) {
-                        row_differences[key] = { "row": row_id, "Actual": actual_values[key], "Expected": expected_values[key] };
+                    if (!stringMatch[matchtype](actual_values[key].toString(), expected_values[key].toString())) {
+
+                        row_differences[key] = { "row": row_id, "Actual": actual_values[key], "Expected": expected_values[key], "MatchType": matchtype };
                         if (result)
                             result = false;
                         if (verbose)
-                            console.log("    MISMATCH:: " + key + " => \nExpected: [" + expected_values[key] + "], \nActual: [" + actual_values[key] + "]");
+                            console.log("    MISMATCH:: " + key + " => \nExpected: [" + expected_values[key] + "], \nActual: [" + actual_values[key] + "], \MatchType: [" + matchtype + "]");
                     }
                 }
             }
@@ -282,16 +327,21 @@ function validateItems(actualValues, expectedValues) {
             console.log("expected_values", JSON.stringify(expectedValues));
             console.log("actual_values", JSON.stringify(actualValues));
         }
-        console.log("Validate Select/List/Table Options/Items/Cells(s): ", JSON.stringify(differences, null, 2));
-        throw new Error("Validate Select/List/Table Options/Items/Cells\n" + JSON.stringify(differences, null, 2));
+        console.log("SQL Server - Results Validate: ", JSON.stringify(differences, null, 2));
+        throw new Error("SQL Server - Results Validate\n" + JSON.stringify(differences, null, 2));
     }
 
     return result;
 }
 
 if (typeof expectedValues !== 'undefined' && expectedValues !== null) {
-
-    validateItems(actualValues, expectedValues);
-
+    let options = null;
+    let expected_values = expectedValues;
+    if (!Array.isArray(expectedValues)) {
+        options = expectedValues["options"];
+        expected_values = expectedValues["expectedValues"];
+    }
+    validateDataSet(actualValues, options, expected_values);
 }
+
 

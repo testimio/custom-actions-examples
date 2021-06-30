@@ -24,12 +24,7 @@
  *                                                  ,{"<column name>":"<column value>", "<column name>":"<column value>", ...}
  *                                                 ]
  *                              }
- *
- *                            Note: expectedValues can be retrieved by running this step with or without expectedValues being set
- *                                 The data will be in the clipboard and the variable actualItems (or returnVariableName if specified)
- *
- *                                  If you set PK:x of an expected row then validation of that entry will be row specific by PK
- *      
+ *     
  *      returnVariableName (JS) [Optional] : Name of return data variable.  
  *              Uses queryResults if not defined
  * 	    connectionString (JS) [optional] : 'mssql://TestimSQL:wh4t3v3r4!@AuggieTheDoggie/TestData'
@@ -46,6 +41,12 @@
  *          Two variables will be created: "firstName" and "lastName" with values that match the first set of data generated
  *				    firstName === queryResults[0].firstName 
  *			      lastName  === queryResults[0].lastName
+ *
+ *  Notes
+ * 
+ *      When run without expectedValues being set the step will pass and simply return the actual values
+ *          The data will be in the clipboard and the variable actualItems (or returnVariableName if specified)
+ *      If you set PK then validation of that entry will be row specific by PK
  *
  *  Base Step
  *      CLI Action
@@ -95,6 +96,8 @@
   */
  var return_variable_name = (typeof returnVariableName !== 'undefined' && returnVariableName !== null) ? returnVariableName : 'queryResults';
  
+ const copyToClipboard = str => { const el = document.createElement('textarea'); el.value = str; el.setAttribute('readonly', ''); el.style.position = 'absolute'; el.style.left = '-9999px'; document.body.appendChild(el); const selected = document.getSelection().rangeCount > 0 ? document.getSelection().getRangeAt(0) : false; el.select(); document.execCommand('copy'); document.body.removeChild(el); if (selected) { document.getSelection().removeAllRanges(); document.getSelection().addRange(selected); } };
+ 
  /* Convenience functions used for matching
   */
  const stringMatch = {};
@@ -103,7 +106,7 @@
  stringMatch['endswith'] = function (str1, str2) { return str1.endsWith(str2); };
  stringMatch['includes'] = function (str1, str2) { return str1.includes(str2); };
  stringMatch['contains'] = function (str1, str2) { return str1.includes(str2); };
-  
+ 
  // Validate
  //
  function validateDataSet(actualValues, options, expectedValues) {
@@ -130,14 +133,14 @@
  
          let row_id = Object.keys(expected_values).includes("index") ? expected_values["index"] : evid;
          actual_values = (actualValues[row_id] !== null) ? actualValues[row_id] : "";
-         
+ 
          /* if PK is defined then use it to find the target row for comparison
           */
-        if (pk != null) {
-            let target_row = actualValues.find(row => row[pk] === expected_values[pk]);
-            actual_values = target_row;
-        }
-
+         if (pk != null) {
+             let target_row = actualValues.find(row => row[pk] === expected_values[pk]);
+             actual_values = target_row;
+         }
+ 
          row_differences = {};
  
          if (typeof expected_values === 'string' && typeof actual_values === 'string') {
@@ -169,7 +172,7 @@
  
                      if (!stringMatch[matchtype](actual_values[key].toString(), expected_values[key].toString())) {
  
-                         row_differences[key] = { "row": row_id, "Actual": actual_values[key], "Expected": expected_values[key], "MatchType" : matchtype};
+                         row_differences[key] = { "row": row_id, "Actual": actual_values[key], "Expected": expected_values[key], "MatchType": matchtype };
                          if (result)
                              result = false;
                          if (verbose)
@@ -209,11 +212,13 @@
          exportsTest[return_variable_name] = actual_results;
          console.log(return_variable_name, JSON.stringify(actual_results, null, 2));
  
-         let expectedResults = {};
-         expectedResults["options"] = { "PK" : null, "matchType" : "exact" };
-         expectedResults["expectedValues"] = actual_results;       
-         exportsTest['expectedResults'] = expectedResults;
-         console.log('expectedResults', JSON.stringify(expectedResults, null, 2));
+         let expected_results = {};
+         expected_results["options"] = { "PK": null, "matchType": "exact" };
+         expected_results["expectedValues"] = actual_results;
+         exportsTest['expectedResults'] = expected_results;
+         console.log('expectedResults', JSON.stringify(expected_results, null, 2));
+ 
+         copyToClipboard(JSON.stringify(expected_results));
  
          // Take an index and store generatedData[0]'s values as naked top level variables
          //
