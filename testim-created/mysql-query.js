@@ -11,7 +11,7 @@
  *  Returns
  *      queryResults or returnVariableName if defined
  *      
- *      Automatically created variables created from the first row of values in the recordset where each variable name equals a column name
+ *      Return first row of results as individual test level variables with  names matching the associated column(s)
  * 			
  *		    For example, if the recordset contains data with the columns ["firstName", "lastName"], 
  *

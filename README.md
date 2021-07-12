@@ -37,3 +37,21 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Debug Popup](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/debug-popup.js) - Displays <message> in a modal popup window for debugging purposes
 
+[graphQL Query](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/graphQL-query.js) - Execute a graphQL Query and return results
+
+[Excel - Import Data](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/excel-import-data.js) - Process Excel download file and save sheet data values as test data (testData)
+
+[Image Element Capture-Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/image-element-capture-validate.js) - Capture an image of a DOM element and optionally validate (pixel exact match)
+
+[Table Cells - Get](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/table-cells-get.js) - Return table cell values in a structured format
+
+[Table Cells - Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/table-cells-validate.js) - Validate table cell content
+
+[Download-Process-Validate PDF](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/pdf-validation.js) - Download, parse and validate a PDF document
+
+[AzureDevOps wiQL Query](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/azure-devops-wiql-query.js) - Execute a wiQL (Work Item Query Language) query in Azure DevOps and return results
+
+[AzureDevOps WorkItem Create/Update](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/azure-devops-workitem-create-update.js) - Create or Update a Work Item in Azure DevOps
+
+[SQL Server - Results Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/sqlserver-validate-results.js) - Execute a SQL Server query, validate and return results
+

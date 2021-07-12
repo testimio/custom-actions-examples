@@ -51,7 +51,7 @@ let popup_html = '<span class="helper"></span><div style="width: 800px;">'
                 + '<table>'
                 +   '<tr>'
                 +     '<td>'
-                +       message
+                +       (typeof message === 'object' ? JSON.stringify(message) : message)
                 +     '</td>'
                 +   '</tr>'
                 + '</table>'
