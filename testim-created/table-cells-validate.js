@@ -58,7 +58,7 @@
  *
 **/
 
-/* globals document, element, returnType, expectedValues, returnVariableName */
+/* globals document, element, expectedValues, returnVariableName */
 
 let verbose = true;
 
@@ -311,7 +311,7 @@ function validateDataSet(actualValues, options, expectedValues) {
                         if (result)
                             result = false;
                         if (verbose)
-                            console.log("    MISMATCH:: " + key + " => \nExpected: [" + expected_values[key] + "], \nActual: [" + actual_values[key] + "], \MatchType: [" + matchtype + "]");
+                            console.log("    MISMATCH:: " + key + " => \nExpected: [" + expected_values[key] + "], \nActual: [" + actual_values[key] + "], \nMatchType: [" + matchtype + "]");
                     }
                 }
             }
