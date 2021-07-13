@@ -1,5 +1,5 @@
 /**
- *  Table Cells - Get
+ *  Table - Cells Get
  *
  *      Return table cell values in a structured format
  * 
@@ -36,8 +36,6 @@
 **/
 
 /* globals document, element, returnVariableName */
-
-let verbose = true;
 
 /* Validate the target element is defined
  */
@@ -107,7 +105,6 @@ function getTableRows(element) {
     let columnheader_nodes;
     let columnheaders;
     let data_rows;
-    let header_row;
 
     let rows = null;
     switch (tagname) {

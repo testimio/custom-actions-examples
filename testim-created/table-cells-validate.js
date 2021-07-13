@@ -1,5 +1,5 @@
 /**
- *  Table Cells - Validate
+ *  Table - Cells Validate
  *
  *      Validate table cell content
  * 

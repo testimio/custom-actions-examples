@@ -43,9 +43,11 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Image Element Capture-Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/image-element-capture-validate.js) - Capture an image of a DOM element and optionally validate (pixel exact match)
 
-[Table Cells - Get](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/table-cells-get.js) - Return table cell values in a structured format
+[Table - Cells Get](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/table-cells-get.js) - Return table cell values in a structured format
 
-[Table Cells - Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/table-cells-validate.js) - Validate table cell content
+[Table - Cells Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/table-cells-validate.js) - Validate table cell content
+
+[Table - Cell Click](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/table-cell-click.js) - Click a specific cell within a specific row in a table
 
 [Download-Process-Validate PDF](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/pdf-validation.js) - Download, parse and validate a PDF document
 
