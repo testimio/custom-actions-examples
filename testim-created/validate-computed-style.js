@@ -1,301 +1,175 @@
-/**
- *  Items/Options/Cells - Get
- *
- *      Return select/ol/ul/table items in a structured format
+/*
+ *  Validate Computed Style
+ *  
+ *      Validates any/all style(s) of an element by getting the computed styles and validating them against expected styles 
  * 
  *  Parameters
- *
- *      element (HTML) : Target element (or child of) either a <select>, <ol>, <ul>, <table> or <ag-grid> 
- *
+ * 
+ *  		element        (HTML) : Target Element
+ *  		expectedStyles (JS)   : expected styles formatted as JSON 
+ *  	 		Example:  {"alignContent": "left", "alignItems": "center", "backgroundColor": "rgb(56, 234, 100)", "backgroundImage": "none", "border": "0px none rgb(49, 49, 49)" }
+ *   
  *  Notes
  * 
- *      ag-grid example - https://www.ag-grid.com/javascript-grid/cell-rendering/#example-dynamic-rendering-component
- *      
- *  Base Step
+ *  	Actual values are copied to the clipboard and can be used as extected values either in whole or in part
+ *      To start, run this without an expectedStyles set to capture the current values that can then be set as expectedStyles 
+ *      The configuration variable 'supportedStyles' (below) can be modified to filter captured styles to just those of interest to you as there are a ton by default
  * 
- *      Custom Action
+ *  Use
+ *      Set the element to the target element to be validated
+ *      Run the step with an empty expectedStyles value\
+ *      After a successful run, all current styles will be in the clipboard and can be pasted into the expectedStyles parameter
+ *      Optionally, you can edit expectedStyles to just those that you want to validate
+ * 
+ *  Base Step
+ *      Custom Validation
  * 
  *  Installation
- *      Create a new "Custom Action"
- *      Name it "Items/Options/Cells - Get"
- *      Create parameters
- *          element (HTML)
+ *      Create a new "Custom Validation"
+ *      Name it "Validate Element Computed Style(s)"
+ *      Create 2 parameters
+ *          HTML - element
+ *          JS   - expectedStyles
  *      Set the new custom action's function body to this javascript
- *      Override timeout => Step timeout (milliseconds) = 2000
  *      Exit the step editor
  *      Share the step if not already done so
  *      Save the test
- *      Bob's your uncle
- *
-**/
-
-/* globals element, matchType, expectedOptions, sortOrder */
-
-let verbose = true;
-
-/* Validate the target element is defined
+ *      And Bob's your uncle * 
  */
-if (typeof element === 'undefined' || element === null) {
-    throw new Error("Target List/Select not found or not visible");
-}
 
-let return_type = 'STRING';
-if (typeof returnType !== 'undefined' && returnType !== null) {
-    return_type = returnType;
-}
+// Used for debugging.  Enable/disable writing interim data to the console
+let verbose = false;
 
-/* If user pointed at a list item, option, table row, table cell for the target element then be nice
- *	try to find the parent element <select>, <ul>, <ol>, <div role~"grid">
- */
-let select_list = selectListFind(element);
-let tagname = select_list?.tagName.toLowerCase();
-if (tagname === 'div' && select_list.attributes['role']?.nodeValue === 'grid')
-    tagname = "grid";
+let supportedStyles = {
+    computedStyles: {
+        "alignContent": "", "alignItems": "", "alignSelf": "", "alignmentBaseline": "", "animation": ""
+        , "animationDelay": "", "animationDirection": "", "animationDuration": "", "animationFillMode": "", "animationIterationCount": "", "animationName": ""
+        , "animationPlayState": "", "animationTimingFunction": "", "appearance": "", "backdropFilter": "", "backfaceVisibility": "", "background": ""
+        , "backgroundAttachment": "", "backgroundBlendMode": "", "backgroundClip": "", "backgroundColor": "", "backgroundImage": "", "backgroundOrigin": ""
+        , "backgroundPosition": "", "backgroundPositionX": "", "backgroundPositionY": "", "backgroundRepeat": "", "backgroundSize": "", "baselineShift": ""
+        , "blockSize": "", "border": "", "borderBlockEnd": "", "borderBlockEndColor": "", "borderBlockEndStyle": "", "borderBlockEndWidth": "", "borderBlockStart": ""
+        , "borderBlockStartColor": "", "borderBlockStartStyle": "", "borderBlockStartWidth": "", "borderBottom": "", "borderBottomColor": "", "borderBottomLeftRadius": ""
+        , "borderBottomRightRadius": "", "borderBottomStyle": "", "borderBottomWidth": "", "borderCollapse": "", "borderColor": "", "borderImage": ""
+        , "borderImageOutset": "", "borderImageRepeat": "", "borderImageSlice": "", "borderImageSource": "", "borderImageWidth": "", "borderInlineEnd": ""
+        , "borderInlineEndColor": "", "borderInlineEndStyle": "", "borderInlineEndWidth": "", "borderInlineStart": "", "borderInlineStartColor": "", "borderInlineStartStyle": ""
+        , "borderInlineStartWidth": "", "borderLeft": "", "borderLeftColor": "", "borderLeftStyle": "", "borderLeftWidth": "", "borderRadius": "", "borderRight": ""
+        , "borderRightColor": "", "borderRightStyle": "", "borderRightWidth": "", "borderSpacing": "", "borderStyle": "", "borderTop": "", "borderTopColor": ""
+        , "borderTopLeftRadius": "", "borderTopRightRadius": "", "borderTopStyle": "", "borderTopWidth": "", "borderWidth": "", "bottom": "", "boxShadow": ""
+        , "boxSizing": "", "breakAfter": "", "breakBefore": "", "breakInside": "", "bufferedRendering": "", "captionSide": "", "caretColor": "", "clear": ""
+        , "clip": "", "clipPath": "", "clipRule": "", "color": "", "colorInterpolation": "", "colorInterpolationFilters": "", "colorRendering": "", "colorScheme": ""
+        , "columnCount": "", "columnFill": "", "columnGap": "", "columnRule": "", "columnRuleColor": "", "columnRuleStyle": "", "columnRuleWidth": "", "columnSpan": ""
+        , "columnWidth": "", "columns": "", "contain": "", "containIntrinsicSize": "", "content": "", "contentVisibility": "", "counterIncrement": "", "counterReset": ""
+        , "counterSet": "", "cursor": "", "cx": "", "cy": "", "d": "", "direction": "", "display": "", "dominantBaseline": "", "emptyCells": "", "fill": "", "fillOpacity": ""
+        , "fillRule": "", "filter": "", "flex": "", "flexBasis": "", "flexDirection": "", "flexFlow": "", "flexGrow": "", "flexShrink": "", "flexWrap": "", "float": "", "floodColor": ""
+        , "floodOpacity": "", "font": "", "fontFamily": "", "fontFeatureSettings": "", "fontKerning": "", "fontOpticalSizing": "", "fontSize": "", "fontStretch": "", "fontStyle": ""
+        , "fontVariant": "", "fontVariantCaps": "", "fontVariantEastAsian": "", "fontVariantLigatures": "", "fontVariantNumeric": "", "fontVariationSettings": "", "fontWeight": ""
+        , "gap": "", "grid": "", "gridArea": "", "gridAutoColumns": "", "gridAutoFlow": "", "gridAutoRows": "", "gridColumn": "", "gridColumnEnd": "", "gridColumnGap": ""
+        , "gridColumnStart": "", "gridGap": "", "gridRow": "", "gridRowEnd": "", "gridRowGap": "", "gridRowStart": "", "gridTemplate": "", "gridTemplateAreas": ""
+        , "gridTemplateColumns": "", "gridTemplateRows": "", "height": "", "hyphens": ""
+        , "imageOrientation": "", "imageRendering": "", "inlineSize": "", "isolation": "", "justifyContent": "", "justifyItems": "", "justifySelf": "", "left": ""
+        , "letterSpacing": "", "lightingColor": "", "lineBreak": "", "lineHeight": "", "listStyle": "", "listStyleImage": "", "listStylePosition": "", "listStyleType": ""
+        , "margin": "", "marginBlockEnd": "", "marginBlockStart": "", "marginBottom": "", "marginInlineEnd": "", "marginInlineStart": "", "marginLeft": "", "marginRight": ""
+        , "marginTop": "", "marker": "", "markerEnd": "", "markerMid": "", "markerStart": "", "mask": "", "maskType": "", "maxBlockSize": "", "maxHeight": "", "maxInlineSize": ""
+        , "maxWidth": "", "minBlockSize": "", "minHeight": "", "minInlineSize": "", "minWidth": "", "mixBlendMode": "", "objectFit": "", "objectPosition": "", "offset": ""
+        , "offsetDistance": "", "offsetPath": "", "offsetRotate": "", "opacity": "", "order": "", "orphans": "", "outline": "", "outlineColor": "", "outlineOffset": "", "outlineStyle": ""
+        , "outlineWidth": "", "overflow": "", "overflowAnchor": "", "overflowWrap": "", "overflowX": "", "overflowY": "", "overscrollBehavior": "", "overscrollBehaviorBlock": ""
+        , "overscrollBehaviorInline": "", "overscrollBehaviorX": "", "overscrollBehaviorY": "", "padding": "", "paddingBlockEnd": "", "paddingBlockStart": "", "paddingBottom": ""
+        , "paddingInlineEnd": "", "paddingInlineStart": "", "paddingLeft": "", "paddingRight": "", "paddingTop": "", "page": "", "pageBreakAfter": "", "pageBreakBefore": ""
+        , "pageBreakInside": "", "paintOrder": "", "perspective": "", "perspectiveOrigin": "", "placeContent": "", "placeItems": "", "placeSelf": "", "pointerEvents": ""
+        , "position": "", "r": "", "resize": "", "right": "", "rowGap": "", "rubyPosition": "", "rx": "", "ry": "", "scrollBehavior": "", "scrollMargin": "", "scrollMarginBlock": ""
+        , "scrollMarginBlockEnd": "", "scrollMarginBlockStart": "", "scrollMarginBottom": "", "scrollMarginInline": "", "scrollMarginInlineEnd": "", "scrollMarginInlineStart": ""
+        , "scrollMarginLeft": "", "scrollMarginRight": "", "scrollMarginTop": "", "scrollPadding": "", "scrollPaddingBlock": "", "scrollPaddingBlockEnd": "", "scrollPaddingBlockStart": ""
+        , "scrollPaddingBottom": "", "scrollPaddingInline": "", "scrollPaddingInlineEnd": "", "scrollPaddingInlineStart": "", "scrollPaddingLeft": "", "scrollPaddingRight": "", "scrollPaddingTop": ""
+        , "scrollSnapAlign": "", "scrollSnapStop": "", "scrollSnapType": "", "shapeImageThreshold": "", "shapeMargin": "", "shapeOutside": "", "shapeRendering": "", "speak": ""
+        , "stopColor": "", "stopOpacity": "", "stroke": "", "strokeDasharray": "", "strokeDashoffset": "", "strokeLinecap": "", "strokeLinejoin": "", "strokeMiterlimit": ""
+        , "strokeOpacity": "", "strokeWidth": "", "tabSize": "", "tableLayout": ""
+        , "textAlign": "", "textAlignLast": "", "textAnchor": "", "textCombineUpright": "", "textDecoration": "", "textDecorationColor": "", "textDecorationLine": ""
+        , "textDecorationSkipInk": "", "textDecorationStyle": "", "textIndent": "", "textOrientation": "", "textOverflow": "", "textRendering": "", "textShadow": ""
+        , "textSizeAdjust": "", "textTransform": "", "textUnderlinePosition": "", "top": "", "touchAction": "", "transform": "", "transformBox": "", "transformOrigin": ""
+        , "transformStyle": "", "transition": "", "transitionDelay": "", "transitionDuration": "", "transitionProperty": "", "transitionTimingFunction": "", "unicodeBidi": ""
+        , "userSelect": "", "vectorEffect": "", "verticalAlign": "", "visibility": "", "whiteSpace": "", "widows": "", "width": "", "willChange": "", "wordBreak": "", "wordSpacing": ""
+        , "wordWrap": "", "writingMode": "", "x": "", "y": "", "zIndex": "", "zoom": "", "cssFloat": "",
+    }
+};
 
-let select_tags = ["select", "ol", "ul", "table", "grid"];
-if (!select_tags.includes(tagname)) {
-    throw new Error("Select Option(s) ==> Target element must be a select, ol, ul, option, li, table or grid");
-}
+/* globals expectedStyles, document, window, element */
+
+// supportedStyles = {
+//     computedStyles: {
+//     }
+// };
 
 const copyToClipboard = str => { const el = document.createElement('textarea'); el.value = str; el.setAttribute('readonly', ''); el.style.position = 'absolute'; el.style.left = '-9999px'; document.body.appendChild(el); const selected = document.getSelection().rangeCount > 0 ? document.getSelection().getRangeAt(0) : false; el.select(); document.execCommand('copy'); document.body.removeChild(el); if (selected) { document.getSelection().removeAllRanges(); document.getSelection().addRange(selected); } };
 
-/* Find a target select/listbox/table 
- */
-function selectListFind(startingElement) {
-
-    let select_list = startingElement;
-    let tagname = select_list.tagName.toLowerCase();
-
-    /* First search down the DOM tree 
-     */
-    let select_tags = ["select", "ol", "ul", "table", "grid"];
-    if (!select_tags.includes(tagname)) {
-        select_list = startingElement.getElementsByTagName('select')[0];
-        if (typeof select_list === 'undefined' || select_list === null)
-            select_list = startingElement.getElementsByTagName('ul')[0];
-        if (typeof select_list === 'undefined' || select_list === null)
-            select_list = startingElement.getElementsByTagName('ol')[0];
-        if (typeof select_list === 'undefined' || select_list === null)
-            select_list = startingElement.getElementsByTagName('table')[0];
-        if (typeof select_list === 'undefined' || select_list === null) {
-            select_list = startingElement.querySelectorAll('div[role="grid"]')[0];
-            if (typeof select_list !== 'undefined' && select_list !== null)
-                tagname = (select_list !== null) ? "grid" : "";
-        }
-        else
-            tagname = (typeof select_list == 'undefined' || select_list == null) ? "" : select_list.tagName.toLowerCase();
+// If Expected Values is not JSON, attempt to convert to JSON
+//
+if (typeof expectedStyles === 'string') {
+    if (expectedStyles.startsWith("{") === false) {
+        expectedStyles = "{" + expectedStyles.replace("=", ":") + "}";
     }
-
-    /* Search up the DOM tree
-     */
-    let stop_tags = ["select", "ul", "ol", "grid", "table", "html"];
-    if (!stop_tags.includes(tagname)) {
-        select_list = startingElement;
-        while (!stop_tags.includes(tagname)) {
-            select_list = select_list.parentNode;
-            tagname = (typeof select_list === 'undefined' || select_list == null) ? "" : select_list.tagName.toLowerCase();
-            if (tagname === 'div' && select_list.attributes['role']?.nodeValue === 'grid')
-                tagname = 'grid';
-        }
-    }
-
-    return select_list;
+    expectedStyles = JSON.parse(expectedStyles);
 }
 
-/* Get select/listbox/table items/rows
- */
-function getSelectOptions(element, returnType) {
-
-    let listSelectOptions = [];
-
-    let columnheader_row;
-    let columnheader_nodes;
-    let columnheaders;
-
-    let items = null;
-    switch (tagname) {
-
-        case "select":
-
-            items = element.options;
-
-            break;
-
-        case "ul":
-        case "ol":
-
-            items = element.getElementsByTagName("li");
-
-            break;
-
-        case "table":
-
-            columnheader_row = element.querySelectorAll('thead')[0];
-            columnheader_nodes = columnheader_row.querySelectorAll('th');
-            columnheaders = [];
-
-            if (columnheader_nodes.length > 0) {
-                [].forEach.call(columnheader_nodes, function (cell) {
-                    columnheaders.push(cell.innerText);
-                });
-            }
-
-            items = element.getElementsByTagName("tr");
-
-            break;
-
-        case "grid":
-
-            columnheader_row = element.querySelectorAll('div[role="rowgroup"]')[0];
-            columnheader_nodes = columnheader_row.querySelectorAll('span[class="ag-header-cell-text"]');
-            columnheaders = [];
-            if (columnheader_nodes.length > 0) {
-                [].forEach.call(columnheader_nodes, function (cell) {
-                    columnheaders.push(cell.innerText);
-                });
-            }
-
-            let data_rows = element.querySelectorAll('div[role="rowgroup"]')[1];
-            items = data_rows.querySelectorAll('div[role="row"]');
-
-            break;
-    }
-    console.log("items.length", items.length);
-
-    let return_item_entry = null;
-    let _return_item_entry;
-
-    for (var i = 0; i < items.length; i++) {
-
-        switch (tagname) {
-
-            case "select":
-
-                switch (returnType) {
-                    case "ITEM":
-                        return_item_entry = { "index": i, "text": items[i].text, "value": items[i].value };
-                        break;
-                    case "VALUE":
-                        return_item_entry = items[i].value;
-                        break;
-                    case "TEXT":
-                    case "STRING":
-                        return_item_entry = items[i].text;
-                        break;
-                    default:
-                        return_item_entry = { "index": i, "text": items[i].text };
-                        return_item_entry[returnType] = items[i].attributes[returnType].value;
-                        break;
-                }
-                break;
-
-            case "ul":
-            case "ol":
-
-                switch (returnType) {
-                    case "ITEM":
-                        return_item_entry = { "index": i, "text": items[i].textContent }; //, "value": items[i].value };
-                        break;
-                    case "VALUE":
-                        return_item_entry = items[i].value;
-                        break;
-                    case "TEXT":
-                    case "STRING":
-                        return_item_entry = items[i].textContent;
-                        break;
-                    default:
-                        return_item_entry = { "index": i, "text": items[i].textContent };
-                        return_item_entry[returnType] = items[i].attributes[returnType].value;
-                        break;
-                }
-                break;
-
-            case "table":
-
-                var row_cells = items[i].querySelectorAll('td');
-                if (row_cells.length > 0) {
-                    _return_item_entry = {};
-                    let row_cell_id = 0;
-                    _return_item_entry["index"] = i;
-                    [].forEach.call(row_cells, function (cell) {
-                        let column_name = columnheaders[row_cell_id++ % columnheaders.length];
-                        _return_item_entry[column_name] = cell.innerText;
-                    });
-                    return_item_entry = _return_item_entry;
-                }
-
-                break;
-
-            case "grid":
-
-                var row_cells = items[i].querySelectorAll('div[role="gridcell"]');
-                if (row_cells.length > 0) {
-                    _return_item_entry = {};
-                    let row_cell_id = 0;
-                    _return_item_entry["index"] = i;
-                    [].forEach.call(row_cells, function (cell) {
-                        let column_name = columnheaders[row_cell_id++ % columnheaders.length];
-                        _return_item_entry[column_name] = cell.innerText;
-                    });
-                    return_item_entry = _return_item_entry;
-                }
-
-                break;
-
-        }
-
-        if (return_item_entry !== null)
-            listSelectOptions.push(return_item_entry);
-    }
-
-    return listSelectOptions;
+// Get Expected Values.  Use default (all known if undefined)
+//
+let expected_styles;
+if (typeof expectedStyles !== 'undefined' && expectedStyles !== null) {
+    expected_styles = expectedStyles;
+    supportedStyles.computedStyles = expectedStyles;
 }
 
-let return_variable_name = 'actualItems';
-if (typeof returnVariableName !== 'undefined' && returnVariableName !== null)
-    return_variable_name = returnVariableName;
+if (verbose)
+    console.log("EXPECTED STYLES", JSON.stringify(expected_styles, null, 2));
 
-let actualValues = getSelectOptions(select_list, return_type);
-copyToClipboard(JSON.stringify(actualValues, null, 1));
-exportsTest[return_variable_name] = actualValues;
+// Get Actual Computed Styles
+//
+let actual_styles = {};
+let elementStyles = window.getComputedStyle(element, null)
+for (let key in elementStyles) {
+    if (isNaN(key) && key != "cssText") {
+        if (key.length > 0 && elementStyles[key] !== null && elementStyles[key].length > 0) {
+            if (Object.prototype.hasOwnProperty.call(supportedStyles.computedStyles, key)) {
+                actual_styles[key] = elementStyles[key];
+            }
+        }
+    }
+}
+
+// Save actual styles to the clipboard.  These can be used to set expected values
+//
+copyToClipboard(JSON.stringify(actual_styles, null, 1));
+if (verbose)
+    console.log("ACTUAL STYLES", JSON.stringify(actual_styles, null, 2));
 
 // Validate
 //
 let result = true;
-let differences = { };
-
-let actual_values   = actualValues[0];
-
-if (typeof expectedValues !== 'undefined' && expectedValues !== null) {
-
-    let expected_values = expectedValues[0];
-
-    for (let key in expected_values) {
+let differences = { "Type": element.tagName, "Text": element.innerText };
+if (typeof expected_styles !== 'undefined') {
+    for (let key in expected_styles) {
         if (verbose)
-            console.log("Validate " + key + "Expected: [" + expected_values[key] + "], Actual:[" + actual_values[key] + "]");
+            console.log("Validate " + key + "Expected: [" + expected_styles[key] + "], Actual:[" + actual_styles[key] + "]");
 
-        if (actual_values.hasOwnProperty(key)) {
+        if (Object.prototype.hasOwnProperty.call(supportedStyles.computedStyles, key) && Object.prototype.hasOwnProperty.call(actual_styles, key)) {
 
-            if (actual_values[key] != expected_values[key]) {
-                differences[key] = { "Actual": actual_values[key], "Expected": expected_values[key] };
+            if (actual_styles[key] != expected_styles[key]) {
+                differences[key] = { "Actual": actual_styles[key], "Expected": expected_styles[key] };
                 if (result)
                     result = false;
                 if (verbose)
-                    console.log("    MISMATCH:: " + key + " => \nExpected: [" + expected_values[key] + "], \nActual: [" + actual_values[key] + "]");
+                    console.log("    MISMATCH:: " + key + " => \nExpected: [" + expected_styles[key] + "], \nActual: [" + actual_styles[key] + "]");
             }
         }
     }
-    
 }
 
 // If failed, echo to console and report an error
 //
 if (!result) {
     if (verbose) {
-        console.log("expected_values", JSON.stringify(expectedValues));
-        console.log("actual_values", JSON.stringify(actual_values));
+        console.log("expected_styles", JSON.stringify(expected_styles));
+        console.log("actual_styles", JSON.stringify(actual_styles));
     }
     console.log("Validate Computed Style(s): ", JSON.stringify(differences, null, 2));
     throw new Error("Validate Computed Style(s)\n" + JSON.stringify(differences, null, 2));
 }
-
