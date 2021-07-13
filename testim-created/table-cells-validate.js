@@ -139,7 +139,6 @@ function getTableRows(element) {
     let columnheader_nodes;
     let columnheaders;
     let data_rows;
-    let header_row;
 
     let rows = null;
     switch (tagname) {
