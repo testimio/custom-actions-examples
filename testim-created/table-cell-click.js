@@ -7,13 +7,16 @@
  *
  *      element (HTML) : Target element (or child of) either a <table> 
  *      rowSelector     (JS)   : { column name : value/index } specification to specify which row target column is in
- *                       example { "Type"  : "age" }
- *                               { "index" : 4 }
- *                               2
+ *                       example { "Type"  : "age" } - find "age" in column "Type"
+ *                               { "2" : "Nicole" }  - find "Nicole" in column 3
+ *                               { "index" : 4 }     - row 5
+ *                               2                   - row 3
  *      columnId  (JS)   : Column name or index to click within a row
  *                       example "Value"
  *                               0
  *      returnVariableName (JS) [optional] : string name of variable to store actual value in 
+ * 
+ *      highlightTargetCell (JS) [optional] : Highlight Table/Row/Cell for posterity (and debugging)
  * 
  *  Returns
  * 
@@ -37,6 +40,7 @@
  *          columnId (JS)
  *      Create optional parameters if desired
  *          returnVariableName (JS) [optional]
+ *          highlightTargetCell (JS) [optional]
  *      Set the new custom action's function body to this javascript
  *      Exit the step editor
  *      Share the step if not already done so
@@ -48,6 +52,11 @@
 /* globals document, element, columnId, rowSelector, Event, returnVariableName */
 
 let verbose = true;
+
+let highlight_target_cell = false;
+if (typeof highlightTargetCell !== 'undefined' && highlightTargetCell !== null) {
+    highlight_target_cell = highlightTargetCell;
+}
 
 /* Validate the target element is defined
  */
@@ -67,6 +76,15 @@ if (!select_tags.includes(tagname)) {
 }
 
 const copyToClipboard = str => { const el = document.createElement('textarea'); el.value = str; el.setAttribute('readonly', ''); el.style.position = 'absolute'; el.style.left = '-9999px'; document.body.appendChild(el); const selected = document.getSelection().rangeCount > 0 ? document.getSelection().getRangeAt(0) : false; el.select(); document.execCommand('copy'); document.body.removeChild(el); if (selected) { document.getSelection().removeAllRanges(); document.getSelection().addRange(selected); } };
+
+/* Convenience functions used for matching
+ */
+const stringMatch = {};
+stringMatch['exact'] = function (str1, str2) { return (str1 === str2); };
+stringMatch['startswith'] = function (str1, str2) { return str1.startsWith(str2); };
+stringMatch['endswith'] = function (str1, str2) { return str1.endsWith(str2); };
+stringMatch['includes'] = function (str1, str2) { return str1.includes(str2); };
+stringMatch['contains'] = function (str1, str2) { return str1.includes(str2); };
 
 function doEvent(obj, eventName) {
     let event = new Event(eventName, { target: obj, bubbles: true, composed: true });
@@ -105,7 +123,7 @@ function tableFind(startingElement) {
 
 /* Find target table row
  */
-function tableRowFind(theGrid, rowSelector) {
+function tableRowFind(theGrid, rowSelector, matchType) {
 
     let target_row_id = -1;
     let target_row_column_name;
@@ -147,6 +165,8 @@ function tableRowFind(theGrid, rowSelector) {
         console.log("  rows.length:", rows.length);
     }
 
+    /* Find the target row column id of our primary key
+     */
     columnheaders = [];
     if (columnheader_nodes.length > 0) {
         let _column_id = -1;
@@ -157,6 +177,8 @@ function tableRowFind(theGrid, rowSelector) {
                 target_row_column_id = _column_id;
         });
     }
+    if (target_row_column_id == undefined && !isNaN(target_row_column_name))
+        target_row_column_id = Number(target_row_column_name);
 
     if (verbose) {
         console.log("  target_row_column_id:", target_row_column_id);
@@ -173,7 +195,7 @@ function tableRowFind(theGrid, rowSelector) {
 
         [].forEach.call(rows, function (row) {
             _row_id = ++_row_id;
-            if (row.children[target_row_column_id].innerText.trim() == target_row_column_value && target_row_column_instance-- >= 0) {
+            if (!stringMatch[matchType](row.children[target_row_column_id].innerText.trim(), target_row_column_value) && target_row_column_instance-- >= 0) {
                 target_row_id = _row_id;
                 if (verbose)
                     console.log("    !==> target_row_id = ", target_row_id);
@@ -204,7 +226,7 @@ function tableCellFind(theRow, columnId, columnValue) {
     let target_column_id = -1;
 
     if (typeof columnId === 'number') {
-        target_column_id = (columnId < 0) ? 0 : columnId >= columnheaders.length ? columnheaders.length - 1 : columnId;
+        target_column_id = (columnId < 0) ? 0 : columnId >= theRow.length ? theRow.length - 1 : columnId;
     }
     else if (columnId !== null && columnheaders.length > 0) {
         let _column_id = -1;
@@ -255,14 +277,25 @@ let row_selector = rowSelector
 if (typeof rowSelector === 'number')
     row_selector = { "index": rowSelector };
 
+let matchtype = "exact";
+if (typeof options !== 'undefined' && options !== null) {
+    pk = options["PK"];
+    matchtype = options["matchType"];
+}
+
 let columnheader_row;
 let columnheader_nodes;
 let columnheaders;
 
+if (highlight_target_cell)
+    table.style.border = "2px solid red";
+
 let theRow;
-theRow = tableRowFind(table, row_selector);
+theRow = tableRowFind(table, row_selector, matchtype);
 if (verbose)
     console.log("theRow = ", theRow);
+if (highlight_target_cell)
+    theRow.style.border = "2px solid blue";
 
 let theCell;
 if (typeof theRow !== 'undefined' && theRow !== null)
@@ -276,12 +309,19 @@ if (typeof theCell !== 'undefined' && theCell !== null) {
     if (verbose)
         console.log("Click on cell with innerText = ", theCell.innerText);
 
-    //theCell.style.border = "1px solid red";
-
     copyToClipboard(theCell.innerText);
     exportsTest[return_variable_name] = theCell.innerText;
 
-    doEvent(theCell, 'click');
-    theCell.click();
+    if (highlight_target_cell)
+        theCell.style.border = "2px solid green";
+
+    if (theCell.children.length == 0) {
+        doEvent(theCell, 'click');
+        theCell.click();
+    }
+    else {
+        doEvent(theCell.children[0], 'click');
+        theCell.children[0].click();
+    }
 
 }
