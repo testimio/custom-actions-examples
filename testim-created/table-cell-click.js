@@ -21,6 +21,9 @@
  * 
  *  Notes
  * 
+ *  Disclaimer
+ *      This Custom Action is provided "AS IS".  It is for instructional purposes only and is not officially supported by Testim
+ * 
  *  Base Step
  * 
  *      Custom Action 

@@ -39,8 +39,10 @@
  *          The data will be in the clipboard and the variable actualItems (or returnVariableName if specified)
  *      If you set PK then validation of that entry will be row specific by PK
  *                      
- *  Base Step
+ *  Disclaimer
+ *      This Custom Action is provided "AS IS".  It is for instructional purposes only and is not officially supported by Testim
  * 
+ *  Base Step
  *      Custom Action
  * 
  *  Installation

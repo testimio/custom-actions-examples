@@ -17,6 +17,9 @@
  *      Supports both html tables and ag-grid
  *          ag-grid example - https://www.ag-grid.com/javascript-grid/cell-rendering/#example-dynamic-rendering-component
  *      
+ *  Disclaimer
+ *      This Custom Action is provided "AS IS".  It is for instructional purposes only and is not officially supported by Testim
+ * 
  *  Base Step
  * 
  *      Custom Action

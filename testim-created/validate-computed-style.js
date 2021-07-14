@@ -21,6 +21,9 @@
  *      After a successful run, all current styles will be in the clipboard and can be pasted into the expectedStyles parameter
  *      Optionally, you can edit expectedStyles to just those that you want to validate
  * 
+ *  Disclaimer
+ *      This Custom Action is provided "AS IS".  It is for instructional purposes only and is not officially supported by Testim
+ * 
  *  Base Step
  *      Custom Validation
  * 

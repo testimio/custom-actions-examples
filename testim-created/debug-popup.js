@@ -13,7 +13,10 @@
  *     
  *  Note
  * 
- *      You can add a subsequesnt step that dismisses the popup to capture a screenshot
+ *      You can add a subsequent step that dismisses this popup to capture a screenshot
+ * 
+ *  Disclaimer
+ *      This Custom Action is provided "AS IS".  It is for instructional purposes only and is not officially supported by Testim
  * 
  *  Base Step
  * 

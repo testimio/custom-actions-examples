@@ -34,10 +34,8 @@
  *      https://docs.microsoft.com/en-us/azure/devops/boards/queries/wiql-syntax?view=azure-devops#operators
  *      https://docs.microsoft.com/en-us/rest/api/azure/devops/test/?view=azure-devops-rest-6.1
  * 
- *  Version
- *      1.0.0 - Initial Working Version
- *      1.0.1 - Bug fixes
- *      1.0.2 - Refactoring for handling multiple requests
+ *  Disclaimer
+ *      This Custom Action is provided "AS IS".  It is for instructional purposes only and is not officially supported by Testim
  * 
  *  Base Step
  *      Custom CLI Action

@@ -21,6 +21,9 @@
  *	  matchType [optional] : Text match type when searching for text in lists/selects
  *		Examples: exact (default), startswith, endswith, includes
  *
+ *  Disclaimer
+ *      This Custom Action is provided "AS IS".  It is for instructional purposes only and is not officially supported by Testim
+ * 
  *  Base Step
  *      Custom Action
  * 

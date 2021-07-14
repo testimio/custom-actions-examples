@@ -31,6 +31,9 @@
  *          If you click the "Open Modal" button a modal dialog comes up.
  *          After you run this step and click the button again, it will not display.
  *
+ *  Disclaimer
+ *      This Custom Action is provided "AS IS".  It is for instructional purposes only and is not officially supported by Testim
+ * 
  *  Base Step
  *      Custom Action
  * 
