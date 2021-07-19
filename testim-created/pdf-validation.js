@@ -8,8 +8,13 @@
  *      fieldsToValidate (JS) [optional] - JSON expected text/data that can be used to validate data in a PDF file
  *                          Example:  [{"Family Name" : "Solomon" }, { "Gender_List_Box": "Man" }, { "Height_Formatted_Field": "150" }, { "Favourite_Colour_List_Box": "Red" } ]
  *                                    [{  "TextBlock": "PDF Form Example" } ]
- *      maxPages (JS) [optional]  - Limits processing to just the first maxPages pages
- *      pdf2json (NPM)            - pdf2json NPM Package
+ *      pages (JS) - Limits processing to just certain pages
+ *                          Example:  '1-3'       Pages 1,2,3
+ *                                    '3-5'       Pages 3,4,5
+ *                                    '1,2,4-6'   Pages 1,2,4,5,6
+ *                                    4           Page 1-4
+ *                                    <unset>     All pages
+ *      pdf2json (NPM) - pdf2json NPM Package
  * 
  *  Output (The following test level variables will be created on successful execution of this step)
  *      pdfActualFieldValues : actual values that can be used as expected values (baseline)
@@ -29,7 +34,7 @@
  *      Name it "Download-Process-Validate PDF"
  *      Create parameters
  *          fieldsToValidate (JS) 
- *          maxPages (JS) 
+ *          pages (JS) 
  *          pdf2json (NPM) and set its value = pdf2json @ latest 
  *      Set the new custom action's function body to this javascript
  *      Set connection information
@@ -48,10 +53,6 @@ var pdfDocumentFields = [];
 var pdfDocumentTexts = [];
 var pdfDocumentTextLines = [];
 var pdfExpectedFieldValues = [];
-
-// Store as base64 for the heck of it.  Might use this later for storage of something.
-//
-exportsTest.pdfData64 = fileBuffer.toString('base64');
 
 function pdfFieldValidate(searchToken, expectedValues) {
 
@@ -178,16 +179,40 @@ return new Promise((resolve, reject) => {
 
         if (verbose) console.log("pdfData.formImage.Pages.length", pdfData.formImage.Pages.length);
 
+        let max_pages = pdfData.formImage.Pages.length;
+        let target_pages = [];
+        if (typeof pages === 'undefined' || pages === null) {
+            for (let i = 1; i <= max_pages; i++)
+                target_pages.push(parseInt(i));
+        }
+        else if (parseInt(pages) === pages) {
+            pages = (pages > max_pages) ? max_pages : pages;
+            for (let i = 1; i <= pages; i++)
+                target_pages.push(parseInt(i));
+        }
+        else {
+            pages.split(',').forEach((spec) => {
+                if (spec == Number(spec))
+                    target_pages.push(parseInt(spec));
+                else if (spec.includes('-')) {
+                    let min = spec.split('-')[0];
+                    let max = spec.split('-')[1];
+                    for (let i = min; i <= max; i++)
+                        target_pages.push(parseInt(i));
+                }
+            });
+        }
+        console.log('target_pages: ', target_pages);
+
         // Store Texts, Fields in pdfDataTexts, pdfDataFields.  
         //    Note: PageNumber is the index into the arrays
         //
-        let max_pages = pdfData.formImage.Pages.length;
-        if (typeof maxPages !== 'undefined' && maxPages !== null) {
-            max_pages = Math.min(maxPages, pdfData.formImage.Pages.length);
-        }
 
         let current_line_number = 0;
         for (var i = 0; i < max_pages; i++) {
+
+            if (!target_pages.includes(i))
+                continue;
 
             let current_line_top_y = -1;
 
@@ -221,7 +246,7 @@ return new Promise((resolve, reject) => {
                         textblock.Bottom = textblock.y + textblock.h;
                         textblock.Right = textblock.x + textblock.w;
 
-                        if (Math.round((textblock.y + Number.EPSILON) * 1000) / 1000 != Math.round((current_line_top_y + Number.EPSILON) * 1000) / 1000) {
+                        if (Math.round((textblock.y + Number.EPSILON) * 2000) / 2000 != Math.round((current_line_top_y + Number.EPSILON) * 2000) / 2000) {
                             current_line_top_y = textblock.y;
                             current_line_number++;
                             if (typeof pdfDocumentTextLines[current_line_number] === 'undefined')
