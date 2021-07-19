@@ -23,8 +23,6 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [graphQL Query](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/graphQL-query.js) - Execute a graphQL Query and return results
 
-[hasClass](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/hasClass.js) - Check if an element's class list includes certain expected classes
-
 [Image Element Capture-Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/image-element-capture-validate.js) - Capture an image of a DOM element and optionally validate (pixel exact match)
 
 [Link Checker](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/link-checker.js) (CLI) - Finds links at the given URL and validates that they are working. 
