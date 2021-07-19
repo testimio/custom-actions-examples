@@ -15,7 +15,7 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Excel - Import Data](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/excel-import-data.js) - Process Excel download file and save sheet data values as test data (testData)
 
-[Generate Faked Data](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/Generate-Faked-Data.js) (faker.js) - Uses the faker.js library to create fake test data. 
+[Generate Faked Data](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/generate-faked-data.js) (faker.js) - Uses the faker.js library to create fake test data. 
 
 [graphQL Query](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/graphQL-query.js) - Execute a graphQL Query and return results
 
@@ -41,7 +41,7 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Popup Killer](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/popup-killer.js) - When you don't know when a popup modal will kill your test, use this to handle it.
 
-[Redact data](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/Redact-data.js) - This custom step creates an overlay element to prevent screenshot capture of private data.
+[Redact data](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/redact-data.js) - This custom step creates an overlay element to prevent screenshot capture of private data.
 
 [Select Item/Option by Text/Value](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/select-by-text.js) - Select an item by value or text (select/option, ul/li. table/tr)
 
