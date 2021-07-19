@@ -11,6 +11,10 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [AzureDevOps WorkItem Create/Update](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/azure-devops-workitem-create-update.js) - Create or Update a Work Item in Azure DevOps
 
+[Classes Get](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/classes-get.js) - Get an element's class list as a string array
+
+[Classes Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/classes-validate.js) - Check if an element's class list includes certain expected classes
+
 [Debug Popup](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/debug-popup.js) - Displays <message> in a modal popup window for debugging purposes
 
 [Excel - Import Data](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/excel-import-data.js) - Process Excel download file and save sheet data values as test data (testData)
