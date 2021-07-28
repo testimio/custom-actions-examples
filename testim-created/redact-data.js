@@ -14,6 +14,9 @@
  *    Base Testim Step
  *        Custom Action
  *
+ *  Disclaimer
+ *      This Custom Action is provided "AS IS".  It is for instructional purposes only and is not officially supported by Testim
+ * 
  *    Installation:
  *        Create a new shared custom action
  *        Name it "Redact Data"

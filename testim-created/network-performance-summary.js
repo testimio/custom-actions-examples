@@ -35,6 +35,9 @@
  *  Returns
  *      networkPerformanceSummaryIndex - Index of last networkRequests entry checked.  
  *   
+ *  Disclaimer
+ *      This Custom Action is provided "AS IS".  It is for instructional purposes only and is not officially supported by Testim
+ * 
  *  Base Step
  *      Network Validation
  * 

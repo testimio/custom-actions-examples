@@ -1,5 +1,5 @@
 /**
- *  Table Cells - Get
+ *  Table - Cells Get
  *
  *      Return table cell values in a structured format
  * 
@@ -17,6 +17,9 @@
  *      Supports both html tables and ag-grid
  *          ag-grid example - https://www.ag-grid.com/javascript-grid/cell-rendering/#example-dynamic-rendering-component
  *      
+ *  Disclaimer
+ *      This Custom Action is provided "AS IS".  It is for instructional purposes only and is not officially supported by Testim
+ * 
  *  Base Step
  * 
  *      Custom Action
@@ -36,8 +39,6 @@
 **/
 
 /* globals document, element, returnVariableName */
-
-let verbose = true;
 
 /* Validate the target element is defined
  */
@@ -107,7 +108,6 @@ function getTableRows(element) {
     let columnheader_nodes;
     let columnheaders;
     let data_rows;
-    let header_row;
 
     let rows = null;
     switch (tagname) {

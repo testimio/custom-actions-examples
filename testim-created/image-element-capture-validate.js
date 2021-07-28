@@ -21,6 +21,9 @@
  *      If even a single pixel is different then step validation will fail
  *      If the dom element is an image and has a width/height set then this only gets the width/height part of the original image (if that makes sense to you)
  * 
+ *  Disclaimer
+ *      This Custom Action is provided "AS IS".  It is for instructional purposes only and is not officially supported by Testim
+ * 
  */
 
  String.prototype.hashCode = function () {

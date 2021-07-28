@@ -8,6 +8,9 @@
  *    element (HTML) : Target element (or child of) either a <select>, <ul> or <ol>
  *    sortOrder (JS) [optional] : "ASCENDING" (Default), "DESCENDING"  
  * 
+ *  Disclaimer
+ *      This Custom Action is provided "AS IS".  It is for instructional purposes only and is not officially supported by Testim
+ * 
  *  Base Step
  *    Custom Validation
  * 

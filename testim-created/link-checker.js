@@ -13,6 +13,9 @@
  *      brokenLinks     - Array of full links that are not quite right
  *      brokenFragments - Array of partial links that are not quite right
  *  
+ *  Disclaimer
+ *      This Custom Action is provided "AS IS".  It is for instructional purposes only and is not officially supported by Testim
+ * 
  *  Base Step
  *      CLI Action
  * 

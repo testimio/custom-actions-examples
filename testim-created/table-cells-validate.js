@@ -1,5 +1,5 @@
 /**
- *  Table Cells - Validate
+ *  Table - Cells Validate
  *
  *      Validate table cell content
  * 
@@ -39,8 +39,10 @@
  *          The data will be in the clipboard and the variable actualItems (or returnVariableName if specified)
  *      If you set PK then validation of that entry will be row specific by PK
  *                      
- *  Base Step
+ *  Disclaimer
+ *      This Custom Action is provided "AS IS".  It is for instructional purposes only and is not officially supported by Testim
  * 
+ *  Base Step
  *      Custom Action
  * 
  *  Installation
@@ -58,7 +60,7 @@
  *
 **/
 
-/* globals document, element, returnType, expectedValues, returnVariableName */
+/* globals document, element, expectedValues, returnVariableName */
 
 let verbose = true;
 
@@ -139,7 +141,6 @@ function getTableRows(element) {
     let columnheader_nodes;
     let columnheaders;
     let data_rows;
-    let header_row;
 
     let rows = null;
     switch (tagname) {
@@ -311,7 +312,7 @@ function validateDataSet(actualValues, options, expectedValues) {
                         if (result)
                             result = false;
                         if (verbose)
-                            console.log("    MISMATCH:: " + key + " => \nExpected: [" + expected_values[key] + "], \nActual: [" + actual_values[key] + "], \MatchType: [" + matchtype + "]");
+                            console.log("    MISMATCH:: " + key + " => \nExpected: [" + expected_values[key] + "], \nActual: [" + actual_values[key] + "], \nMatchType: [" + matchtype + "]");
                     }
                 }
             }

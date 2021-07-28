@@ -1,37 +1,37 @@
 /**
- *  Validate Select Items/Options
+ *  Validate Select/List Items
  *
- *      Validate that all expectedOptions are in the target select/list element (Order independent)
- *      If sortOrder is defined then validation of the select/list's order will be performed
+ *      Return and optionally validate select/ol/ul items (option/li entries)
  * 
  *  Parameters
  *
- *      element (HTML)       : Target element (or child of) either a <select>, <ol> or <ul>
+ *      element (HTML) : Target element (or child of) either a <select>, <ol>, <ul>
+ *      expectedValues (JS) : expected data example can be gotten by running this step with no expectedValue.  
+ *                            The data will be in the clipboard and the variable actualItems (or returnVariableName if specified)
+ *	                          If you set index:x key/value of an expected value node it validates that entry in that row of actual values.
  *
- *	    expectedOptions (JS) : String array of expected itmes in list/select
- *                    
- *  	sortOrder (JS) [optional] : "ASCENDING" (Default), "DESCENDING"  
+ *      returnVariableName (JS) [optional] : string name of variable to store actual values in that can be used for setting expectedValues
+ *
+ *  Returns
  * 
- *	    matchType (JS) [optional] : Text match type when searching for text in lists/selects
- *	    	Examples: 	'exact' (default), 
- *	    				'startswith', 
- *	    				'endswith', 
- *	    				'includes'
+ *      actualItems - unless returnVariableName is set whereby data will be in that variable name instead
+ * 
+ *  Notes
+ * 
+ *  Disclaimer
+ *      This Custom Action is provided "AS IS".  It is for instructional purposes only and is not officially supported by Testim
  * 
  *  Base Step
- *      Custom Validation
+ *      Custom Action
  * 
  *  Installation
- *      Create a new "Custom Validation"
+ *      Create a new "Custom Action"
  *      Name it "Validate Select Items/Options"
  *      Create parameters
  *          element (HTML)
- *          expectedOptions (JS)
- *      Optional - add optional parameters
- *          matchType (JS)  
- *          sortOrder (JS)  
+ *          expectedValues (JS)
+ *          returnVariableName (JS) [optional]
  *      Set the new custom action's function body to this javascript
- *      Override timeout => Step timeout (milliseconds) = 2000
  *      Exit the step editor
  *      Share the step if not already done so
  *      Save the test
@@ -39,7 +39,9 @@
  *
 **/
 
-/* globals element, matchType, expectedOptions, sortOrder */
+/* globals document, element, matchType, returnType, expectedValues, returnVariableName */
+
+let verbose = true;
 
 /* Validate the target element is defined
  */
@@ -47,10 +49,9 @@ if (typeof element === 'undefined' || element === null) {
     throw new Error("Target List/Select not found or not visible");
 }
 
-/* Validate expectedOptions is defined
- */
-if (typeof expectedOptions === 'undefined' || expectedOptions === null) {
-    throw new Error("expectedOptions is not defined");
+let return_type = 'STRING';
+if (typeof returnType !== 'undefined' && returnType !== null) {
+    return_type = returnType;
 }
 
 let match_type = 'exact';
@@ -58,16 +59,18 @@ if (typeof matchType !== 'undefined' && matchType !== null) {
     match_type = matchType.toLowerCase();
 }
 
-/* If user pointed at a list item or for the target element then be nice
- *	try to find the parent element <select> or <ul>
+/* If user pointed at a list item, option, table row, table cell for the target element then be nice
+ *	try to find the parent element <select>, <ul>, <ol>, <div role~"grid">
  */
 let select_list = selectListFind(element);
-let tagname = select_list.tagName.toLowerCase();
+let tagname = select_list?.tagName.toLowerCase();
 
 let select_tags = ["select", "ol", "ul"];
 if (!select_tags.includes(tagname)) {
-    throw new Error("Select Option(s) ==> Target element must be a select, ol, ul, option or li");
+    throw new Error("Select Option(s) ==> Target element must be a select, ol, ul, option, li, table or grid");
 }
+
+const copyToClipboard = str => { const el = document.createElement('textarea'); el.value = str; el.setAttribute('readonly', ''); el.style.position = 'absolute'; el.style.left = '-9999px'; document.body.appendChild(el); const selected = document.getSelection().rangeCount > 0 ? document.getSelection().getRangeAt(0) : false; el.select(); document.execCommand('copy'); document.body.removeChild(el); if (selected) { document.getSelection().removeAllRanges(); document.getSelection().addRange(selected); } };
 
 /* Convenience functions used for matching
  */
@@ -76,10 +79,12 @@ stringMatch['exact'] = function (str1, str2) { return (str1 === str2); };
 stringMatch['startswith'] = function (str1, str2) { return str1.startsWith(str2); };
 stringMatch['endswith'] = function (str1, str2) { return str1.endsWith(str2); };
 stringMatch['includes'] = function (str1, str2) { return str1.includes(str2); };
+stringMatch['contains'] = function (str1, str2) { return str1.includes(str2); };
 
-/* Find a target select/listbox 
+/* Find a target select/listbox/table 
  */
 function selectListFind(startingElement) {
+
     let select_list = startingElement;
     let tagname = select_list.tagName.toLowerCase();
 
@@ -92,7 +97,7 @@ function selectListFind(startingElement) {
             select_list = startingElement.getElementsByTagName('ul')[0];
         if (typeof select_list === 'undefined' || select_list === null)
             select_list = startingElement.getElementsByTagName('ol')[0];
-        tagname = (typeof select_list === 'undefined' || select_list == null) ? "" : select_list.tagName.toLowerCase();
+        tagname = (typeof select_list == 'undefined' || select_list == null) ? "" : select_list.tagName.toLowerCase();
     }
 
     /* Search up the DOM tree
@@ -109,79 +114,168 @@ function selectListFind(startingElement) {
     return select_list;
 }
 
-/* Validate select/listbox items
+/* Get select/listbox/table items/rows
  */
-function validateSelectOptions(element, expectedOptions, matchType) {
-    let tagname = element.tagName.toLowerCase();
+function getSelectOptions(element, returnType) {
 
-    let matchtype = matchType.toLowerCase();
-    if (typeof stringMatch[matchtype] === 'undefined' || stringMatch[matchtype] === null)
-        matchtype = "exact";
+    let listSelectOptions = [];
+    let items = null;
 
-    let items = (["ul", "ol"].includes(tagname)) ? element.getElementsByTagName("li") : element.options;
-    for (let eo = 0; eo < expectedOptions.length; eo++) {
-        let item_found = false;
-        let expected_item_text = expectedOptions[eo];
+    switch (tagname) {
 
-        for (let i = 0; i < items.length; i++) {
-            switch (tagname) {
-                case "select":
-                    if (stringMatch[matchtype](items[i].text, expected_item_text)) {
-                        item_found = true;
+        case "select":
+
+            items = element.options;
+
+            break;
+
+        case "ul":
+        case "ol":
+
+            items = element.getElementsByTagName("li");
+
+            break;
+
+    }
+    console.log("items.length", items.length);
+
+    let return_item_entry = null;
+
+    for (let i = 0; i < items.length; i++) {
+
+        switch (tagname) {
+
+            case "select":
+
+                switch (returnType) {
+                    case "ITEM":
+                        return_item_entry = { "index": i, "text": items[i].text, "value": items[i].value };
                         break;
-                    }
-                    break;
-                case "ol":
-                case "ul":
-                    if (stringMatch[matchtype](items[i].textContent, expected_item_text)) {
-                        item_found = true;
+                    case "VALUE":
+                        return_item_entry = items[i].value;
                         break;
-                    }
-                    break;
-            }
+                    case "TEXT":
+                    case "STRING":
+                        return_item_entry = items[i].text;
+                        break;
+                    default:
+                        return_item_entry = { "index": i, "text": items[i].text };
+                        return_item_entry[returnType] = items[i].attributes[returnType].value;
+                        break;
+                }
+                break;
+
+            case "ul":
+            case "ol":
+
+                switch (returnType) {
+                    case "ITEM":
+                        return_item_entry = { "index": i, "text": items[i].textContent }; //, "value": items[i].value };
+                        break;
+                    case "VALUE":
+                        return_item_entry = items[i].value;
+                        break;
+                    case "TEXT":
+                    case "STRING":
+                        return_item_entry = items[i].textContent;
+                        break;
+                    default:
+                        return_item_entry = { "index": i, "text": items[i].textContent };
+                        return_item_entry[returnType] = items[i].attributes[returnType].value;
+                        break;
+                }
+                break;
 
         }
 
-        if (!item_found)
-            throw new Error("Item " + expected_item_text + " not found");
-
+        if (return_item_entry !== null)
+            listSelectOptions.push(return_item_entry);
     }
 
+    return listSelectOptions;
 }
-validateSelectOptions(element, expectedOptions, match_type);
 
-/* Validate Select/List Order if sortOrder is defined
- */
-function validateSelectOptionOrder(selectList, order) {
+let return_variable_name = 'actualItems';
+if (typeof returnVariableName !== 'undefined' && returnVariableName !== null)
+    return_variable_name = returnVariableName;
 
-    let tagname = selectList.tagName.toLowerCase();
-    let items = (tagname === "ul" || tagname === "ol") ? selectList.getElementsByTagName("li") : selectList.options;
+let actualValues = getSelectOptions(select_list, return_type);
+copyToClipboard(JSON.stringify(actualValues, null, 1));
+exportsTest[return_variable_name] = actualValues;
 
-    if (typeof items === 'undefined' || items === null || items.length === 0)
-        throw new Error("items list not found");
+if (verbose) {
+    console.log("actualValues", JSON.stringify(actualValues));
+    console.log("expectedValues", JSON.stringify(expectedValues));
+}
 
-    let actual_items = [];
-    for (let i = 0; i < items.length; i++) {
-        actual_items.push((tagname === "ul" || tagname === "ol") ? items[i].textContent : items[i].text);
+// Validate
+//
+function validateItems(actualValues, expectedValues, matchType) {
+
+    let result = true;
+    let expected_values;
+    let actual_values;
+    let row_differences;
+    let differences = [];
+
+    for (let evid = 0; evid < expectedValues.length; evid++) {
+
+        expected_values = expectedValues[evid];
+
+        let row_id = Object.keys(expected_values).includes("index") ? expected_values["index"] : evid;
+        actual_values = (actualValues[row_id] !== null) ? actualValues[row_id] : "";
+
+        row_differences = {};
+
+        if (typeof expected_values === 'string' && typeof actual_values === 'string') {
+            if (!stringMatch[matchType](actual_values, expected_values)) {
+                row_differences[evid] = { "row": evid, "Actual": actual_values, "Expected": expected_values };
+                if (result)
+                    result = false;
+            }
+        }
+        else {
+
+            for (let key in expected_values) {
+
+                if (key === 'index')
+                    continue;
+
+                if (verbose)
+                    console.log("Validate " + key + "Expected: [" + expected_values[key] + "], Actual:[" + actual_values[key] + "]");
+
+                if (Object.keys(actual_values).includes(key)) {
+
+                    if (!stringMatch[matchType](actual_values[key], expected_values[key])) {
+                        row_differences[key] = { "row": row_id, "Actual": actual_values[key], "Expected": expected_values[key] };
+                        if (result)
+                            result = false;
+                        if (verbose)
+                            console.log("    MISMATCH:: " + key + " => \nExpected: [" + expected_values[key] + "], \nActual: [" + actual_values[key] + "]");
+                    }
+                }
+            }
+        }
+        if (Object.keys(row_differences).length > 0)
+            differences.push(row_differences);
     }
 
-    let expected_items = [...actual_items];
-    if (order === "DESCENDING")
-        expected_items.sort().reverse();
-    else
-        expected_items.sort();
+    // If failed, echo to console and report an error
+    //
+    if (!result) {
+        if (verbose) {
+            console.log("expected_values", JSON.stringify(expectedValues));
+            console.log("actual_values", JSON.stringify(actual_values));
+        }
+        console.log("Validate Select/List Options/Items: ", JSON.stringify(differences, null, 2));
+        throw new Error("Validate Select/List Options/Items\n" + JSON.stringify(differences, null, 2));
+    }
 
-    console.log("Expected Item Order: " + JSON.stringify(expected_items));
-    console.log("Actual Item Order:   " + JSON.stringify(actual_items));
-
-    if (expected_items.every(function (value, index) { return value === actual_items[index] }) === false)
-        throw new Error("Options are not in " + order + " order: " + JSON.stringify(actual_items, null, 2));
-
+    return result;
 }
-if (typeof sortOrder !== 'undefined' && sortOrder !== null) {
 
-    let order_direction = (sortOrder.toUpperCase() !== 'DESCENDING') ? 'ASCENDING' : 'DESCENDING';
+if (typeof expectedValues !== 'undefined' && expectedValues !== null) {
 
-    validateSelectOptionOrder(select_list, order_direction);
+    validateItems(actualValues, expectedValues, match_type);
 
 }

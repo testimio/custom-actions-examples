@@ -21,6 +21,9 @@
  *      After a successful run, all current styles will be in the clipboard and can be pasted into the expectedStyles parameter
  *      Optionally, you can edit expectedStyles to just those that you want to validate
  * 
+ *  Disclaimer
+ *      This Custom Action is provided "AS IS".  It is for instructional purposes only and is not officially supported by Testim
+ * 
  *  Base Step
  *      Custom Validation
  * 
@@ -37,81 +40,48 @@
  *      And Bob's your uncle * 
  */
 
-/* eslint-disable no-prototype-builtins */
-/* eslint-disable no-global-assign */
-/* globals document, window, element, expectedStyles */
-
 // Used for debugging.  Enable/disable writing interim data to the console
 let verbose = false;
 
-const supportedStyles = {
+/* supportedStyles.computedStyles is used to filter which styles we are interested in.  If left blank then all computed styles will be captured/validated
+ */
+let supportedStyles = {
     computedStyles: {
-        "alignContent": "", "alignItems": "", "alignSelf": "", "alignmentBaseline": "", "animation": ""
-        , "animationDelay": "", "animationDirection": "", "animationDuration": "", "animationFillMode": "", "animationIterationCount": "", "animationName": ""
-        , "animationPlayState": "", "animationTimingFunction": "", "appearance": "", "backdropFilter": "", "backfaceVisibility": "", "background": ""
-        , "backgroundAttachment": "", "backgroundBlendMode": "", "backgroundClip": "", "backgroundColor": "", "backgroundImage": "", "backgroundOrigin": ""
-        , "backgroundPosition": "", "backgroundPositionX": "", "backgroundPositionY": "", "backgroundRepeat": "", "backgroundSize": "", "baselineShift": ""
-        , "blockSize": "", "border": "", "borderBlockEnd": "", "borderBlockEndColor": "", "borderBlockEndStyle": "", "borderBlockEndWidth": "", "borderBlockStart": ""
-        , "borderBlockStartColor": "", "borderBlockStartStyle": "", "borderBlockStartWidth": "", "borderBottom": "", "borderBottomColor": "", "borderBottomLeftRadius": ""
-        , "borderBottomRightRadius": "", "borderBottomStyle": "", "borderBottomWidth": "", "borderCollapse": "", "borderColor": "", "borderImage": ""
-        , "borderImageOutset": "", "borderImageRepeat": "", "borderImageSlice": "", "borderImageSource": "", "borderImageWidth": "", "borderInlineEnd": ""
-        , "borderInlineEndColor": "", "borderInlineEndStyle": "", "borderInlineEndWidth": "", "borderInlineStart": "", "borderInlineStartColor": "", "borderInlineStartStyle": ""
-        , "borderInlineStartWidth": "", "borderLeft": "", "borderLeftColor": "", "borderLeftStyle": "", "borderLeftWidth": "", "borderRadius": "", "borderRight": ""
-        , "borderRightColor": "", "borderRightStyle": "", "borderRightWidth": "", "borderSpacing": "", "borderStyle": "", "borderTop": "", "borderTopColor": ""
-        , "borderTopLeftRadius": "", "borderTopRightRadius": "", "borderTopStyle": "", "borderTopWidth": "", "borderWidth": "", "bottom": "", "boxShadow": ""
-        , "boxSizing": "", "breakAfter": "", "breakBefore": "", "breakInside": "", "bufferedRendering": "", "captionSide": "", "caretColor": "", "clear": ""
-        , "clip": "", "clipPath": "", "clipRule": "", "color": "", "colorInterpolation": "", "colorInterpolationFilters": "", "colorRendering": "", "colorScheme": ""
-        , "columnCount": "", "columnFill": "", "columnGap": "", "columnRule": "", "columnRuleColor": "", "columnRuleStyle": "", "columnRuleWidth": "", "columnSpan": ""
-        , "columnWidth": "", "columns": "", "contain": "", "containIntrinsicSize": "", "content": "", "contentVisibility": "", "counterIncrement": "", "counterReset": ""
-        , "counterSet": "", "cursor": "", "cx": "", "cy": "", "d": "", "direction": "", "display": "", "dominantBaseline": "", "emptyCells": "", "fill": "", "fillOpacity": ""
-        , "fillRule": "", "filter": "", "flex": "", "flexBasis": "", "flexDirection": "", "flexFlow": "", "flexGrow": "", "flexShrink": "", "flexWrap": "", "float": "", "floodColor": ""
-        , "floodOpacity": "", "font": "", "fontFamily": "", "fontFeatureSettings": "", "fontKerning": "", "fontOpticalSizing": "", "fontSize": "", "fontStretch": "", "fontStyle": ""
-        , "fontVariant": "", "fontVariantCaps": "", "fontVariantEastAsian": "", "fontVariantLigatures": "", "fontVariantNumeric": "", "fontVariationSettings": "", "fontWeight": ""
-        , "gap": "", "grid": "", "gridArea": "", "gridAutoColumns": "", "gridAutoFlow": "", "gridAutoRows": "", "gridColumn": "", "gridColumnEnd": "", "gridColumnGap": ""
-        , "gridColumnStart": "", "gridGap": "", "gridRow": "", "gridRowEnd": "", "gridRowGap": "", "gridRowStart": "", "gridTemplate": "", "gridTemplateAreas": ""
-        , "gridTemplateColumns": "", "gridTemplateRows": "", "height": "", "hyphens": ""
-        , "imageOrientation": "", "imageRendering": "", "inlineSize": "", "isolation": "", "justifyContent": "", "justifyItems": "", "justifySelf": "", "left": ""
-        , "letterSpacing": "", "lightingColor": "", "lineBreak": "", "lineHeight": "", "listStyle": "", "listStyleImage": "", "listStylePosition": "", "listStyleType": ""
-        , "margin": "", "marginBlockEnd": "", "marginBlockStart": "", "marginBottom": "", "marginInlineEnd": "", "marginInlineStart": "", "marginLeft": "", "marginRight": ""
-        , "marginTop": "", "marker": "", "markerEnd": "", "markerMid": "", "markerStart": "", "mask": "", "maskType": "", "maxBlockSize": "", "maxHeight": "", "maxInlineSize": ""
-        , "maxWidth": "", "minBlockSize": "", "minHeight": "", "minInlineSize": "", "minWidth": "", "mixBlendMode": "", "objectFit": "", "objectPosition": "", "offset": ""
-        , "offsetDistance": "", "offsetPath": "", "offsetRotate": "", "opacity": "", "order": "", "orphans": "", "outline": "", "outlineColor": "", "outlineOffset": "", "outlineStyle": ""
-        , "outlineWidth": "", "overflow": "", "overflowAnchor": "", "overflowWrap": "", "overflowX": "", "overflowY": "", "overscrollBehavior": "", "overscrollBehaviorBlock": ""
-        , "overscrollBehaviorInline": "", "overscrollBehaviorX": "", "overscrollBehaviorY": "", "padding": "", "paddingBlockEnd": "", "paddingBlockStart": "", "paddingBottom": ""
-        , "paddingInlineEnd": "", "paddingInlineStart": "", "paddingLeft": "", "paddingRight": "", "paddingTop": "", "page": "", "pageBreakAfter": "", "pageBreakBefore": ""
-        , "pageBreakInside": "", "paintOrder": "", "perspective": "", "perspectiveOrigin": "", "placeContent": "", "placeItems": "", "placeSelf": "", "pointerEvents": ""
-        , "position": "", "r": "", "resize": "", "right": "", "rowGap": "", "rubyPosition": "", "rx": "", "ry": "", "scrollBehavior": "", "scrollMargin": "", "scrollMarginBlock": ""
-        , "scrollMarginBlockEnd": "", "scrollMarginBlockStart": "", "scrollMarginBottom": "", "scrollMarginInline": "", "scrollMarginInlineEnd": "", "scrollMarginInlineStart": ""
-        , "scrollMarginLeft": "", "scrollMarginRight": "", "scrollMarginTop": "", "scrollPadding": "", "scrollPaddingBlock": "", "scrollPaddingBlockEnd": "", "scrollPaddingBlockStart": ""
-        , "scrollPaddingBottom": "", "scrollPaddingInline": "", "scrollPaddingInlineEnd": "", "scrollPaddingInlineStart": "", "scrollPaddingLeft": "", "scrollPaddingRight": "", "scrollPaddingTop": ""
-        , "scrollSnapAlign": "", "scrollSnapStop": "", "scrollSnapType": "", "shapeImageThreshold": "", "shapeMargin": "", "shapeOutside": "", "shapeRendering": "", "speak": ""
-        , "stopColor": "", "stopOpacity": "", "stroke": "", "strokeDasharray": "", "strokeDashoffset": "", "strokeLinecap": "", "strokeLinejoin": "", "strokeMiterlimit": ""
-        , "strokeOpacity": "", "strokeWidth": "", "tabSize": "", "tableLayout": ""
-        , "textAlign": "", "textAlignLast": "", "textAnchor": "", "textCombineUpright": "", "textDecoration": "", "textDecorationColor": "", "textDecorationLine": ""
-        , "textDecorationSkipInk": "", "textDecorationStyle": "", "textIndent": "", "textOrientation": "", "textOverflow": "", "textRendering": "", "textShadow": ""
-        , "textSizeAdjust": "", "textTransform": "", "textUnderlinePosition": "", "top": "", "touchAction": "", "transform": "", "transformBox": "", "transformOrigin": ""
-        , "transformStyle": "", "transition": "", "transitionDelay": "", "transitionDuration": "", "transitionProperty": "", "transitionTimingFunction": "", "unicodeBidi": ""
-        , "userSelect": "", "vectorEffect": "", "verticalAlign": "", "visibility": "", "whiteSpace": "", "widows": "", "width": "", "willChange": "", "wordBreak": "", "wordSpacing": ""
-        , "wordWrap": "", "writingMode": "", "x": "", "y": "", "zIndex": "", "zoom": "", "cssFloat": "",
     }
 };
 
-const copyToClipboard = str => { const el = document.createElement('textarea'); el.value = str; el.setAttribute('readonly', ''); el.style.position = 'absolute'; el.style.left = '-9999px'; document.body.appendChild(el); const selected = document.getSelection().rangeCount > 0 ? document.getSelection().getRangeAt(0) : false; el.select(); document.execCommand('copy'); document.body.removeChild(el); if (selected) { document.getSelection().removeAllRanges(); document.getSelection().addRange(selected); } };
-
-// If Expected Values is not JSON, attempt to convert to JSON
-//
-if (typeof expectedStyles === 'string') {
-    if (expectedStyles.startsWith("{") === false) {
-        expectedStyles = "{" + expectedStyles.replace("=", ":") + "}";
+/* An example of some common styles for validation
+ */
+supportedStyles = {
+    computedStyles: {
+        "alignContent": "", "alignItems": "", "background": "", "backgroundColor": "", "backgroundImage": "", "borderStyle": "", "color": "", "display": "", "float": "", "font": ""
+      , "fontSize": "", "fontStyle": "", "fontWeight": "", "left": "", "margin": "", "maxHeight": "", "maxWidth": "", "minHeight": "", "minWidth": "", "overflow": ""
+      , "padding": "", "position": "", "textAlign": "", "top": "", "visibility": "", "width": "", "x": "", "y": "", "zIndex": "", "zoom": "",
     }
-    expectedStyles = JSON.parse(expectedStyles);
-}
+};
+
+/* globals expectedStyles, document, window, element */
+
+const copyToClipboard = str => { const el = document.createElement('textarea'); el.value = str; el.setAttribute('readonly', ''); el.style.position = 'absolute'; el.style.left = '-9999px'; document.body.appendChild(el); const selected = document.getSelection().rangeCount > 0 ? document.getSelection().getRangeAt(0) : false; el.select(); document.execCommand('copy'); document.body.removeChild(el); if (selected) { document.getSelection().removeAllRanges(); document.getSelection().addRange(selected); } };
 
 // Get Expected Values.  Use default (all known if undefined)
 //
 let expected_styles;
-if (typeof expectedStyles !== 'undefined' && expectedStyles !== null)
+if (typeof expectedStyles !== 'undefined' && expectedStyles !== null) {
+   
     expected_styles = expectedStyles;
+
+    // If Expected Values is not JSON, attempt to convert to JSON
+    //
+    if (typeof expected_styles === 'string') {
+        if (expected_styles.startsWith("{") === false) {
+            expected_styles = "{" + expected_styles.replace("=", ":") + "}";
+        }
+        expected_styles = JSON.parse(expected_styles);
+    }
+    
+    supportedStyles.computedStyles = expected_styles;
+}
 
 if (verbose)
     console.log("EXPECTED STYLES", JSON.stringify(expected_styles, null, 2));
@@ -123,7 +93,9 @@ let elementStyles = window.getComputedStyle(element, null)
 for (let key in elementStyles) {
     if (isNaN(key) && key != "cssText") {
         if (key.length > 0 && elementStyles[key] !== null && elementStyles[key].length > 0) {
-            actual_styles[key] = elementStyles[key];
+            if (typeof(supportedStyles?.computedStyles) === 'undefined' || supportedStyles?.computedStyles === null || Object.keys(supportedStyles.computedStyles).length === 0 || supportedStyles.computedStyles.hasOwnProperty(key)) {
+                actual_styles[key] = elementStyles[key];
+            }
         }
     }
 }
@@ -143,7 +115,7 @@ if (typeof expected_styles !== 'undefined') {
         if (verbose)
             console.log("Validate " + key + "Expected: [" + expected_styles[key] + "], Actual:[" + actual_styles[key] + "]");
 
-        if (supportedStyles.computedStyles.hasOwnProperty(key) && actual_styles.hasOwnProperty(key)) {
+        if (Object.prototype.hasOwnProperty.call(supportedStyles.computedStyles, key) && Object.prototype.hasOwnProperty.call(actual_styles, key)) {
 
             if (actual_styles[key] != expected_styles[key]) {
                 differences[key] = { "Actual": actual_styles[key], "Expected": expected_styles[key] };

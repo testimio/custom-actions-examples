@@ -26,8 +26,8 @@
  *      https://docs.microsoft.com/en-us/azure/devops/boards/queries/wiql-syntax?view=azure-devops
  *      https://docs.microsoft.com/en-us/azure/devops/boards/queries/wiql-syntax?view=azure-devops#operators
  * 
- *  Version
- *      1.0.0 - Initial Working Version
+ *  Disclaimer
+ *      This Custom Action is provided "AS IS".  It is for instructional purposes only and is not officially supported by Testim
  * 
  *  Base Step
  *      Custom CLI Action

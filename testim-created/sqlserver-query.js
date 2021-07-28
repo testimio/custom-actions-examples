@@ -22,6 +22,9 @@
  *				    firstName === queryResults[0].firstName 
  *			      lastName  === queryResults[0].lastName
  *
+ *  Disclaimer
+ *      This Custom Action is provided "AS IS".  It is for instructional purposes only and is not officially supported by Testim
+ * 
  *  Base Step
  *      CLI Action
  * 

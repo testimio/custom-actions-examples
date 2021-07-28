@@ -23,6 +23,9 @@
  *          https://api.spacex.land/graphql/
  *          https://moonhighway.com/public-graphql-apis
  *
+ *  Disclaimer
+ *      This Custom Action is provided "AS IS".  It is for instructional purposes only and is not officially supported by Testim
+ * 
  *  Base Step
  *      CLI Action
  * 
