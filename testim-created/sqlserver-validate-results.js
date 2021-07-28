@@ -95,7 +95,7 @@
  /* if returnVariableName is defined then use it else use 'queryResults' as the return variable
   */
  var return_variable_name = (typeof returnVariableName !== 'undefined' && returnVariableName !== null) ? returnVariableName : 'queryResults';
-  
+ 
  /* Convenience functions used for matching
   */
  const stringMatch = {};
@@ -210,25 +210,29 @@
          exportsTest[return_variable_name] = actual_results;
          console.log(return_variable_name, JSON.stringify(actual_results, null, 2));
  
-         let expected_results = {};
-         expected_results["options"] = { "PK": null, "matchType": "exact" };
-         expected_results["expectedValues"] = actual_results;
-         exportsTest['expectedResults'] = expected_results;
-         console.log('expectedResults', JSON.stringify(expected_results, null, 2));
+         if (result?.recordset !== null) {
  
-         // Take an index and store generatedData[0]'s values as naked top level variables
-         //
-         let naked_variable_index = 0;
-         function storeFirstAsGlobalNakedVariables(value) {
+             let expected_results = {};
+             expected_results["options"] = { "PK": null, "matchType": "exact" };
+             expected_results["expectedValues"] = actual_results;
+             exportsTest['expectedResults'] = expected_results;
+             console.log('expectedResults', JSON.stringify(expected_results, null, 2));
  
-             let variableName = value;
-             let variableValue = result.recordset[naked_variable_index][variableName];
+             // Take an index and store generatedData[0]'s values as naked top level variables
+             //
+             let naked_variable_index = 0;
+             function storeFirstAsGlobalNakedVariables(value) {
  
-             exportsTest[variableName] = variableValue;
-             console.log(variableName + " = " + variableValue);
+                 let variableName = value;
+                 let variableValue = result.recordset[naked_variable_index][variableName];
+ 
+                 exportsTest[variableName] = variableValue;
+                 console.log(variableName + " = " + variableValue);
+ 
+             }
+             Object.keys(result.recordset[naked_variable_index]).forEach(storeFirstAsGlobalNakedVariables);
  
          }
-         Object.keys(result.recordset[naked_variable_index]).forEach(storeFirstAsGlobalNakedVariables);
  
          if (typeof expectedValues !== 'undefined' && expectedValues !== null) {
              let options = null;

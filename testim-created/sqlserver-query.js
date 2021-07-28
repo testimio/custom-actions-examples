@@ -78,22 +78,26 @@
  
      }).then(result => {
  
-         exportsTest[return_variable_name] = result?.recordset;
-         console.log(return_variable_name, exportsTest[return_variable_name]);
- 
-         // Take an index and store generatedData[0]'s values as naked top level variables
-         //
-         let naked_variable_index = 0;
-         function storeFirstAsGlobalNakedVariables(value) {
- 
-             let variableName = value;
-             let variableValue = result.recordset[naked_variable_index][variableName];
- 
-             exportsTest[variableName] = variableValue;
-             console.log(variableName + " = " + variableValue);
- 
+        if (result?.recordset !== null) {
+
+            exportsTest[return_variable_name] = result?.recordset;
+            console.log(return_variable_name, exportsTest[return_variable_name]);
+    
+            // Take an index and store generatedData[0]'s values as naked top level variables
+            //
+            let naked_variable_index = 0;
+            function storeFirstAsGlobalNakedVariables(value) {
+    
+                let variableName = value;
+                let variableValue = result.recordset[naked_variable_index][variableName];
+    
+                exportsTest[variableName] = variableValue;
+                console.log(variableName + " = " + variableValue);
+    
+            }
+            Object.keys(result.recordset[naked_variable_index]).forEach(storeFirstAsGlobalNakedVariables);
+         
          }
-         Object.keys(result.recordset[naked_variable_index]).forEach(storeFirstAsGlobalNakedVariables);
  
          resolve();
  
