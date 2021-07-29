@@ -5,25 +5,25 @@
  *
  *  Parameters
  *
- *	    faker (NPM) : Faker NodeJS Package
- *
  *	    dataSchema (JS) : String array of data items to generate
  *               Supported data schema types:
  *                   [
- *                    "firstName","lastName","prefix","suffix", "fullName"
- *                   ,"company", "jobTitle","jobArea"
- *                   ,"email", "emailWork", "emailAddr", "emailAddress"
- *                   ,"ssn"
- *                   ,"homepage", "webPage"
- *                   ,"streetAddress","secondaryAddress","city","state","zipCode"
- *                   ,"country"
- *                   ,"phoneNumber","faxNumber","phoneWork","phoneHome","phoneMain","phoneMobile"
+ *                       "firstName","lastName","prefix","suffix", "fullName"
+ *                      ,"company", "jobTitle","jobArea"
+ *                      ,"email", "emailWork", "emailAddr", "emailAddress"
+ *                      ,"ssn"
+ *                      ,"homepage", "webPage"
+ *                      ,"streetAddress","secondaryAddress","city","state","zipCode"
+ *                      ,"country"
+ *                      ,"phoneNumber","faxNumber","phoneWork","phoneHome","phoneMain","phoneMobile"
  *                   ]
  *
- *	    numDataSets (JS) [optional] : How many instances of fake data to generate.  If undefined then 1 set will be generated
+ *	    numDataSets (JS) : How many instances of fake data to generate.  If undefined then 1 set will be generated
  *
  *      dataVariableName (JS) [optional] : Name of returned data array.  Default "generatedData"
  * 
+ *	    faker (NPM) : Faker NodeJS Package
+ *
  *  Returns
  * 
  *      generatedData
@@ -53,11 +53,11 @@
  *      Create a new "Custom Action"
  *      Name it "Generate Data"
  *      Create parameters
- *          element (HTML)
- *          expectedOptions (JS)
+ *          dataSchema (JS)
+ *          numDataSets (JS)
+ *          faker (NPM)
  *      Optional - add optional parameters
- *          matchType (JS)  
- *          checkState (JS)  
+ *          dataVariableName (JS)  
  *      Set the new custom action's function body to this javascript
  *      Exit the step editor
  *      Share the step if not already done so
