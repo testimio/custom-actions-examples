@@ -29,9 +29,6 @@
  *      https://docs.microsoft.com/en-us/azure/devops/boards/queries/wiql-syntax?view=azure-devops
  *      https://docs.microsoft.com/en-us/azure/devops/boards/queries/wiql-syntax?view=azure-devops#operators
  * 
- *  Version
- *      1.0.0 - Initial Working Version
- * 
  *  Base Step
  *      Custom CLI Action
  * 
@@ -117,6 +114,7 @@
   if (typeof validateOnly === 'undefined' || validateOnly === null)
       validateOnly = DEFAULT_VALIDATION_ONLY_MODE;
   
+  let workItemType = "Bug";
   let workItemTags = "";
   let testResultWorkItem = {};
   
@@ -161,8 +159,8 @@
       testResultWorkItem["state"] =
           (typeof _stepInternalData.failureReason !== 'undefined')
               ? (typeof (workItemId) !== 'undefined' && workItemId > 0)
-                  ? TEST_FAIL_WORKITEM_NEW_STATE 
-                  : TEST_FAIL_WORKITEM_EXISTING_STATE
+                  ? TEST_FAIL_WORKITEM_EXISTING_STATE 
+                  : TEST_FAIL_WORKITEM_NEW_STATE
               : TEST_PASS_WORKITEM_STATE;
  
       if (typeof (reprosteps) !== 'undefined' && reprosteps !== null)
