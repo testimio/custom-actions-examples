@@ -63,3 +63,7 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Validate Element Computed Style(s)](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validate-computed-style.js) - Validate a superset/subset of style for an element
 
+[AfterStep (Hook Function)](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/hook-functions/after-step-hook.js) - Collect step information for AfterTest reporting
+
+[AfterTest - Azure Devops (Hook Function)](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/hook-functions/azure-devops-after-test-hook) - Create a new or update an existing work item (bug) with test results
+
