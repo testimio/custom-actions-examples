@@ -62,10 +62,16 @@
  *
  **/
 
- const DEFAULT_BEARER_TOKEN = 'gv5feq5kafsx7bfh7f5mn2mzueqiqpxnmp6fguaop246yqg734wq';
- const DEFAULT_ORGANIZATION = 'barrysolomon';
- const DEFAULT_PROJECT = 'TestAutomation';
+ const DEFAULT_BEARER_TOKEN = null;
+ const DEFAULT_ORGANIZATION = null;
+ const DEFAULT_PROJECT = null;
  const DEFAULT_VALIDATION_ONLY_MODE = 'false';
+ 
+ let WORKITEM_TESTIM_TAG = "TestimMade";
+ let WORKITEM_ITERATION_PATH = "";
+ let WORKITEM_AREA_PATH = "";
+ let WORKITEM_PRIORITY = ""; // "2"
+ let WORKITEM_SEVERITY = ""; // "3 - Medium";
  
  /**** DEBUG ****
  let _stepData = {};
@@ -102,7 +108,7 @@
  if (typeof validateOnly === 'undefined' || validateOnly === null)
      validateOnly = DEFAULT_VALIDATION_ONLY_MODE;
  
- let work_item_tags = "";
+ let workItemTags = "";
  let testResultWorkItem = {};
  
  function afterTest(_stepData, _stepInternalData, workItemId) {
@@ -142,7 +148,7 @@
  
      /* Optional work item details that can be set
       */
-     testResultWorkItem["tags"] = work_item_tags + ", Testim";
+     testResultWorkItem["tags"] = workItemTags + ((workItemTags === "") ? "" : ", ") + WORKITEM_TESTIM_TAG;
      // testResultWorkItem["Severity"] = "3 - Medium";
      // testResultWorkItem["Priority"] = "2";
      // testResultWorkItem["iterationpath"] = "TestAutomation\\Sprint 1"; 
@@ -160,10 +166,10 @@
  
      /* Other fields available to be set
       */
-     // testResultWorkItem["Severity"] = "3 - Medium";
-     // testResultWorkItem["Priority"] = "2";
-     // testResultWorkItem["iterationpath"] = "TestAutomation\\Sprint 1"; 
-     // testResultWorkItem["areapath"] = "TestAutomation";
+     if (typeof (WORKITEM_SEVERITY) !== 'undefined') testResultWorkItem["Severity"] = WORKITEM_SEVERITY;
+     if (typeof (WORKITEM_PRIORITY) !== 'undefined') testResultWorkItem["Priority"] = WORKITEM_PRIORITY;
+     if (typeof (WORKITEM_ITERATION_PATH) !== 'undefined') testResultWorkItem["iterationpath"] = WORKITEM_ITERATION_PATH;
+     if (typeof (WORKITEM_AREA_PATH) !== 'undefined') testResultWorkItem["areapath"] = WORKITEM_AREA_PATH;
  
      console.log("testResultWorkItem", JSON.stringify(testResultWorkItem));
      exportsTest.testResultWorkItem = testResultWorkItem;
@@ -260,12 +266,9 @@
  
                  let work_item_id;
                  if (typeof exportsTest.adoResponse.workItems !== 'undefined' && exportsTest.adoResponse.workItems.length > 0) {
-                     work_item_id   = exportsTest.adoResponse.workItems[0].id;
+                     work_item_id = exportsTest.adoResponse.workItems[0].id;
                  }
                  console.log(" --> work_item_id", work_item_id);
- 
-                 work_item_tags = exportsTest.adoResponse.workItems[0].tags;
-                 console.log(" --> existing work_item_tags", work_item_tags);
  
                  resolve(work_item_id);
              });
@@ -277,12 +280,90 @@
  
      /* Create the wiql query to find a bug with this test name in it
      */
-     let b_wiq = "Select [System.TeamProject], [System.Id], [System.Title], [System.State], [System.WorkItemType] From WorkItems Where [System.WorkItemType] = 'Bug' And [System.Title] Contains '"
+     let b_wiq = "Select [System.TeamProject], [System.Id], [System.Title], [System.State], [System.WorkItemType], [System.Tags] From WorkItems Where [System.WorkItemType] = 'Bug' And [System.Title] Contains '"
          + ((_stepData.testName !== "") ? _stepData.testName : 'unsaved untitled test')
          + "'";
      let wiqlQuery = { "query": b_wiq };
  
      AzureDevOpsWorkItemQuery(wiqlQuery, return_variable_name, orgName, projectName, bearerToken, validateOnly, resolve, reject);
+ 
+ }).then((workItemId) => {
+ 
+     if (typeof workItemId !== 'undefined' && workItemId > 0) {
+ 
+         return new Promise((resolve, reject) => {
+ 
+             // GET https://dev.azure.com/fabrikam/Fabrikam-Fiber-Git/_apis/wit/workitems/12?api-version=6.0
+             let wiQueryUrl = 'https://' + orgName + ".visualstudio.com/" + projectName + '/_apis/wit/workitems/' + workItemId + '?api-version=6.0';
+ 
+             async function makeRequest(apiUrl, requestMethod, contentType, requestBody) {
+ 
+                 if (typeof requestMethod === 'undefined' || requestMethod === null)
+                     requestMethod = "POST";
+                 if (typeof requestBody === 'undefined' || requestBody === null)
+                     requestBody = "";
+ 
+                 // requestBody if an object must be stringified
+                 if (typeof requestBody === 'object')
+                     requestBody = JSON.stringify(requestBody);
+ 
+                 let bearer_token = "Basic " + Buffer.from(":" + bearerToken).toString('base64');
+                 //console.log(bearer_token);
+ 
+                 var options = {
+                     url: apiUrl
+                     , method: requestMethod
+                     , headers: {
+                         "Authorization": bearer_token,
+                         "content-type": contentType,
+                         "Content-Length": requestBody.length
+                     }
+                     , body: requestBody
+                     , pretend: false
+                     , followAllRedirects: true
+                 };
+                 //console.log(JSON.stringify(options));
+ 
+                 await request(options, function (err, response, responseBody) {
+                     if (typeof err !== 'undefined' && err !== null) {
+                         console.log(err);
+                         reject(err);
+                     }
+ 
+                     if (response.statusCode != 200) {
+                         console.log("response.statusCode = ", response.statusCode, "response.statusMessage = ", response.statusMessage);
+                         exportsTest.adoResponse = response;
+                         reject("statusCode = " + response.statusCode + ", statusMessage = " + response.statusMessage + ", body = " + response.body);
+                     }
+                     //console.log("Response body ==> ", responseBody);
+ 
+                     exportsTest.workItem = JSON.parse(responseBody);
+                     exportsTest[return_variable_name] = exportsTest.workItem;
+ 
+                     let work_item_id;
+                     if (typeof exportsTest.workItem !== 'undefined') {
+                         work_item_id = exportsTest.workItem.id;
+                         workItemTags = "";
+                         if (Object.keys(exportsTest.workItem.fields).includes("System.Tags")) {
+                             workItemTags = exportsTest.workItem.fields["System.Tags"];
+                         }
+                     }
+                     console.log("=============================");
+                     console.log(" --> work_item_id", work_item_id);
+                     console.log(" --> workItemTags", workItemTags);
+                     console.log("=============================");
+ 
+                     resolve(workItemId);
+                 });
+ 
+             }
+             makeRequest(wiQueryUrl, "GET", "application/json", "");
+ 
+         });
+ 
+     }
+ 
+     return (workItemId);
  
  }).then((workItemId) => {
  
@@ -564,7 +645,7 @@
  
  }).then(() => {
  
-     console.log("THEN: ==> " + JSON.stringify(exportsTest.adoResponse));
+     //console.log("THEN: ==> " + JSON.stringify(exportsTest.adoResponse));
  
  });
  
