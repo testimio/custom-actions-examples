@@ -12,24 +12,9 @@
  *              Example: ["www.amazon.com", "www.google.com"]
  *      networkRequestTypes (JS) [optional] : Array of response types to include
  *              Example: ["Image", "Media", "Document", "Stylesheet", "Script", "Font", "XHR"]
+ *      consoleLogDisable (JS) [optional] : Do not output to the console (set true when using Transaction Summary Report as results are displayed there)
  * 
  *  Notes
- *      networkRequest fields
- *         isBlocked
- *         isDone
- *         method
- *         isCancelled
- *         url
- *         source
- *         tab
- *         type
- *         statusCode
- *         statusText
- *         startTime
- *         protocol
- *         responseSize
- *         endTime
- *      
  *      Output to console is done using a console.table command and is best visualized in the chrome debugger
  * 
  *  Returns
@@ -47,6 +32,7 @@
  *      Optional - add optional parameters
  *          networkRequestURLs  (JS) 
  *          networkRequestTypes (JS)  
+ *          consoleLogDisable (JS)
  *      Set the new custom action's function body to this javascript
  *      Override timeout => Step timeout (milliseconds) = 2000
  *      Exit the step editor
@@ -55,7 +41,7 @@
  *      Bob's your uncle
  **/
 
-/* global networkRequestTypes, networkRequestURLs, networkRequests */
+/* global networkRequestTypes, networkRequestURLs, networkRequests, consoleLogDisable */
 
 /*  Used for debugging.  Enable/disable writing interim data to the console
  */
@@ -116,7 +102,9 @@ const filteredNetworkRequests = networkRequests.filter((request, index) => {
     }
     return prevIndex === index;
 })
-const networkRequestStats = filteredNetworkRequests.map(({ url, count, minDuration, maxDuration, aveDuration, totDuration, minResponseSize, maxResponseSize, aveResponseSize, totResponseSize }) => ({ url, count, minDuration, maxDuration, aveDuration, totDuration, minResponseSize, maxResponseSize, aveResponseSize, totResponseSize }));
-                            
-console.table(networkRequestStats.sort((a, b) => b.maxDuration - a.maxDuration));
-console.table(JSON.stringify(networkRequestStats.sort((a, b) => b.maxDuration - a.maxDuration)));
+exportsTest.networkRequestStats = filteredNetworkRequests.map(({ url, count, minDuration, maxDuration, aveDuration, totDuration, minResponseSize, maxResponseSize, aveResponseSize, totResponseSize }) => ({ url, count, minDuration, maxDuration, aveDuration, totDuration, minResponseSize, maxResponseSize, aveResponseSize, totResponseSize }));
+
+if (typeof consoleLogDisable === 'undefined' || consoleLogDisable === true) {
+    console.table(exportsTest.networkRequestStats.sort((a, b) => b.maxDuration - a.maxDuration));
+    console.table(JSON.stringify(exportsTest.networkRequestStats.sort((a, b) => b.maxDuration - a.maxDuration)));
+}
