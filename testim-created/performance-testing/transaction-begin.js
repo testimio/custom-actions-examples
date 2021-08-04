@@ -8,6 +8,7 @@
  *      transactionName (JS) : Name of transaction
  * 
  *  Notes
+ *      Transaction Begin/End can be added as Before/After test hooks to get timing information for every step
  * 
  *  Disclaimer
  *      This Custom Action is provided "AS IS".  It is for instructional purposes only and is not officially supported by Testim
