@@ -31,10 +31,6 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [MySQL Server Query](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/mysql-query.js) - Execute a MySQL Query and return results
 
-[Network Performance Checker](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/network-performance-checker.js) - Validate that all network requests are completed under maxResponseTime milliseconds. 
-
-[Network Performance Summary](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/network-performance-summary.js) - Creates a summary of network requests with min/max/avg duration and request size. 
-
 [Network Validate Request](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/network-validate.js) - Validate that a network request returns the proper status and/or is not slower than maxDuration (ms).
 
 [PDF - Download-Process-Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/pdf-validation.js) - Download, parse and validate a PDF document
@@ -63,7 +59,21 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Validate Element Computed Style(s)](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validate-computed-style.js) - Validate a superset/subset of style for an element
 
-[AfterStep (Hook Function)](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/hook-functions/afterstep.js) - Collect step information for AfterTest reporting
+[Hook Functions](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/hook-functions/)
 
-[AfterTest - Azure Devops (Hook Function)](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/hook-functions/aftertest-azure-devops.js) - Create a new or update an existing work item (bug) with test results
+  [AfterStep (Hook Function)](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/hook-functions/afterstep.js) - Collect step information for AfterTest reporting
+
+  [AfterTest - Azure Devops (Hook Function)](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/hook-functions/aftertest-azure-devops.js) - Create a new or update an existing work item (bug) with test results
+
+[Network Performance Testing](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/performance-testing/)
+
+  [Transaction Begin](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/performance-testing/transaction-begin.js) - Start a transaction.
+
+  [Transaction End](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/performance-testing/transaction-end.js) - End a transaction.
+
+  [Transaction Summary Report](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/performance-testing/transaction-end.js) - Log/Report all transactions.
+
+  [Network Performance Checker](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/performance-testing/network-performance-checker.js) - Validate that all network requests are completed under maxResponseTime milliseconds. 
+
+  [Network Performance Summary](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/performance-testing/network-performance-summary.js) - Creates a summary of network requests with min/max/avg duration and request size. 
 
