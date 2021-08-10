@@ -22,6 +22,10 @@
  *				    firstName === queryResults[0].firstName 
  *			      lastName  === queryResults[0].lastName
  *
+ *  Notes
+ *      https://bertwagner.com/posts/converting-json-to-sql-server-create-table-statements/
+ *      https://www.pauric.blog/How-To-Import-JSON-To-SQL-Server/#5-save-the-rowsets-into-a-table
+ * 
  *  Disclaimer
  *      This Custom Action is provided "AS IS".  It is for instructional purposes only and is not officially supported by Testim
  * 
@@ -72,34 +76,36 @@
  /* if returnVariableName is defined then use it else use 'queryResults' as the return variable
   */
  var return_variable_name = (typeof returnVariableName !== 'undefined' && returnVariableName !== null) ? returnVariableName : 'queryResults';
-  
+ 
  return new Promise((resolve, reject) => {
  
      sql.connect(connectionString).then(() => {
+ 
+         console.log("sqlQuery", sqlQuery);
  
          return sql.query(sqlQuery)
  
      }).then(result => {
  
-        if (typeof result?.recordset !== 'undefined' && result?.recordset !== null) {
-
-            exportsTest[return_variable_name] = result?.recordset;
-            console.log(return_variable_name, exportsTest[return_variable_name]);
-    
-            // Take an index and store generatedData[0]'s values as naked top level variables
-            //
-            let naked_variable_index = 0;
-            function storeFirstAsGlobalNakedVariables(value) {
-    
-                let variableName = value;
-                let variableValue = result.recordset[naked_variable_index][variableName];
-    
-                exportsTest[variableName] = variableValue;
-                console.log(variableName + " = " + variableValue);
-    
-            }
-            Object.keys(result.recordset[naked_variable_index]).forEach(storeFirstAsGlobalNakedVariables);
-         
+         if (typeof result?.recordset !== 'undefined' && result?.recordset !== null) {
+ 
+             exportsTest[return_variable_name] = result?.recordset;
+             console.log(return_variable_name, exportsTest[return_variable_name]);
+ 
+             // Take an index and store generatedData[0]'s values as naked top level variables
+             //
+             let naked_variable_index = 0;
+             function storeFirstAsGlobalNakedVariables(value) {
+ 
+                 let variableName = value;
+                 let variableValue = result.recordset[naked_variable_index][variableName];
+ 
+                 exportsTest[variableName] = variableValue;
+                 console.log(variableName + " = " + variableValue);
+ 
+             }
+             Object.keys(result.recordset[naked_variable_index]).forEach(storeFirstAsGlobalNakedVariables);
+ 
          }
  
          resolve();
@@ -111,3 +117,4 @@
      })
  
  });
+ 
