@@ -81,7 +81,7 @@
  
      }).then(result => {
  
-        if (result?.recordset !== null) {
+        if (typeof result?.recordset !== 'undefined' && result?.recordset !== null) {
 
             exportsTest[return_variable_name] = result?.recordset;
             console.log(return_variable_name, exportsTest[return_variable_name]);
