@@ -47,23 +47,19 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [SQL Server - Results Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/sqlserver-validate-results.js) - Execute a SQL Server query, validate and return results
 
-[Table - Cells Get](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/table-cells-get.js) - Return table cell values in a structured format
-
-[Table - Cells Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/table-cells-validate.js) - Validate table cell content
-
-[Table - Cell Click](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/table-cell-click.js) - Click a specific cell within a specific row in a table
-
 [Validate Select Items/Options](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validate-select-items.js) - Validate that expected items are in a list/select.
 
 [Validate Select Items/Options Order](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/select-order-validate.js) - Validates that the items in a list are sorted properly.
 
 [Validate Element Computed Style(s)](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validate-computed-style.js) - Validate a superset/subset of style for an element
 
+
 [**Hook Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/hook-functions/)
 
 [AfterStep (Hook Function)](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/hook-functions/afterstep.js) - Collect step information for AfterTest reporting
 
 [AfterTest - Azure Devops (Hook Function)](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/hook-functions/aftertest-azure-devops.js) - Create a new or update an existing work item (bug) with test results
+
 
 [**Performance Testing**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/performance-testing/)
 
@@ -77,3 +73,13 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Network Performance Summary](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/performance-testing/network-performance-summary.js) - Creates a summary of network requests with min/max/avg duration and request size. 
 
+
+[**Table Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/table-functions/)
+
+[Table - Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/table-functions/table-validate.js) - Validate table cell content
+
+[Table - Cells Get](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/table-functions/table-cells-get.js) - Get all table cell values
+
+[Table - Cell Get](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/table-functions/table-cell-get.js) - Get the content a specific cell within a specific row in a table
+
+[Table - Cell Click](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/table-functions/table-cell-click.js) - Click on a specific cell within a specific row in a table
