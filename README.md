@@ -53,6 +53,8 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Validate Element Computed Style(s)](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validate-computed-style.js) - Validate a superset/subset of style for an element
 
+[Watchlist Popup](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/watchlist-popup.js) - Display Testim and User defined variables in a popup window (div)
+
 
 [**Hook Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/hook-functions/)
 
