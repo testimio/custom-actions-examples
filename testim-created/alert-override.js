@@ -1,7 +1,7 @@
 /**
  *  Alert Override
  *
- *      Overrides the window.alert function to dispaly an alert as a popup div to enable validation of javascript alert
+ *      Overrides the window.alert function to display an alert as a popup div to enable validation of javascript alert
  * 
  *  Parameters:
  *
