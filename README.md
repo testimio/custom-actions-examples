@@ -65,7 +65,7 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [**Select/Listbox Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/)
 
-[Select Item/Option by Text/Value](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/select-by-text.js) - Select an item by value or text (select/option, ul/li. table/tr)
+[Select Items/Options](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/select-items-options.js) - Select an item by value or text (select/option, ul/li)
 
 [Select Items/Options - Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validate-select-items.js) - Validate that expected items are in a list/select.
 
