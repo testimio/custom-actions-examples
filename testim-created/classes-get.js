@@ -40,7 +40,7 @@ const copyToClipboard = str => { const el = document.createElement('textarea'); 
 /* Validate the target element is defined
  */
 if (typeof element === 'undefined' || element === null) {
-    throw new Error("HTML parameter element not found or not set");
+  throw new Error("HTML parameter element not found or not set");
 }
 
 let return_variable_name = 'actualClasses';

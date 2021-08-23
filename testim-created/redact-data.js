@@ -35,7 +35,7 @@
 // Set element fore/background color to black
 //
 
-element.style.color           = "black";
+element.style.color = "black";
 element.style.backgroundColor = "black";
 
 //
@@ -48,12 +48,12 @@ let div = document.createElement('div');
 
 div.style.background = 'black';
 
-div.style.position   = element_computed_style.position == 'fixed' ? 'fixed' : 'absolute';
-div.style.zIndex     = parseInt(element_computed_style.zIndex) + 1;
+div.style.position = element_computed_style.position == 'fixed' ? 'fixed' : 'absolute';
+div.style.zIndex = parseInt(element_computed_style.zIndex) + 1;
 
-div.style.top        = element.offsetTop    + 'px';
-div.style.left       = element.offsetLeft   + 'px';
-div.style.width      = element.offsetWidth  + 'px';
-div.style.height     = element.offsetHeight + 'px';
+div.style.top = element.offsetTop + 'px';
+div.style.left = element.offsetLeft + 'px';
+div.style.width = element.offsetWidth + 'px';
+div.style.height = element.offsetHeight + 'px';
 
 element.appendChild(div);

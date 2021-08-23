@@ -50,26 +50,23 @@ if (typeof sortOrder !== 'undefined' && sortOrder !== null) {
  *	try to find the parent element <select> or <ul>
  */
 let select_list = selectListFind(element);
-let tagname     = select_list.tagName.toLowerCase();
+let tagname = select_list.tagName.toLowerCase();
 
 let select_tags = ["select", "ul", "ol"];
-if (!select_tags.includes(tagname))
-{
+if (!select_tags.includes(tagname)) {
   throw new Error("Select Option(s) ==> Target element must be a select, ul, ol, option or li");
 }
 
 /* Find a target select/listbox 
  */
-function selectListFind(startingElement) 
-{
+function selectListFind(startingElement) {
   let select_list = startingElement;
-  let tagname     = select_list.tagName.toLowerCase();
+  let tagname = select_list.tagName.toLowerCase();
 
   /* First search down the DOM tree 
    */
   let select_tags = ["select", "ul", "ol"];
-  if (!select_tags.includes(tagname))
-  {
+  if (!select_tags.includes(tagname)) {
     select_list = startingElement.getElementsByTagName('select')[0];
     if (typeof select_list === 'undefined' || select_list === null)
       select_list = startingElement.getElementsByTagName('ul')[0];
@@ -77,48 +74,46 @@ function selectListFind(startingElement)
       select_list = startingElement.getElementsByTagName('ol')[0];
     tagname = (typeof select_list === 'undefined' || select_list == null) ? "" : select_list.tagName.toLowerCase();
   }
-  
- /* Search up the DOM tree
-  */
- let stop_tags = ["select", "ul", "ol", "html"];
+
+  /* Search up the DOM tree
+   */
+  let stop_tags = ["select", "ul", "ol", "html"];
   if (!stop_tags.includes(tagname)) {
     select_list = startingElement;
-    while (!stop_tags.includes(tagname))
-    {
+    while (!stop_tags.includes(tagname)) {
       select_list = select_list.parentNode;
-      tagname     = (typeof select_list === 'undefined' || select_list == null) ? "" : select_list.tagName.toLowerCase();
+      tagname = (typeof select_list === 'undefined' || select_list == null) ? "" : select_list.tagName.toLowerCase();
     }
   }
-  
+
   return select_list;
 }
 
 /* Validate select/listbox item order
  */
-function validateSelectOptionOrder (selectList, order) 
-{
+function validateSelectOptionOrder(selectList, order) {
   let tagname = selectList.tagName.toLowerCase();
-  let items   = (tagname === "ul" || tagname === "ol") ? selectList.getElementsByTagName("li") : selectList.options;  
-  
+  let items = (tagname === "ul" || tagname === "ol") ? selectList.getElementsByTagName("li") : selectList.options;
+
   if (typeof items === 'undefined' || items === null || items.length === 0)
     throw new Error("items list not found");
 
   let actual_items = [];
-  for (let i = 0; i < items.length; i++) { 
+  for (let i = 0; i < items.length; i++) {
     actual_items.push((tagname === "ul" || tagname === "ol") ? items[i].textContent : items[i].text);
   }
 
   let expected_items = [...actual_items];
-  if (order === "DESCENDING") 
-      expected_items.sort().reverse();
-    else
-      expected_items.sort();
+  if (order === "DESCENDING")
+    expected_items.sort().reverse();
+  else
+    expected_items.sort();
 
   console.log("Expected Item Order: " + JSON.stringify(expected_items));
   console.log("Actual Item Order:   " + JSON.stringify(actual_items));
 
-  if (expected_items.every(function(value, index) { return value === actual_items[index]}) === false)
+  if (expected_items.every(function (value, index) { return value === actual_items[index] }) === false)
     throw new Error("Options are not in " + order + " order: " + JSON.stringify(actual_items, null, 2));
-  
+
 }
-validateSelectOptionOrder (select_list, order_direction);
+validateSelectOptionOrder(select_list, order_direction);

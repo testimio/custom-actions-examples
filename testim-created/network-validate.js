@@ -117,7 +117,7 @@ let _networkRequestMatches = networkRequests.filter((request, index) => {
         // Run all checks and note statuses
         //
         request.validateMaxDuration = (typeof expectedNetworkRequest.maxDuration === 'undefined' || expectedNetworkRequest.maxDuration === null || request.duration <= expectedNetworkRequest.maxDuration) ? true : false;
-        request.validateStatusCode  = (typeof expectedNetworkRequest.statusCode  === 'undefined' || expectedNetworkRequest.statusCode  === null || request.statusCode == expectedNetworkRequest.statusCode) ? true : false;
+        request.validateStatusCode = (typeof expectedNetworkRequest.statusCode === 'undefined' || expectedNetworkRequest.statusCode === null || request.statusCode == expectedNetworkRequest.statusCode) ? true : false;
 
         // Mark success based on sub-check validations
         //

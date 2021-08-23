@@ -26,7 +26,7 @@
  * 
  */
 
- String.prototype.hashCode = function () {
+String.prototype.hashCode = function () {
     var hash = 0;
     if (this.length == 0) {
         return hash;
@@ -63,7 +63,7 @@ if (typeof expectedImageData !== 'undefined' && expectedImageData !== null) {
         img.style = 'background-color: white;border:1px solid black; box-shadow: 4px 4px 2px 1px rgba(0, 0, 255, .2);';
         img.style.position = element_computed_style.position == 'fixed' ? 'fixed' : 'absolute';
         img.style.top = element.offsetTop + 'px';
-        img.style.left = (element.offsetLeft + (2*element.width) + 10) + 'px';
+        img.style.left = (element.offsetLeft + (2 * element.width) + 10) + 'px';
         img.style.width = element.offsetWidth + 'px';
         img.style.height = element.offsetHeight + 'px';
         document.body.append(img);

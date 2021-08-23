@@ -42,24 +42,24 @@ if (typeof showOpenTransactions === 'undefined' || showOpenTransactions == null 
     transactions = transactions.filter((transaction, index) => {
 
       let keep = (transaction.transactionName !== "_stepData" && transaction.status !== "Open")
-      if (transaction.transactionName == "_stepData"   && transaction.status == "Open")
+      if (transaction.transactionName == "_stepData" && transaction.status == "Open")
         keep = false;
       if (transaction.transactionName == "Transaction" && transaction.status == "Open")
         keep = false;
-      
+
       return keep;
 
     });
 
-  }  
+  }
 }
 
 /* Loop all transactions and Write to Log
  */
 if (transactions !== null && transactions.length > 0) {
-  
-  console.table( transactions);
-  
+
+  console.table(transactions);
+
   //console.log( "transactionName", "status", "duration", "startTime", "endTime"); 
   //transactions.forEach((transaction, index) => {                                                                    
   //  switch (transaction.status) {       
@@ -70,18 +70,18 @@ if (transactions !== null && transactions.length > 0) {
   //  }  
   //  console.table( transaction.transactionName, transaction.status, transaction.duration, transaction.startTime, transaction.endTime);
   //});
- 
-  console.table( JSON.stringify(transactions));
+
+  console.table(JSON.stringify(transactions));
 
 }
 
 /* If networkRequestStats is defined the include it
  */
-if (typeof networkRequestStats !== 'undefined' && networkRequestStats !== null){
-    console.log("---------------------------------------------------------------------");
-    console.log("Network Performance Summary");
-    console.log("---------------------------------------------------------------------");
-    console.table(JSON.stringify(networkRequestStats.sort((a, b) => b.maxDuration - a.maxDuration))); 
+if (typeof networkRequestStats !== 'undefined' && networkRequestStats !== null) {
+  console.log("---------------------------------------------------------------------");
+  console.log("Network Performance Summary");
+  console.log("---------------------------------------------------------------------");
+  console.table(JSON.stringify(networkRequestStats.sort((a, b) => b.maxDuration - a.maxDuration)));
 }
 console.log("");
 

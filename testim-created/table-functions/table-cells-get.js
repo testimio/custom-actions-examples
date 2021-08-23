@@ -156,10 +156,10 @@ function getTableRows(element) {
 
             case "table":
 
-                row_cells    = rows[i].querySelectorAll('td');
+                row_cells = rows[i].querySelectorAll('td');
                 if (row_cells.length > 0) {
                     _return_item_entry = {};
-                    let row_cell_id = 0;              
+                    let row_cell_id = 0;
                     _return_item_entry["index"] = i - ((typeof columnheader_row === 'undefined') ? 0 : 1);
                     [].forEach.call(row_cells, function (cell) {
                         let column_name = columnheaders[row_cell_id++ % columnheaders.length];

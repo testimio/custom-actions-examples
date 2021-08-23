@@ -42,7 +42,7 @@ if (typeof element === 'undefined' || element === null) {
 
 let return_variable_name = 'actualClasses';
 if (typeof returnVariableName !== 'undefined' && returnVariableName !== null)
-return_variable_name = returnVariableName;
+  return_variable_name = returnVariableName;
 
 const copyToClipboard = str => { const el = document.createElement('textarea'); el.value = str; el.setAttribute('readonly', ''); el.style.position = 'absolute'; el.style.left = '-9999px'; document.body.appendChild(el); const selected = document.getSelection().rangeCount > 0 ? document.getSelection().getRangeAt(0) : false; el.select(); document.execCommand('copy'); document.body.removeChild(el); if (selected) { document.getSelection().removeAllRanges(); document.getSelection().addRange(selected); } };
 
@@ -54,35 +54,35 @@ exportsTest[return_variable_name] = actual_classes;
 //
 function validateClasses(actualClasses, expectedClasses) {
 
-let result = true;
-let expected_value;
-let differences = [];
+  let result = true;
+  let expected_value;
+  let differences = [];
 
-for (let row_id = 0; row_id < expectedClasses.length; row_id++) {
-  expected_value = expectedClasses[row_id];
-  if (!actualClasses.includes(expected_value)) {
-    differences.push(expected_value);
-    result = false;
+  for (let row_id = 0; row_id < expectedClasses.length; row_id++) {
+    expected_value = expectedClasses[row_id];
+    if (!actualClasses.includes(expected_value)) {
+      differences.push(expected_value);
+      result = false;
+    }
   }
-}
 
-// If failed, echo to console and report an error
-//
-if (!result) {
-  console.log("Expected Classes Not Found: " + JSON.stringify(differences, null, 2) + "Actual Classes: " + JSON.stringify(actualClasses, null, 2));
-  throw new Error("\nExpected Classes Not Found\n" + JSON.stringify(differences, null, 2) + "\nActual Classes: \n" + JSON.stringify(actualClasses, null, 2));
-}
+  // If failed, echo to console and report an error
+  //
+  if (!result) {
+    console.log("Expected Classes Not Found: " + JSON.stringify(differences, null, 2) + "Actual Classes: " + JSON.stringify(actualClasses, null, 2));
+    throw new Error("\nExpected Classes Not Found\n" + JSON.stringify(differences, null, 2) + "\nActual Classes: \n" + JSON.stringify(actualClasses, null, 2));
+  }
 
-return result;
+  return result;
 }
 
 if (typeof expectedClasses !== 'undefined' && expectedClasses !== null) {
 
-let expected_values = expectedClasses;
-if (!Array.isArray(expected_values)) {
-  expected_values = [expectedClasses];
-}
+  let expected_values = expectedClasses;
+  if (!Array.isArray(expected_values)) {
+    expected_values = [expectedClasses];
+  }
 
-validateClasses(actual_classes, expected_values);
+  validateClasses(actual_classes, expected_values);
 
 }

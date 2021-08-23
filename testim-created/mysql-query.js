@@ -42,50 +42,50 @@
  */
 
 
- var dbName = "testdata";
- var userName = "barry";
- var password = "P@$$w0rdMS";
- var host = "localhost";
- var port = 3306;
- 
- /* if returnVariableName is defined then use it else use 'queryResults' as the return variable
-  */
- var return_variable_name = (typeof returnVariableName !== 'undefined' && returnVariableName !== null) ? returnVariableName : 'queryResults';
- 
- const sequelize = new Sequelize(dbName, userName, password, {
-     select: "mysql",
-     dialect: 'mysql',
-     host,
-     port,
- });
- 
- return sequelize
-     .query(query, {
-         type: Sequelize.QueryTypes.SELECT,
-     })
-     .then(myTableRows => {
- 
-         const result = myTableRows && JSON.stringify(myTableRows);
- 
-         console.log("myTableRows", JSON.stringify(myTableRows));
-         console.log("Query result", result);
-         exportsTest[return_variable_name] = result;
- 
-         // Take an index and store generatedData[0]'s values as naked top level variables
-         //
-         let naked_variable_index = 0;
-         function storeFirstAsGlobalNakedVariables(value) {
- 
-             let variableName = value;
-             let variableValue = myTableRows[naked_variable_index][variableName];
- 
-             exportsTest[variableName] = variableValue;
-             console.log(variableName + " = " + variableValue);
- 
-         }
-         Object.keys(myTableRows[naked_variable_index]).forEach(storeFirstAsGlobalNakedVariables);
- 
-         if (!myTableRows) {
-             return Promise.reject(new Error("Failed to find raw"));
-         }
-     });
+var dbName = "testdata";
+var userName = "barry";
+var password = "P@$$w0rdMS";
+var host = "localhost";
+var port = 3306;
+
+/* if returnVariableName is defined then use it else use 'queryResults' as the return variable
+ */
+var return_variable_name = (typeof returnVariableName !== 'undefined' && returnVariableName !== null) ? returnVariableName : 'queryResults';
+
+const sequelize = new Sequelize(dbName, userName, password, {
+    select: "mysql",
+    dialect: 'mysql',
+    host,
+    port,
+});
+
+return sequelize
+    .query(query, {
+        type: Sequelize.QueryTypes.SELECT,
+    })
+    .then(myTableRows => {
+
+        const result = myTableRows && JSON.stringify(myTableRows);
+
+        console.log("myTableRows", JSON.stringify(myTableRows));
+        console.log("Query result", result);
+        exportsTest[return_variable_name] = result;
+
+        // Take an index and store generatedData[0]'s values as naked top level variables
+        //
+        let naked_variable_index = 0;
+        function storeFirstAsGlobalNakedVariables(value) {
+
+            let variableName = value;
+            let variableValue = myTableRows[naked_variable_index][variableName];
+
+            exportsTest[variableName] = variableValue;
+            console.log(variableName + " = " + variableValue);
+
+        }
+        Object.keys(myTableRows[naked_variable_index]).forEach(storeFirstAsGlobalNakedVariables);
+
+        if (!myTableRows) {
+            return Promise.reject(new Error("Failed to find raw"));
+        }
+    });

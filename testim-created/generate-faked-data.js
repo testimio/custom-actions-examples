@@ -8,7 +8,7 @@
  *	    dataSchema (JS) : String array of data items to generate
  *               Supported data schema types:
  *                   [
- *                       "firstName","lastName","prefix","suffix", "fullName"
+ *                       "id", "firstName","lastName","prefix","suffix", "fullName"
  *                      ,"company", "jobTitle","jobArea"
  *                      ,"email", "emailWork", "emailAddr", "emailAddress"
  *                      ,"ssn"
@@ -71,14 +71,17 @@
 let generatedData = [];
 let generatedDataInstance = {};
 
-function generateDatum (value) {
-  
-  let dataType     = value;
+function generateDatum(value) {
+
+  let dataType = value;
   let variableName = value;
-  
+
   let datum = "";
   switch (dataType) {
 
+    case "id":
+      datum = Math.floor(Math.random() * 1000000000);;
+      break;
     case "firstName":
       datum = faker.name.firstName();
       break;
@@ -93,7 +96,7 @@ function generateDatum (value) {
       datum = faker.name.jobTitle();
       break;
     case "prefix":
-      datum = faker.name.prefix(); 
+      datum = faker.name.prefix();
       break;
     case "suffix":
       datum = faker.name.suffix();
@@ -118,7 +121,7 @@ function generateDatum (value) {
     case "phoneMobile":
       datum = faker.phone.phoneNumber();
       break;
-	
+
     case "email":
     case "emailWork":
     case "emailAddr":
@@ -146,15 +149,15 @@ function generateDatum (value) {
       datum = faker.address.stateAbbr();
       break;
     case "zipCode":
-      datum= faker.address.zipCode();
+      datum = faker.address.zipCode();
       break;
     case "country":
-      datum= faker.address.country();
+      datum = faker.address.country();
       break;
   }
-  
+
   generatedDataInstance[variableName] = datum;
-  
+
 }
 
 if (typeof dataSchema === 'undefined' || dataSchema === null)
@@ -167,11 +170,11 @@ if (typeof numDataSets !== 'undefined' && numDataSets > 1)
 // Create count number of instances of faked data 
 //
 for (let i = 0; i < count; i++) {
-    
+
   generatedDataInstance = {};
 
   dataSchema.forEach(generateDatum);
-  
+
   generatedData.push(generatedDataInstance);
 
 }
@@ -181,7 +184,7 @@ console.log("Generated " + generatedData.length + " instances of data for dataSc
 //
 let faked_data_variable_name = "generatedData";
 if (typeof dataVariableName !== 'undefined' && dataVariableName !== null)
-    faked_data_variable_name = dataVariableName;
+  faked_data_variable_name = dataVariableName;
 
 exportsTest[faked_data_variable_name] = generatedData;
 console.log("Faked data stored in exportsTest." + faked_data_variable_name + " and variable(s) of the same name as there type in dataSchema");
@@ -190,14 +193,14 @@ console.log("Faked data stored in exportsTest." + faked_data_variable_name + " a
 //
 let naked_variable_index = 0;
 function storeFirstAsGlobalNakedVariables(value) {
-  
-  let variableName  = value;
+
+  let variableName = value;
   let variableValue = generatedData[naked_variable_index][variableName];
-   
-  let setString    = "exportsTest." + variableName + " = '" + variableValue + "'";
+
+  let setString = "exportsTest." + variableName + " = '" + variableValue + "'";
   console.log("  " + setString);
-  eval (setString);
-  
+  eval(setString);
+
 }
 Object.keys(generatedData[naked_variable_index]).forEach(storeFirstAsGlobalNakedVariables);
 

@@ -69,10 +69,10 @@ if (!select_tags.includes(tagname)) {
     throw new Error("Select Option(s) ==> Target element must be a table or grid");
 }
 
-let grid_header_css   = "div[role='columnheader']";
-let grid_css          = "div[role='grid']";
+let grid_header_css = "div[role='columnheader']";
+let grid_css = "div[role='grid']";
 let grid_rowgroup_css = "div[role='rowgroup']";
-let grid_row_css      = "div[role='row']";
+let grid_row_css = "div[role='row']";
 
 const copyToClipboard = str => { const el = document.createElement('textarea'); el.value = str; el.setAttribute('readonly', ''); el.style.position = 'absolute'; el.style.left = '-9999px'; document.body.appendChild(el); const selected = document.getSelection().rangeCount > 0 ? document.getSelection().getRangeAt(0) : false; el.select(); document.execCommand('copy'); document.body.removeChild(el); if (selected) { document.getSelection().removeAllRanges(); document.getSelection().addRange(selected); } };
 

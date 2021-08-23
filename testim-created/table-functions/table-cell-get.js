@@ -324,9 +324,9 @@ if (typeof theCell !== 'undefined' && theCell !== null) {
 
     copyToClipboard(theCell.innerText);
     exportsTest[return_variable_name] = theCell.innerText;
-    exportsTest[return_variable_name+"HTML"] = theCell.outerHTML;
+    exportsTest[return_variable_name + "HTML"] = theCell.outerHTML;
     console.log(return_variable_name, " = ", theCell.innerText);
-    console.log(return_variable_name+"HTML", " = ", theCell.outerHTML);
+    console.log(return_variable_name + "HTML", " = ", theCell.outerHTML);
 
     if (highlight_target_cell)
         theCell.style.border = "2px solid green";

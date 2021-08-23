@@ -84,7 +84,7 @@ if (openTransactions !== null && openTransactions.length === 0) {
         status: "Open",
         type: (transaction_name == "_stepData") ? "Step" : "User",
     }
- 
+
     exportsTest.transactions.push(transaction_template);
 
 }

@@ -70,10 +70,10 @@
 
 let verbose = true;
 
-let grid_header_css   = "div[role='columnheader']";
-let grid_css          = "div[role='grid']";
+let grid_header_css = "div[role='columnheader']";
+let grid_css = "div[role='grid']";
 let grid_rowgroup_css = "div[role='rowgroup']";
-let grid_row_css      = "div[role='row']";
+let grid_row_css = "div[role='row']";
 
 //let grid_header_css = "div[role='grid']>div[role='row']";
 
@@ -150,7 +150,7 @@ function tableFind(startingElement) {
 /* Get table rows/rows
  */
 function getTableRows(theTable) {
-    
+
     let tableRows = [];
 
     let columnheader_row;

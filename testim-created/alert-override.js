@@ -122,7 +122,7 @@ if (typeof _stepData === 'undefined') {
                 + `<br/><input type="button" onclick="$('.alert_override_popup').hide();" value="ok" />`
                 + '</div>';
             + '</div></div>';
-    
+
             let div = document.getElementById("alert_override_popup");
             if (div === null) {
                 let style = document.createElement('style');

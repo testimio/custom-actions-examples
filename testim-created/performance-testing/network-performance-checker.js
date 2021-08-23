@@ -135,7 +135,7 @@ let slowNetworkRequests = _networkRequestsSlow.map(({ url, duration, responseSiz
 exportsTest.slowNetworkRequests = slowNetworkRequests;
 
 if (slowNetworkRequests !== null && slowNetworkRequests.length > 0) {
-    console.error('There were ' + slowNetworkRequests.length + ' slow requests: [duration > ' + maxResponseTime + '] found.');  
+    console.error('There were ' + slowNetworkRequests.length + ' slow requests: [duration > ' + maxResponseTime + '] found.');
     for (const request of slowNetworkRequests)
         console.error(` ==>`, JSON.stringify(request));
     throw new Error('There were ' + slowNetworkRequests.length + ' slow requests: [duration > ' + maxResponseTime + '] found.  See Console Log for details');

@@ -55,8 +55,8 @@ let supportedStyles = {
 supportedStyles = {
     computedStyles: {
         "alignContent": "", "alignItems": "", "background": "", "backgroundColor": "", "backgroundImage": "", "borderStyle": "", "color": "", "display": "", "float": "", "font": ""
-      , "fontSize": "", "fontStyle": "", "fontWeight": "", "left": "", "margin": "", "maxHeight": "", "maxWidth": "", "minHeight": "", "minWidth": "", "overflow": ""
-      , "padding": "", "position": "", "textAlign": "", "top": "", "visibility": "", "width": "", "x": "", "y": "", "zIndex": "", "zoom": "",
+        , "fontSize": "", "fontStyle": "", "fontWeight": "", "left": "", "margin": "", "maxHeight": "", "maxWidth": "", "minHeight": "", "minWidth": "", "overflow": ""
+        , "padding": "", "position": "", "textAlign": "", "top": "", "visibility": "", "width": "", "x": "", "y": "", "zIndex": "", "zoom": "",
     }
 };
 
@@ -68,7 +68,7 @@ const copyToClipboard = str => { const el = document.createElement('textarea'); 
 //
 let expected_styles;
 if (typeof expectedStyles !== 'undefined' && expectedStyles !== null) {
-   
+
     expected_styles = expectedStyles;
 
     // If Expected Values is not JSON, attempt to convert to JSON
@@ -79,7 +79,7 @@ if (typeof expectedStyles !== 'undefined' && expectedStyles !== null) {
         }
         expected_styles = JSON.parse(expected_styles);
     }
-    
+
     supportedStyles.computedStyles = expected_styles;
 }
 
@@ -93,7 +93,7 @@ let elementStyles = window.getComputedStyle(element, null)
 for (let key in elementStyles) {
     if (isNaN(key) && key != "cssText") {
         if (key.length > 0 && elementStyles[key] !== null && elementStyles[key].length > 0) {
-            if (typeof(supportedStyles?.computedStyles) === 'undefined' || supportedStyles?.computedStyles === null || Object.keys(supportedStyles.computedStyles).length === 0 || supportedStyles.computedStyles.hasOwnProperty(key)) {
+            if (typeof (supportedStyles?.computedStyles) === 'undefined' || supportedStyles?.computedStyles === null || Object.keys(supportedStyles.computedStyles).length === 0 || supportedStyles.computedStyles.hasOwnProperty(key)) {
                 actual_styles[key] = elementStyles[key];
             }
         }

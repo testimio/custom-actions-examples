@@ -23,8 +23,8 @@
  *      Bob's your uncle
  *
  **/
- 
- console.log("TEST LEVEL - AfterStep");
+
+console.log("TEST LEVEL - AfterStep");
 
 /* _steps will contain all step information for use in communicating results after the test is complete
  */

@@ -80,8 +80,7 @@ if (typeof observer === 'undefined' || observer === null) {
     // Set to a default list of CSS selectors as needed  
     //
     let target_element_selectors = [];
-    if (typeof TARGET_ELEMENT_SELECTORS !== 'undefined' && TARGET_ELEMENT_SELECTORS !== null) 
-    {
+    if (typeof TARGET_ELEMENT_SELECTORS !== 'undefined' && TARGET_ELEMENT_SELECTORS !== null) {
         if (typeof TARGET_ELEMENT_SELECTORS === 'string') {
             target_element_selectors.push(TARGET_ELEMENT_SELECTORS);
         }
@@ -89,8 +88,7 @@ if (typeof observer === 'undefined' || observer === null) {
             target_element_selectors = TARGET_ELEMENT_SELECTORS;
         }
     }
-    if (typeof targetElementCSS !== 'undefined' && targetElementCSS !== null) 
-    {
+    if (typeof targetElementCSS !== 'undefined' && targetElementCSS !== null) {
         if (typeof targetElementCSS === 'string') {
             target_element_selectors.push(targetElementCSS);
         }
@@ -98,7 +96,7 @@ if (typeof observer === 'undefined' || observer === null) {
             target_element_selectors = targetElementCSS;
         }
     }
- 
+
     /* Add an observer for all target elements
     */
     target_element_selectors.forEach((target_element_selector) => {

@@ -41,26 +41,26 @@ let options = {
     fragments: false
 };
 
-exportsTest.brokenLinks     = [];
+exportsTest.brokenLinks = [];
 exportsTest.brokenFragments = [];
 
 return new Promise((resolve, reject) => {
 
     nlc.check(url, options).then(function (result) {
 
-        exportsTest.brokenLinks     = result.brokenLinks;
+        exportsTest.brokenLinks = result.brokenLinks;
         exportsTest.brokenFragments = result.brokenFragments;
 
         if (result.brokenLinks.length > 0) {
             console.error(result.brokenLinks);
-            reject("Error: " + url + ' contains broken links ' + JSON.stringify(result.brokenLinks,null,2));
+            reject("Error: " + url + ' contains broken links ' + JSON.stringify(result.brokenLinks, null, 2));
         }
         if (result.brokenFragments.length > 0) {
             console.error(result.brokenFragments);
-            reject("Error: " + url + ' contains broken fragments ' + JSON.stringify(result.brokenFragments,null,2));
-       }
-       resolve();
+            reject("Error: " + url + ' contains broken fragments ' + JSON.stringify(result.brokenFragments, null, 2));
+        }
+        resolve();
 
     });
-    
+
 });
