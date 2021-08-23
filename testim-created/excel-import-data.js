@@ -14,6 +14,7 @@
  *  Returns
  * 
  *      testData or returnVariableName if defined
+ *      named variables with the same name as the columns (firstName, lastName, etc)
  * 
  *  Usage
  * 
@@ -53,18 +54,18 @@ if (SheetNames.length === 0) {
 //console.log("SheetNames: ", SheetNames);
 
 let sheet_name = "Sheet1";
-if (typeof sheetName!== 'undefined' && sheetName !== null) 
-   sheet_name = sheetName;
+if (typeof sheetName !== 'undefined' && sheetName !== null)
+  sheet_name = sheetName;
 
 if (!SheetNames.includes(sheet_name))
-   throw new Error('Sheet ' + sheet_name + ' is not found');
+  throw new Error('Sheet ' + sheet_name + ' is not found');
 
-let TestData = xlsx.utils.make_json(Sheets[sheet_name]);  
+let TestData = xlsx.utils.make_json(Sheets[sheet_name]);
 console.log("TestData", JSON.stringify(TestData));
 
 let return_variable_name = 'testData';
 if (typeof returnVariableName !== 'undefined' && returnVariableName !== null)
-    return_variable_name = returnVariableName;
+  return_variable_name = returnVariableName;
 
 exportsTest[return_variable_name] = TestData;
 
@@ -72,10 +73,10 @@ exportsTest[return_variable_name] = TestData;
 //
 let naked_variable_index = 0;
 function storeFirstAsGlobalNakedVariables(value) {
-  
-  let variableName  = value;
+
+  let variableName = value;
   let variableValue = TestData[naked_variable_index][variableName];
-   
+
   exportsTest[variableName] = variableValue;
   console.log("variableName = " + variableValue);
 

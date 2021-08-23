@@ -70,7 +70,7 @@
 
 let verbose = true;
 
-let grid_header_css   = 'span[class="ag-header-cell-text"]';
+let grid_header_css   = "div[role='columnheader']";
 let grid_css          = "div[role='grid']";
 let grid_rowgroup_css = "div[role='rowgroup']";
 let grid_row_css      = "div[role='row']";
@@ -182,8 +182,7 @@ function getTableRows(theTable) {
 
         case "grid":
 
-            columnheader_row   = theTable.querySelectorAll(grid_row_css)[0];
-            columnheader_nodes = columnheader_row.querySelectorAll(grid_header_css);
+            columnheader_nodes = theTable.querySelectorAll(grid_header_css);
             columnheaders = [];
             if (columnheader_nodes.length > 0) {
                 [].forEach.call(columnheader_nodes, function (cell) {
