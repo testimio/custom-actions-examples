@@ -1,5 +1,5 @@
 /**
- * Network Validate Request
+ * Network Validate Requests
  * 
  *  Validate that a network request was made and optionally validate that the status is correct and/or is not slower than maxDuration (ms)
  * 
