@@ -26,13 +26,15 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 [Redact data](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/redact-data.js) - This custom step creates an overlay element to prevent screenshot capture of private data.
 
 
-[**Validation Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/performance-testing/)
+[**Validation Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/)
 
 [Image Element Capture-Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/image-element-capture-validate.js) - Capture an image of a DOM element and optionally validate (pixel exact match)
 
 [Link Checker](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/link-checker.js) (CLI) - Finds links at the given URL and validates that they are working. 
 
 [Network Validate Request](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/network-validate.js) - Validate that a network request returns the proper status and/or is not slower than maxDuration (ms).
+
+[Numeric Expression Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/numeric-expression-validate.js) - Validate a value using numeric expressions ">", ">=", "==", "<", "<=".
 
 
 [**Database Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/performance-testing/)
