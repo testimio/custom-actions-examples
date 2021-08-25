@@ -61,6 +61,11 @@ return new Promise((resolve, reject) => {
         }
         resolve();
 
-    });
+    })
+    .catch((error) => {
+        console.error(error);
+        reject(error);
+        throw new Error(error);
+     });
 
 });
