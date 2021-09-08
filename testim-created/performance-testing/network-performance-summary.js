@@ -27,8 +27,8 @@
  *      Network Validation
  * 
  *  Installation
- *      Create a new "Network Performance Summary"
- *      Name it "Network Performance Check"
+ *      Create a new "Network Validation"
+ *      Name it "Network Performance Summary"
  *      Optional - add optional parameters
  *          networkRequestURLs  (JS) 
  *          networkRequestTypes (JS)  
