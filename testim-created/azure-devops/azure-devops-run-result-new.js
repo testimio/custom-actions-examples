@@ -27,8 +27,11 @@
  *      https://docs.microsoft.com/en-us/rest/api/azure/devops/test/results/add?view=azure-devops-rest-6.0
  *      https://docs.microsoft.com/en-us/rest/api/azure/devops/test/results/add?view=azure-devops-rest-6.0#testcaseresult
  * 
+ *  Disclaimer
+ *      This Custom Action is provided "AS IS".  It is for instructional purposes only and is not officially supported by Testim
+ * 
  *  Version
- *      0.0.0 - Non Working Version
+ *      0.0.1 - Possibly Working Version.  Worked when created, but has been a while
  * 
  *  Base Step
  *      Custom CLI Action
