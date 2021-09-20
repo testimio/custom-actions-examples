@@ -38,6 +38,8 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Email - Validate/GetOTP](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/email-validate.js) -  Process email inbox and validate/parse last message for subject/body and regex to pull data from email
 
+[isEnabled](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/is-enabled.js) - Vaildate that an element is enabled (or disabled)
+
 
 [**Database Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/performance-testing/)
 
