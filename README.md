@@ -40,6 +40,8 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [isEnabled](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/is-enabled.js) - Vaildate that an element is enabled (or disabled)
 
+[isVisible](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/is-visible.js) - Vaildate that an element is visible
+
 
 [**Database Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/performance-testing/)
 
