@@ -16,6 +16,8 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Element Computed Style(s) - Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validate-computed-style.js) - Validate a superset/subset of style for an element
 
+[Set Text (Redacted)](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/text-set-redacted.js) -  Redacts a field and then sets its text
+
 
 [**Data Generation and Redaction**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/)
 
