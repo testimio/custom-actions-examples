@@ -45,18 +45,19 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 [isVisible](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/is-visible.js) - Vaildate that an element is visible
 
 
-[**Database Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/performance-testing/)
+[**Database Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/database-apis/)
 
-[graphQL Query](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/graphQL-query.js) - Execute a graphQL Query and return results
+[MongoDB Query](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/database-apis/mongodb-query.js) - Execute a MongoDB Query and return results
 
-[MongoDB Query](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/mongodb-query.js) - Execute a MongoDB Query and return results
+[MySQL Server Query](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/database-apis/mysql-query.js) - Execute a MySQL Query and return results
 
-[MySQL Server Query](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/mysql-query.js) - Execute a MySQL Query and return results
+[SQL Server Query](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/database-apis/sqlserver-query.js) - Execute a SQL Server Query and return results
 
-[SQL Server Query](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/sqlserver-query.js) - Execute a SQL Server Query and return results
+[SQL Server - Results Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/database-apis/sqlserver-validate-results.js) - Execute a SQL Server query, validate and return results
 
-[SQL Server - Results Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/sqlserver-validate-results.js) - Execute a SQL Server query, validate and return results
+[graphQL Query](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/database-apis/graphQL-query.js) - Execute a graphQL Query and return results
 
+[SOAP Request](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/database-apis/soap-request.js) - Execute a SOAP request and return results
 
 
 [**API**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/)
