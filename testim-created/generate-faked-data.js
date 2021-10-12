@@ -44,13 +44,13 @@
  *			    lastName  === generatedData[0].lastName
  *
  *  Disclaimer
- *      This Custom Action is provided "AS IS".  It is for instructional purposes only and is not officially supported by Testim
+ *      This Custom CLI Action is provided "AS IS".  It is for instructional purposes only and is not officially supported by Testim
  * 
  *  Base Step
- *      Custom Action
+ *      CLI Action
  * 
  *  Installation
- *      Create a new "Custom Action"
+ *      Create a new "CLI Action"
  *      Name it "Generate Data"
  *      Create parameters
  *          dataSchema (JS)
