@@ -55,10 +55,10 @@
  *      Create parameters
  *          dataSchema (JS)
  *          numDataSets (JS)
- *          faker (NPM)
+ *          faker (NPM) version @latest
  *      Optional - add optional parameters
  *          dataVariableName (JS)  
- *      Set the new custom action's function body to this javascript
+ *      Set the new custom CLI action's function body to this javascript
  *      Exit the step editor
  *      Share the step if not already done so
  *      Save the test
