@@ -50,6 +50,14 @@ const copyToClipboard = str => { const el = document.createElement('textarea'); 
 
 let element_computed_style = window.getComputedStyle(element);
 
+let top = element.offsetTop;
+let left = element.offsetLeft;
+let width = element.offsetWidth;
+let height = element.offsetHeight;
+
+const MAX_IMAGE_WIDTH = 200;
+let width_height_ratio = (element.offsetWidth > 0) ? element.offsetHeight / element.offsetWidth : 1;
+
 // if expectedImageData is set then use it as a baseline for compare
 // else use testim_image_collection that holds the expected image's base64 encoding (total hack)
 //
@@ -71,10 +79,12 @@ if (typeof expectedImageData !== 'undefined' && expectedImageData !== null) {
             img.alt = "Expected Image";
             img.style = 'background-color: white;border:1px solid black; box-shadow: 4px 4px 2px 1px rgba(0, 255, 0, .2);';
             img.style.position = element_computed_style.position == 'fixed' ? 'fixed' : 'absolute';
-            img.style.top = element.offsetTop + 'px';
-            img.style.left = (element.offsetLeft + element.width + 10) + 'px';
-            img.style.width = element.offsetWidth + 'px';
-            img.style.height = element.offsetHeight + 'px';
+            img.style.maxWidth = MAX_IMAGE_WIDTH + "px";
+            img.style.maxHeight = Math.floor(MAX_IMAGE_WIDTH * width_height_ratio); + "px";
+            img.style.top = top + 'px';
+            img.style.left = (left + MAX_IMAGE_WIDTH + 10) + 'px';
+            img.style.zIndex = 1000000;
+
             document.body.append(img);
         }
         img.src = expected_image_data;
@@ -122,15 +132,16 @@ return new Promise(function (resolve, reject) {
                     img.style.boxShadow = '0px 4px 2px 1px rgba(255, 0, 0, .2)';
                 }
 
-                if (expected_image_hashcode === null)
-                    img.style.left = (element.offsetLeft + element.width + 10) + 'px';
+                img.style.maxWidth = MAX_IMAGE_WIDTH + "px";
+                img.style.maxHeight = Math.floor(MAX_IMAGE_WIDTH * width_height_ratio); + "px";
+                if (expected_image_hashcode === MAX_IMAGE_WIDTH)
+                    img.style.left = (left + MAX_IMAGE_WIDTH + 10) + 'px';
                 else
-                    img.style.left = (element.offsetLeft + (2 * element.width) + 20) + 'px';
+                    img.style.left = (left + (2 * MAX_IMAGE_WIDTH) + 20) + 'px';
 
                 img.style.position = element_computed_style.position == 'fixed' ? 'fixed' : 'absolute';
                 img.style.top = element.offsetTop + 'px';
-                img.style.width = element.offsetWidth + 'px';
-                img.style.height = element.offsetHeight + 'px';
+                img.style.zIndex = 1000000;
 
                 img.src = actualImageData;
             }
