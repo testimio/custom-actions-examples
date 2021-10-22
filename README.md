@@ -103,6 +103,10 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [AfterTest - Azure Devops (Hook Function)](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/hook-functions/aftertest-azure-devops.js) - Create a new or update an existing work item (bug) with test results
 
+[After Test Hook - SQL Server (Hook Function)](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/hook-functions/aftertest-sqlserver.js) - Collect test results gathered during a test run and insert into a SQL Server database table
+
+[After Test Hook - JSONDBFS (Hook Function)](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/hook-functions/aftertest-jsondbfs.js) - Collect test results gathered during a test run and insert into a JSONDBFS Database Collection (file)
+
 
 [**Performance Testing**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/performance-testing/)
 
