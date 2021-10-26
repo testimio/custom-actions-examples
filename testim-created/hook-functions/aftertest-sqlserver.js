@@ -12,12 +12,14 @@
  *      Use this with "AfterStep" hooks if you wish to include detailed step information with reported results
  * 
  *  Base Step
- *      Custom Action
+ *      Custom CLI Action
  * 
  *  Installation
- *      Create a new "Custom Action"
+ *      Create a new "Custom CLI Action"
  *      Name it "After Test Hook - SQL Server" or base it on the target reporting system. 
- *      Set the new custom action's function body to this javascript
+ *      Add the parameter 
+ *          sql (NPM) and set it to mssql@latest
+ *      Set the new custom CLI action's function body to this javascript
  *      Exit the step editor
  *      Share the step if not already done so
  *      Assign this step as an "After Test" hook in the configuration

@@ -14,12 +14,12 @@
  *      You will have to install the npm package jsondbfs@latest
  * 
  *  Base Step
- *      Custom Action
+ *      Custom CLI Action
  * 
  *  Installation
- *      Create a new "Custom Action"
+ *      Create a new "Custom CLI Action"
  *      Name it "After Test Hook - JSONDBFS" or base it on the target reporting system. 
- *      Set the new custom action's function body to this javascript
+ *      Set the new custom CLI action's function body to this javascript
  *      Add the parameter 
  *          JSONDBFSDriver (NPM) and set it to jsondbfs@latest
  *      Exit the step editor
