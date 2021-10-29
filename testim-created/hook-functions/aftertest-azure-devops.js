@@ -22,13 +22,16 @@
  *          https://docs.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate?view=azure-devops
  *       to create one:
  *          https://<<Organization>>.visualstudio.com/_usersSettings/tokens
- * 
+ *
  *      You can also specify other fields in the target work item such as  "Severity", "Priority", "iterationpath" and "areapath".  
  *     
  *  References
  *      https://docs.microsoft.com/en-us/rest/api/azure/devops/wit/work%20items/create?view=azure-devops-rest-6.0
  *      https://docs.microsoft.com/en-us/azure/devops/boards/queries/wiql-syntax?view=azure-devops
  *      https://docs.microsoft.com/en-us/azure/devops/boards/queries/wiql-syntax?view=azure-devops#operators
+ * 
+ *  Version
+ *      1.1.0 - Added Result URL link to comments/history
  * 
  *  Base Step
  *      Custom CLI Action
@@ -60,17 +63,17 @@
  *
  **/
 
-const DEFAULT_BEARER_TOKEN = null;
-const DEFAULT_ORGANIZATION = null;
-const DEFAULT_PROJECT = null;
-const DEFAULT_VALIDATION_ONLY_MODE = 'false';
-
-let WORKITEM_TESTIM_TAG = "TestimMade";
-let WORKITEM_ITERATION_PATH = null;
-let WORKITEM_AREA_PATH = null;
-let WORKITEM_PRIORITY = null;
-let WORKITEM_SEVERITY = null;
-
+ const DEFAULT_BEARER_TOKEN = null;
+ const DEFAULT_ORGANIZATION = null;
+ const DEFAULT_PROJECT = null;
+ const DEFAULT_VALIDATION_ONLY_MODE = 'false';
+ 
+ let WORKITEM_TESTIM_TAG = "TestimMade";
+ let WORKITEM_ITERATION_PATH = null;
+ let WORKITEM_AREA_PATH = null;
+ let WORKITEM_PRIORITY = null;
+ let WORKITEM_SEVERITY = null;
+ 
 let TEST_FAIL_WORKITEM_EXISTING_STATE = "Committed";
 let TEST_FAIL_WORKITEM_NEW_STATE = "New";
 let TEST_PASS_WORKITEM_STATE = "Done";
@@ -124,12 +127,19 @@ function afterTest(_stepData, _stepInternalData, workItemId) {
     let bugTitle = (_stepData.testName !== "" ? _stepData.testName : 'NoName TestName') + " - "
         + ((typeof _stepInternalData.failureReason !== 'undefined') ? _stepInternalData.failureReason : "Passed");
 
-    let comment = "";
+    var project_id = ((typeof _stepInternalData.projectId === 'undefined') ? null : _stepInternalData.projectId);
+    var test_id = ((typeof _stepInternalData.testId === 'undefined') ? null : _stepInternalData.testId);
+    var branch = ((typeof _stepInternalData.branch === 'undefined') ? null : _stepInternalData.branch);
+    var result_id = ((typeof _stepInternalData.testResultId === 'undefined') ? null : _stepInternalData.testResultId);
+    var result_url = (project_id === null || test_id === null || branch === null || result_id === null) ? null : "https://app.testim.io/#/project/" + project_id + "/branch/" + branch + "/test/" + test_id + "?result-id=" + result_id;
+
+    let comment = "<div>";
     if (typeof _stepInternalData.failureReason !== 'undefined') {
         comment = "<div>Test [" + _stepData.testName + "] - " + _stepInternalData.errorType + "</div><div>" + _stepInternalData.failureReason + "</div>";
     } else {
         comment = "<div>Test [" + _stepData.testName + "] - Passed</div>";
     }
+    comment += "<br/><a target='_blank' href='" + result_url + "'>View Results</a></div>";
 
     let reprosteps = "";
     if (typeof _steps !== 'undefined' && _steps !== null) {
