@@ -31,7 +31,8 @@
  *      https://docs.microsoft.com/en-us/azure/devops/boards/queries/wiql-syntax?view=azure-devops#operators
  * 
  *  Version
- *      1.1.0 - Added Result URL link to comments/history
+ *      1.1.0 - Added Result URL to comments/history
+ *      1.1.1 - Added Result URL to work item's "Links"
  * 
  *  Base Step
  *      Custom CLI Action
@@ -163,6 +164,7 @@ function afterTest(_stepData, _stepInternalData, workItemId) {
     testResultWorkItem["type"] = "Bug";
     testResultWorkItem["title"] = bugTitle;
     testResultWorkItem["history"] = comment;
+    testResultWorkItem["link"] = result_url;
 
     if (typeof (WORKITEM_TESTIM_TAG) !== 'undefined' && WORKITEM_TESTIM_TAG !== null)
         testResultWorkItem["tags"] = workItemTags + ((workItemTags === "") ? "" : ", ") + WORKITEM_TESTIM_TAG;
