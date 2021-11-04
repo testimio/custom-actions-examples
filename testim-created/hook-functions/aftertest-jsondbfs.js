@@ -53,6 +53,7 @@ var testResult = {
     "ResultID": result_id,
     "ResultURL": result_url,
     "BaseURL": BASE_URL,
+    "TestRunDate" : Date(),
     "TestData": test_data,
     "TestStatus": (typeof _stepInternalData.failureReason === 'undefined') ? "PASSED" : "FAILED",
     "TestStatusDetails": test_status_details,
@@ -68,6 +69,7 @@ console.log("\n==================================== Test Results ===============
  */
 var resultData = {
     "TestName": testResult.TestName,
+    "TestRunDate": testResult.TestRunDate,
     "Branch": testResult.Branch,
     "BaseURL": testResult.BaseURL,
     "TestStatus": testResult.TestStatus,

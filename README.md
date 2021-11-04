@@ -7,6 +7,18 @@ If you have an idea for a custom action example feel free to submit a GitHub iss
 
 Initially it includes custom action steps (JavaScript) that we have created for customers. The code can be copied from here and added to a custom step in a Testim test. Instructions on how to use each example are included in the linked file with the JavaScript code needed. Typically it will involve copying the file and code into a custom step, making a change or two to the properties panel, checking your variables, and perhaps pointing to the correct element. 
 
+[**Test Reporting and Analysis**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/test-reporting-analysis/)
+
+[Testim Test Result Report Generater](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/test-reporting-analysis/testim-test-result-report-generate.js) - Generate Detailed HTML/PDF Test Report(s) with optional screenshots, test data and network summary performance data
+
+[AfterStep - Extended (Hook Function)](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/hook-functions/afterstep-extended.js) - Collect enhanced step information for AfterTest reporting
+
+[After Test Hook - JSONDBFS (Hook Function)](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/hook-functions/aftertest-jsondbfs.js) - Collect test results gathered during a test run and insert into a JSONDBFS Database Collection (file)
+
+[After Test Hook - SQL Server (Hook Function)](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/hook-functions/aftertest-sqlserver.js) - Collect test results gathered during a test run and insert into a SQL Server database table
+
+[Network Performance Summary](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/performance-testing/network-performance-summary.js) - Creates a summary of network requests with min/max/avg duration and request size that can be included in the test report. 
+
 
 [**Element Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/)
 

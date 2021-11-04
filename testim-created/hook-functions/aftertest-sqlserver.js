@@ -28,7 +28,7 @@
  *
  **/
 
- //console.log("TEST LEVEL - AfterTest - SQL Server");
+ // console.log("TEST LEVEL - AfterTest - SQL Server");
 
  var test_name = _stepData.testName;
  var test_data = (typeof _test_data !== 'undefined') ? _test_data : null;
@@ -51,6 +51,7 @@
      "ResultID": result_id,
      "ResultURL": result_url,
      "BaseURL": BASE_URL,
+     "TestRunDate" : Date(),
      "TestData": test_data,
      "TestStatus": (typeof _stepInternalData.failureReason === 'undefined') ? "PASSED" : "FAILED",
      "TestStatusDetails": test_status_details,
@@ -64,9 +65,10 @@
 
  /* Write results to DB
   */
- var query = "insert into [TestResults] ([TestName], [Branch], [BaseURL], [TestStatus], [TestStatusDetails], [ProjectID], [TestID], [ResultID], [ResultURL], [TestResultsJSON], [TestDataJSON], [TestPerformanceJSON], [NetworkRequestStats]) values ('"
+ var query = "insert into [TestResults] ([TestName], [Branch], [TestRunDate], [BaseURL], [TestStatus], [TestStatusDetails], [ProjectID], [TestID], [ResultID], [ResultURL], [TestResultsJSON], [TestDataJSON], [TestPerformanceJSON], [NetworkRequestStats]) values ('"
      + testResult.TestName + "','"
      + testResult.Branch + "','"
+     + testResult.TestRunDate + "','"
      + testResult.BaseURL + "','"
      + testResult.TestStatus + "','"
      + testResult.TestStatusDetails + "','"
@@ -80,7 +82,7 @@
      + "," + ((network_request_stats !== null) ? "'" + JSON.stringify(network_request_stats).replace(/\'/g, "''") + "'" : "null")
      + ")";
  
- //console.log("query: ", query);
+ console.log("SQL Insert Query: ", query);
  
  const config = {
      user: 'TestimSQL',
@@ -107,8 +109,7 @@
  
      }).then(result => {
  
-         console.log(result)
- 
+         // console.log(result)
          resolve();
  
      }).catch(err => {
@@ -135,6 +136,7 @@
             [TestStatus] [varchar](256) NOT NULL,
             [TestStatusDetails] [varchar](256) NULL,
             [BaseURL] [varchar](256) NOT NULL,
+            [TestRunDate] [datetime] NULL,
             [TestID] [varchar](50) NULL,
             [ProjectID] [varchar](50) NULL,
             [ResultID] [varchar](50) NULL,
@@ -156,5 +158,5 @@
         ALTER TABLE [dbo].[TestResults] ADD  CONSTRAINT [DF_TestResults_Branch]  DEFAULT ('master') FOR [Branch]
         GO
   
-  **/
+ **/
  
