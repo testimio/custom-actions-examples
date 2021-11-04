@@ -9,7 +9,7 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [**Test Reporting and Analysis**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/test-reporting-analysis/)
 
-[Testim Test Result Report Generater](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/test-reporting-analysis/testim-test-result-report-generate.js) - Generate Detailed HTML/PDF Test Report(s) with optional screenshots, test data and network summary performance data
+[Testim Test Result Report Generator](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/test-reporting-analysis/testim-test-result-report-generate.js) - Generate Detailed HTML/PDF Test Report(s) with optional screenshots, test data and network summary performance data
 
 [AfterStep - Extended (Hook Function)](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/hook-functions/afterstep-extended.js) - Collect enhanced step information for AfterTest reporting
 
