@@ -19,6 +19,7 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Network Performance Summary](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/performance-testing/network-performance-summary.js) - Creates a summary of network requests with min/max/avg duration and request size that can be included in the test report. 
 
+<br/>
 
 [**Element Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/)
 
@@ -30,6 +31,7 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Set Text (Redacted)](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/text-set-redacted.js) -  Redacts a field and then sets its text
 
+<br/>
 
 [**Data Generation and Redaction**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/)
 
@@ -39,6 +41,7 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Redact data](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/redact-data.js) - This custom step creates an overlay element to prevent screenshot capture of private data.
 
+<br/>
 
 [**Validation Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/)
 
@@ -56,6 +59,7 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [isVisible](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/is-visible.js) - Vaildate that an element is visible
 
+<br/>
 
 [**Database Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/database-apis/)
 
@@ -67,6 +71,7 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [SQL Server - Results Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/database-apis/sqlserver-validate-results.js) - Execute a SQL Server query, validate and return results
 
+<br/>
 
 [**API**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/)
 
@@ -78,6 +83,7 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [graphQL Query](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/database-apis/graphQL-query.js) - Execute a graphQL Query and return results
 
+<br/>
 
 [**PDF Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/)
 
@@ -85,6 +91,7 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [PDF - Fields/Texts Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/pdf-fields-textblocks-validate.js) - Validates text blocks and fields using pdfDocumentTexts and pdfDocumentFields from "Download-Process-Validate PDF" step
 
+<br/>
 
 [**Select/Listbox Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/)
 
@@ -94,6 +101,7 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Select Items/Options Order - Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/select-order-validate.js) - Validates that the items in a list are sorted properly.
 
+<br/>
 
 [**Debuging Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/hook-functions/)
 
@@ -101,6 +109,7 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Watchlist Popup](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/watchlist-popup.js) - Display Testim and User defined variables in a popup window (div)
 
+<br/>
 
 [**Browser Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/hook-functions/)
 
@@ -108,6 +117,7 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Alert Override](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/alert-override.js) - Overrides the window.alert function to dispaly an alert as a popup div to enable validation of javascript alert
 
+<br/>
 
 [**Hook Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/hook-functions/)
 
@@ -121,6 +131,7 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [After Test Hook - JSONDBFS (Hook Function)](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/hook-functions/aftertest-jsondbfs.js) - Collect test results gathered during a test run and insert into a JSONDBFS Database Collection (file)
 
+<br/>
 
 [**Performance Testing**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/performance-testing/)
 
@@ -134,6 +145,7 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Network Performance Summary](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/performance-testing/network-performance-summary.js) - Creates a summary of network requests with min/max/avg duration and request size. 
 
+<br/>
 
 [**Table Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/table-functions/)
 
@@ -147,6 +159,7 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Table - Column Order Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/table-functions/table-column-order-validate.js) - Validate the values in a column are sorted properly
 
+<br/>
 
 [**Misc Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/)
 
