@@ -25,7 +25,7 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Classes Get](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/classes-get.js) - Get an element's class list as a string array
 
-[Classes Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/classes-validate.js) - Check if an element's class list includes certain expected classes
+[Classes Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/classes-validate.js) - Check if an element's class list includes certain expected classes
 
 [Element Computed Style(s) - Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validate-computed-style.js) - Validate a superset/subset of style for an element
 
