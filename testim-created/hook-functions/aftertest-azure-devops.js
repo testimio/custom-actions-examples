@@ -33,6 +33,7 @@
  *  Version
  *      1.1.0 - Added Result URL to comments/history
  *      1.1.1 - Added Result URL to work item's "Links"
+ *      1.2.0 - Refactored for better readability and logic flow
  * 
  *  Base Step
  *      Custom CLI Action
@@ -64,17 +65,17 @@
  *
  **/
 
- const DEFAULT_BEARER_TOKEN = null;
- const DEFAULT_ORGANIZATION = null;
- const DEFAULT_PROJECT = null;
- const DEFAULT_VALIDATION_ONLY_MODE = 'false';
- 
- let WORKITEM_TESTIM_TAG = "TestimMade";
- let WORKITEM_ITERATION_PATH = null;
- let WORKITEM_AREA_PATH = null;
- let WORKITEM_PRIORITY = null;
- let WORKITEM_SEVERITY = null;
- 
+const DEFAULT_BEARER_TOKEN = null;
+const DEFAULT_ORGANIZATION = null;
+const DEFAULT_PROJECT = null;
+const DEFAULT_VALIDATION_ONLY_MODE = 'false';
+
+let WORKITEM_TESTIM_TAG = "TestimMade";
+let WORKITEM_ITERATION_PATH = null;
+let WORKITEM_AREA_PATH = null;
+let WORKITEM_PRIORITY = null;
+let WORKITEM_SEVERITY = null;
+
 let TEST_FAIL_WORKITEM_EXISTING_STATE = "Committed";
 let TEST_FAIL_WORKITEM_NEW_STATE = "New";
 let TEST_PASS_WORKITEM_STATE = "Done";
@@ -123,7 +124,7 @@ let workItemType = "Bug";
 let workItemTags = "";
 let testResultWorkItem = {};
 
-function afterTest(_stepData, _stepInternalData, workItemId) {
+function testResult_WorkItemJSON(_stepData, _stepInternalData, workItemId) {
 
     let bugTitle = (_stepData.testName !== "" ? _stepData.testName : 'NoName TestName') + " - "
         + ((typeof _stepInternalData.failureReason !== 'undefined') ? _stepInternalData.failureReason : "Passed");
@@ -134,26 +135,6 @@ function afterTest(_stepData, _stepInternalData, workItemId) {
     var result_id = ((typeof _stepInternalData.testResultId === 'undefined') ? null : _stepInternalData.testResultId);
     var result_url = (project_id === null || test_id === null || branch === null || result_id === null) ? null : "https://app.testim.io/#/project/" + project_id + "/branch/" + branch + "/test/" + test_id + "?result-id=" + result_id;
 
-    let comment = "<div>";
-    if (typeof _stepInternalData.failureReason !== 'undefined') {
-        comment = "<div>Test [" + _stepData.testName + "] - " + _stepInternalData.errorType + "</div><div>" + _stepInternalData.failureReason + "</div>";
-    } else {
-        comment = "<div>Test [" + _stepData.testName + "] - Passed</div>";
-    }
-    comment += "<br/><a target='_blank' href='" + result_url + "'>View Results</a></div>";
-
-    let reprosteps = "";
-    if (typeof _steps !== 'undefined' && _steps !== null) {
-        reprosteps = "<div><b>Steps</b></div>";
-        _steps.forEach((step) => {
-            let step_string = "";
-            step_string = "<div>Step " + step.stepNumber + ": " + step.name + "</div>";
-            reprosteps += step_string;
-        });
-        if (typeof _stepInternalData.failureReason !== 'undefined')
-            reprosteps += "<div>" + _stepInternalData.failureReason + "</div>";
-    }
-
     /* Create testResultWorkItem object for use in call to AzureDevOpsWorkItemCreateUpdate
      */
     testResultWorkItem = {};
@@ -163,9 +144,20 @@ function afterTest(_stepData, _stepInternalData, workItemId) {
 
     testResultWorkItem["type"] = "Bug";
     testResultWorkItem["title"] = bugTitle;
-    testResultWorkItem["history"] = comment;
-    testResultWorkItem["link"] = result_url;
 
+    /* HISTORY
+     */
+    let history_entry = "<div>";
+    if (typeof _stepInternalData.failureReason !== 'undefined') {
+        history_entry = "<div>Test [" + _stepData.testName + "] - " + _stepInternalData.errorType + "</div><div>" + _stepInternalData.failureReason + "</div>";
+    } else {
+        history_entry = "<div>Test [" + _stepData.testName + "] - Passed</div>";
+    }
+    history_entry += "<br/><a target='_blank' href='" + result_url + "'>View Results</a></div>";
+    testResultWorkItem["history"] = history_entry;
+
+    /* TAGS
+     */
     if (typeof (WORKITEM_TESTIM_TAG) !== 'undefined' && WORKITEM_TESTIM_TAG !== null)
         testResultWorkItem["tags"] = workItemTags + ((workItemTags === "") ? "" : ", ") + WORKITEM_TESTIM_TAG;
 
@@ -176,6 +168,19 @@ function afterTest(_stepData, _stepInternalData, workItemId) {
                 : TEST_FAIL_WORKITEM_NEW_STATE
             : TEST_PASS_WORKITEM_STATE;
 
+    /* REPRO STEPS
+     */
+    let reprosteps = null;
+    if (typeof _steps !== 'undefined' && _steps !== null) {
+        reprosteps = "<div><b>Steps</b></div>";
+        _steps.forEach((step) => {
+            let step_string = "";
+            step_string = "<div>Step " + step.stepNumber + ": " + step.name + "</div>";
+            reprosteps += step_string;
+        });
+        if (typeof _stepInternalData.failureReason !== 'undefined')
+            reprosteps += "<div>" + _stepInternalData.failureReason + "</div>";
+    }
     if (typeof (reprosteps) !== 'undefined' && reprosteps !== null)
         testResultWorkItem["reprosteps"] = reprosteps;
 
@@ -186,160 +191,358 @@ function afterTest(_stepData, _stepInternalData, workItemId) {
     if (typeof (WORKITEM_ITERATION_PATH) !== 'undefined' && WORKITEM_ITERATION_PATH !== null) testResultWorkItem["iterationpath"] = WORKITEM_ITERATION_PATH;
     if (typeof (WORKITEM_AREA_PATH) !== 'undefined' && WORKITEM_AREA_PATH !== null) testResultWorkItem["areapath"] = WORKITEM_AREA_PATH;
 
-    console.log("testResultWorkItem", JSON.stringify(testResultWorkItem));
+    console.log("\ntestResult_WorkItemJSON => testResultWorkItem ==> \n\t" + JSON.stringify(testResultWorkItem));
+
     exportsTest.testResultWorkItem = testResultWorkItem;
+
+    return (testResultWorkItem);
+}
+
+function patchDocumentCreate(workItemInfoJSON) {
+
+    /* Create lookup for field types based on workItemInfoJSON keys or target fields
+    */
+    let field_type_lookup = {
+        "ID": "/fields/System.Id"
+        , "TYPE": "/fields/System.WorkItemType" // Used for routing, not work item itself
+        , "TITLE": "/fields/System.Title"
+        , "AREAPATH": "/fields/System.AreaPath"
+        , "ITERATIONPATH": "/fields/System.IterationPath"
+        , "DESCRIPTION": "/fields/System.Description"
+        , "HISTORY": "/fields/System.History"
+        , "TAGS": "/fields/System.Tags"
+        , "PRIORITY": "/fields/Microsoft.VSTS.Common.Priority"
+        , "SEVERITY": "/fields/Microsoft.VSTS.Common.Severity"
+        , "VALUEAREA": "/fields/Microsoft.VSTS.Common.ValueArea"
+        , "STATE": "/fields/System.State"
+        , "WORKITEMTYPE": "/fields/System.WorkItemType"
+        , "LINK": "/relations/-"
+        , "TESTLINK": "/relations/-"
+        , "RESULTLINK": "/relations/-"
+        , "DEPENDENCY": "/relations/-"
+        , "DEPENDENCYTYPE": ""
+        , "VALUEAREA": "/fields/Microsoft.VSTS.Common.ValueArea"
+        , "INTEGRATIONBUILD": "/fields/Microsoft.VSTS.Build.IntegrationBuild"
+        , "FOUNDIN": "/fields/Microsoft.VSTS.Build.FoundIn"
+        , "REPROSTEPS": "/fields/Microsoft.VSTS.TCM.ReproSteps"
+        , "ID": "/fields/System.Id"
+        , "TYPE": "/fields/System.WorkItemType"
+        , "STEPS": "/fields/Microsoft.VSTS.TCM.Steps"
+    };
+
+    let patch_document = [];
+    Object.keys(workItemInfoJSON).forEach(
+
+        function (key) {
+
+            if (typeof field_type_lookup[key.toUpperCase()] === 'undefined' || field_type_lookup[key.toUpperCase()] === null) {
+                console.log("field_type_lookup[" + key.toUpperCase() + " ] does not exist");
+                return;
+            }
+
+            switch (key.toUpperCase().replace(" ", "")) {
+
+                case "ID":
+                    workItemId = workItemInfoJSON[key];
+                    break;
+
+                case "TYPE":
+                    workItemType = workItemInfoJSON[key];
+                    break;
+
+                case "TITLE":
+                    patch_document.push({
+                        "op": "add",
+                        "path": field_type_lookup[key.toUpperCase()],
+                        "from": null,
+                        "value": workItemInfoJSON[key]
+                    });
+                    break;
+
+                case "VALUEAREA":
+                    patch_document.push({
+                        "op": "add",
+                        "path": field_type_lookup[key.toUpperCase()],
+                        "value": workItemInfoJSON[key]
+                    });
+                    break;
+
+                case "DEPENDENCY":
+                    patch_document.push({
+                        "op": "add",
+                        "path": field_type_lookup[key.toUpperCase()],
+                        "value": {
+                            "rel": (workItemType === 'Bug' ? "Microsoft.VSTS.Common.TestedBy-Forward" : "Microsoft.VSTS.Common.TestedBy-Reverse"),
+                            //"System.LinkTypes.Related", // "System.LinkTypes.Dependency-forward",
+                            "url": 'https://' + orgName + ".visualstudio.com/" + projectName + '/_apis/wit/workitems/' + workItemInfoJSON[key],
+                            "attributes": {
+                            }
+                        }
+                    });
+                    break;
+
+                case "LINK":
+                case "TESTLINK":
+                case "RESULTLINK":
+                    patch_document.push({
+                        "op": "add",
+                        "path": field_type_lookup[key.toUpperCase()],
+                        "value": {
+                            "rel": "Hyperlink",
+                            "url": workItemInfoJSON[key]
+                        }
+                    });
+                    break;
+
+                default:
+                    patch_document.push({
+                        "op": "add",
+                        "path": field_type_lookup[key.toUpperCase()],
+                        "value": workItemInfoJSON[key]
+                    });
+                    break;
+            }
+        }
+    );
+
+    return (patch_document);
+}
+
+async function makeRequest(apiUrl, requestMethod, contentType, requestBody) {
+
+    if (typeof requestMethod === 'undefined' || requestMethod === null)
+        requestMethod = "POST";
+    if (typeof requestBody === 'undefined' || requestBody === null)
+        requestBody = "";
+
+    // requestBody if an object must be stringified
+    if (typeof requestBody === 'object')
+        requestBody = JSON.stringify(requestBody);
+
+    let bearer_token = "Basic " + Buffer.from(":" + bearerToken).toString('base64');
+
+    var options = {
+        url: apiUrl
+        , method: requestMethod
+        , headers: {
+            "Authorization": bearer_token,
+            "content-type": contentType,
+            "Content-Length": requestBody.length
+        }
+        , body: requestBody
+        , pretend: false
+        , followAllRedirects: true
+    };
+
+    return new Promise((resolve, reject) => {
+
+        request(options, function (err, response, responseBody) {
+
+            exportsTest.lastResponse = response;
+            exportsTest.lastResponseBody = responseBody;
+
+            if (typeof err !== 'undefined' && err !== null) {
+                console.log(err);
+                reject(err);
+            }
+
+            if (response.statusCode != 200) {
+                console.log("response.statusCode = ", response.statusCode, "response.statusMessage = ", response.statusMessage);
+                reject("statusCode = " + response.statusCode + ", statusMessage = " + response.statusMessage + ", body = " + response.body);
+            }
+
+            resolve(responseBody);
+
+        });
+
+    })
 
 }
 
-return new Promise((resolve, reject) => {
+function AzureDevOpsWorkItemQuery(wiqlQuery, returnVariableName, orgName, projectName, bearerToken, validateOnly, resolve, reject) {
 
-    /* Find a work item (bug) that starts with this test's name
+    /* Validate Parameters
+     */
+    if (typeof bearerToken === 'undefined' || bearerToken === null)
+        bearerToken = DEFAULT_BEARER_TOKEN;
+    if (typeof bearerToken === 'undefined' || bearerToken === null)
+        throw new Error("bearerToken or DEFAULT_BEARER_TOKEN MUST be defined");
+
+    if (typeof orgName === 'undefined' || orgName === null)
+        orgName = DEFAULT_ORGANIZATION;
+    if (typeof orgName === 'undefined' || orgName === null)
+        throw new Error("orgName MUST be defined");
+
+    if (typeof projectName === 'undefined' || projectName === null)
+        projectName = DEFAULT_PROJECT;
+    if (typeof projectName === 'undefined' || projectName === null)
+        throw new Error("projectName MUST be defined");
+
+    if (typeof validateOnly === 'undefined' || validateOnly === null)
+        validateOnly = DEFAULT_VALIDATION_ONLY_MODE;
+
+    if (typeof wiqlQuery === 'undefined' || wiqlQuery === null)
+        throw new Error("wiqlQuery MUST be defined");
+
+    /* Return parameters
     */
+    let return_variable_name = 'workItems';
+    if (typeof returnVariableName !== 'undefined' && returnVariableName !== null)
+        return_variable_name = returnVariableName;
 
-    function AzureDevOpsWorkItemQuery(wiqlQuery, returnVariableName, orgName, projectName, bearerToken, validateOnly) {
+    exportsTest.wiqlResponse = null;
+    exportsTest[return_variable_name] = null;
 
-        /* Validate Parameters
-         */
-        if (typeof bearerToken === 'undefined' || bearerToken === null)
-            bearerToken = DEFAULT_BEARER_TOKEN;
-        if (typeof bearerToken === 'undefined' || bearerToken === null)
-            throw new Error("bearerToken or DEFAULT_BEARER_TOKEN MUST be defined");
 
-        if (typeof orgName === 'undefined' || orgName === null)
-            orgName = DEFAULT_ORGANIZATION;
-        if (typeof orgName === 'undefined' || orgName === null)
-            throw new Error("orgName MUST be defined");
+    async function makeRequest(apiUrl, requestMethod, contentType, requestBody) {
 
-        if (typeof projectName === 'undefined' || projectName === null)
-            projectName = DEFAULT_PROJECT;
-        if (typeof projectName === 'undefined' || projectName === null)
-            throw new Error("projectName MUST be defined");
+        if (typeof requestMethod === 'undefined' || requestMethod === null)
+            requestMethod = "POST";
+        if (typeof requestBody === 'undefined' || requestBody === null)
+            requestBody = "";
 
-        if (typeof validateOnly === 'undefined' || validateOnly === null)
-            validateOnly = DEFAULT_VALIDATION_ONLY_MODE;
+        // requestBody if an object must be stringified
+        if (typeof requestBody === 'object')
+            requestBody = JSON.stringify(requestBody);
 
-        if (typeof wiqlQuery === 'undefined' || wiqlQuery === null)
-            throw new Error("wiqlQuery MUST be defined");
+        let bearer_token = "Basic " + Buffer.from(":" + bearerToken).toString('base64');
 
-        /* Return parameters
-        */
-        let return_variable_name = 'workItems';
-        if (typeof returnVariableName !== 'undefined' && returnVariableName !== null)
-            return_variable_name = returnVariableName;
+        var options = {
+            url: apiUrl
+            , method: requestMethod
+            , headers: {
+                "Authorization": bearer_token,
+                "content-type": contentType,
+                "Content-Length": requestBody.length
+            }
+            , body: requestBody
+            , pretend: false
+            , followAllRedirects: true
+        };
 
-        exportsTest.wiqlResponse = null;
-        exportsTest[return_variable_name] = null;
+        await request(options, function (err, response, responseBody) {
+            if (typeof err !== 'undefined' && err !== null) {
+                console.log(err);
+                reject(err);
+            }
 
-        let wiqlQueryUrl = 'https://' + orgName + ".visualstudio.com/" + projectName + '/_apis/wit/wiql?api-version=6.0';
+            if (response.statusCode != 200) {
+                console.log("response.statusCode = ", response.statusCode, "response.statusMessage = ", response.statusMessage);
+                exportsTest.adoResponse = response;
+                reject("statusCode = " + response.statusCode + ", statusMessage = " + response.statusMessage + ", body = " + response.body);
+            }
 
-        async function makeRequest(apiUrl, requestMethod, contentType, requestBody) {
+            exportsTest.adoResponse = JSON.parse(responseBody);
+            exportsTest[return_variable_name] = exportsTest.adoResponse.workItems;
 
-            if (typeof requestMethod === 'undefined' || requestMethod === null)
-                requestMethod = "POST";
-            if (typeof requestBody === 'undefined' || requestBody === null)
-                requestBody = "";
+            let work_item_id;
+            if (typeof exportsTest.adoResponse.workItems !== 'undefined' && exportsTest.adoResponse.workItems.length > 0) {
+                work_item_id = exportsTest.adoResponse.workItems[0].id;
+            }
 
-            // requestBody if an object must be stringified
-            if (typeof requestBody === 'object')
-                requestBody = JSON.stringify(requestBody);
-
-            let bearer_token = "Basic " + Buffer.from(":" + bearerToken).toString('base64');
-
-            var options = {
-                url: apiUrl
-                , method: requestMethod
-                , headers: {
-                    "Authorization": bearer_token,
-                    "content-type": contentType,
-                    "Content-Length": requestBody.length
-                }
-                , body: requestBody
-                , pretend: false
-                , followAllRedirects: true
-            };
-
-            await request(options, function (err, response, responseBody) {
-                if (typeof err !== 'undefined' && err !== null) {
-                    console.log(err);
-                    reject(err);
-                }
-
-                if (response.statusCode != 200) {
-                    console.log("response.statusCode = ", response.statusCode, "response.statusMessage = ", response.statusMessage);
-                    exportsTest.adoResponse = response;
-                    reject("statusCode = " + response.statusCode + ", statusMessage = " + response.statusMessage + ", body = " + response.body);
-                }
-
-                exportsTest.adoResponse = JSON.parse(responseBody);
-                exportsTest[return_variable_name] = exportsTest.adoResponse.workItems;
-
-                let work_item_id;
-                if (typeof exportsTest.adoResponse.workItems !== 'undefined' && exportsTest.adoResponse.workItems.length > 0) {
-                    work_item_id = exportsTest.adoResponse.workItems[0].id;
-                }
-
-                resolve(work_item_id);
-            });
-
-        }
-        makeRequest(wiqlQueryUrl, "POST", "application/json", wiqlQuery);
+            resolve(work_item_id);
+        });
 
     }
 
-    let b_wiq = "Select [System.TeamProject], [System.Id], [System.Title], [System.State], [System.WorkItemType] From WorkItems Where [System.WorkItemType] = 'Bug' And [System.Title] Contains '"
-        + ((_stepData.testName !== "") ? _stepData.testName : 'unsaved untitled test')
-        + "'";
-    let wiqlQuery = { "query": b_wiq };
+    let wiqlQueryUrl = 'https://' + orgName + ".visualstudio.com/" + projectName + '/_apis/wit/wiql?api-version=6.0';
+    makeRequest(wiqlQueryUrl, "POST", "application/json", wiqlQuery);
 
-    AzureDevOpsWorkItemQuery(wiqlQuery, return_variable_name, orgName, projectName, bearerToken, validateOnly, resolve, reject);
+}
 
-}).then((workItemId) => {
+function AzureDevOpsWorkItemCreateUpdate(workItemInfoJSON, orgName, projectName, bearerToken, validateOnly, resolve, reject) {
 
-    /* Get work item information if existing workitem exists
+    /*
+    * Validate Parameters
+    */
+    if (typeof bearerToken === 'undefined' || bearerToken === null)
+        bearerToken = DEFAULT_BEARER_TOKEN;
+    if (typeof bearerToken === 'undefined' || bearerToken === null)
+        throw new Error("bearerToken or DEFAULT_BEARER_TOKEN MUST be defined");
+
+    if (typeof orgName === 'undefined' || orgName === null)
+        orgName = DEFAULT_ORGANIZATION;
+    if (typeof orgName === 'undefined' || orgName === null)
+        throw new Error("orgName MUST be defined");
+
+    if (typeof projectName === 'undefined' || projectName === null)
+        projectName = DEFAULT_PROJECT;
+    if (typeof projectName === 'undefined' || projectName === null)
+        throw new Error("projectName MUST be defined");
+
+    if (typeof validateOnly === 'undefined' || validateOnly === null)
+        validateOnly = DEFAULT_VALIDATION_ONLY_MODE;
+
+    if (typeof workItemInfoJSON === 'undefined' || workItemInfoJSON === null)
+        throw new Error("workItemInfoJSON MUST be defined");
+
+    workItemId = Number(workItemInfoJSON['id']);
+
+    /*
+     *  Validate fields
      */
+    let operation = (workItemInfoJSON.hasOwnProperty("title") === true && workItemInfoJSON['title'] === null || Number(workItemInfoJSON['id']) > 0) ? "UPDATE" : "NEW";
+    switch (operation) {
+        case "NEW":
+            if (workItemInfoJSON.hasOwnProperty("title") === false) {
+                throw new Error("New work items require a title to be defined");
+            }
+            if (workItemInfoJSON.hasOwnProperty("type") === false) {
+                throw new Error("New work items require a type to be defined");
+            }
+            break;
+        case "UPDATE":
+            if (workItemInfoJSON.hasOwnProperty("title") === true && workItemInfoJSON['title'] === null || workItemInfoJSON['title'] === '') {
+                throw new Error("Work items require a title to be non-null");
+            }
+            break;
+    }
 
-    if (typeof workItemId !== 'undefined' && workItemId > 0) {
-        return new Promise((resolve, reject) => {
+    /* 
+     * Set API URL based on orgName, projectName and workItemId being set
+     */
+    let apiUrl = '';
+    if (operation === "NEW") {
+        console.log("\nworkItemId undefined.  CREATE new work item");
+        apiUrl = 'https://' + orgName + ".visualstudio.com/" + projectName + '/_apis/wit/workitems/?Type=' + workItemType + '&validateOnly=' + validateOnly + '&bypassRules=true&suppressNotifications=true&api-version=6.0';
+    } else {
+        console.log("\nworkItemId defined.  UPDATE work item ", workItemId);
+        apiUrl = 'https://' + orgName + ".visualstudio.com/" + projectName + '/_apis/wit/workitems/' + workItemId + '?validateOnly=' + validateOnly + '&bypassRules=true&suppressNotifications=true&api-version=6.0';
+    }
+
+    let patch_document = patchDocumentCreate(workItemInfoJSON);
+    console.log("\AzureDevOpsWorkItemCreateUpdate PATCH DOCUMENT ==> \n\t" + JSON.stringify(patch_document));
+
+    return new Promise((resolve, reject) => {
+        if (typeof patch_document !== 'undefined' && patch_document !== null && patch_document.length > 0) {
+            makeRequest(apiUrl, "PATCH", "application/json-patch+json", patch_document)
+                .then((responseBody) => {
+                    resolve(responseBody);
+                })
+        }
+        else {
+            reject("No PATCH document defined");
+        }
+    }).then((responseBody) => {
+
+        resolve(responseBody);
+
+    });
+
+}
+
+function AzureDevOpsWorkItemGet(workItemId) {
+
+    return new Promise((resolve, reject) => {
+
+        /* Get work item information if existing workitem exists
+         */
+        if (typeof workItemId !== 'undefined' && workItemId > 0) {
 
             let wiQueryUrl = 'https://' + orgName + ".visualstudio.com/" + projectName + '/_apis/wit/workitems/' + workItemId + '?api-version=6.0';
+            makeRequest(wiQueryUrl, "GET", "application/json", "")
 
-            async function makeRequest(apiUrl, requestMethod, contentType, requestBody) {
-
-                if (typeof requestMethod === 'undefined' || requestMethod === null)
-                    requestMethod = "POST";
-                if (typeof requestBody === 'undefined' || requestBody === null)
-                    requestBody = "";
-
-                // requestBody if an object must be stringified
-                if (typeof requestBody === 'object')
-                    requestBody = JSON.stringify(requestBody);
-
-                let bearer_token = "Basic " + Buffer.from(":" + bearerToken).toString('base64');
-
-                var options = {
-                    url: apiUrl
-                    , method: requestMethod
-                    , headers: {
-                        "Authorization": bearer_token,
-                        "content-type": contentType,
-                        "Content-Length": requestBody.length
-                    }
-                    , body: requestBody
-                    , pretend: false
-                    , followAllRedirects: true
-                };
-
-                await request(options, function (err, response, responseBody) {
-                    if (typeof err !== 'undefined' && err !== null) {
-                        console.log(err);
-                        reject(err);
-                    }
-
-                    if (response.statusCode != 200) {
-                        console.log("response.statusCode = ", response.statusCode, "response.statusMessage = ", response.statusMessage);
-                        exportsTest.adoResponse = response;
-                        reject("statusCode = " + response.statusCode + ", statusMessage = " + response.statusMessage + ", body = " + response.body);
-                    }
+                .then((responseBody) => {
 
                     exportsTest.workItem = JSON.parse(responseBody);
                     exportsTest[return_variable_name] = exportsTest.workItem;
@@ -354,294 +557,53 @@ return new Promise((resolve, reject) => {
                     }
 
                     resolve(workItemId);
-                });
-
-            }
-            makeRequest(wiQueryUrl, "GET", "application/json", "");
-
-        });
-    }
-
-    return (workItemId);
-
-}).then((workItemId) => {
-
-    /* Prepare WorkItem New/Update Payload with Test Result Data
-    */
-
-    afterTest(_stepData, _stepInternalData, workItemId);
-
-    return (exportsTest.testResultWorkItem);
-
-}).then((workItemInfo) => {
-
-    /* WorkItem New/Update
-    */
-
-    return new Promise((resolve, reject) => {
-
-        function AzureDevOpsWorkItemCreateUpdate(workItemInfo, orgName, projectName, bearerToken, validateOnly) {
-
-            /*
-            * Validate Parameters
-            */
-            if (typeof bearerToken === 'undefined' || bearerToken === null)
-                bearerToken = DEFAULT_BEARER_TOKEN;
-            if (typeof bearerToken === 'undefined' || bearerToken === null)
-                throw new Error("bearerToken or DEFAULT_BEARER_TOKEN MUST be defined");
-
-            if (typeof orgName === 'undefined' || orgName === null)
-                orgName = DEFAULT_ORGANIZATION;
-            if (typeof orgName === 'undefined' || orgName === null)
-                throw new Error("orgName MUST be defined");
-
-            if (typeof projectName === 'undefined' || projectName === null)
-                projectName = DEFAULT_PROJECT;
-            if (typeof projectName === 'undefined' || projectName === null)
-                throw new Error("projectName MUST be defined");
-
-            if (typeof validateOnly === 'undefined' || validateOnly === null)
-                validateOnly = DEFAULT_VALIDATION_ONLY_MODE;
-
-            if (typeof workItemInfo === 'undefined' || workItemInfo === null)
-                throw new Error("workItemInfo MUST be defined");
-
-            /* PATCH document from WorkItemInfo
-            */
-            function patchDocumentCreate(workItemInfo) {
-
-                /* Create lookup for field types based on workItemInfo keys or target fields
-                */
-                let field_type_lookup = {
-                    "ID": "/fields/System.Id"
-                    , "TYPE": "/fields/System.WorkItemType" // Used for routing, not work item itself
-                    , "TITLE": "/fields/System.Title"
-                    , "AREAPATH": "/fields/System.AreaPath"
-                    , "ITERATIONPATH": "/fields/System.IterationPath"
-                    , "DESCRIPTION": "/fields/System.Description"
-                    , "HISTORY": "/fields/System.History"
-                    , "TAGS": "/fields/System.Tags"
-                    , "PRIORITY": "/fields/Microsoft.VSTS.Common.Priority"
-                    , "SEVERITY": "/fields/Microsoft.VSTS.Common.Severity"
-                    , "VALUEAREA": "/fields/Microsoft.VSTS.Common.ValueArea"
-                    , "STATE": "/fields/System.State"
-                    , "WORKITEMTYPE": "/fields/System.WorkItemType"
-                    , "LINK": "/relations/-"
-                    , "TESTLINK": "/relations/-"
-                    , "RESULTLINK": "/relations/-"
-                    , "DEPENDENCY": "/relations/-"
-                    , "DEPENDENCYTYPE": ""
-                    , "VALUEAREA": "/fields/Microsoft.VSTS.Common.ValueArea"
-                    , "INTEGRATIONBUILD": "/fields/Microsoft.VSTS.Build.IntegrationBuild"
-                    , "FOUNDIN": "/fields/Microsoft.VSTS.Build.FoundIn"
-                    , "REPROSTEPS": "/fields/Microsoft.VSTS.TCM.ReproSteps"
-                    , "ID": "/fields/System.Id"
-                    , "TYPE": "/fields/System.WorkItemType"
-                    , "STEPS": "/fields/Microsoft.VSTS.TCM.Steps"
-                };
-
-                let patch_document = [];
-                Object.keys(workItemInfo).forEach(
-
-                    function (key) {
-
-                        if (typeof field_type_lookup[key.toUpperCase()] === 'undefined' || field_type_lookup[key.toUpperCase()] === null) {
-                            console.log("field_type_lookup[" + key.toUpperCase() + " ] does not exist");
-                            return;
-                        }
-
-                        switch (key.toUpperCase().replace(" ", "")) {
-
-                            case "ID":
-                                workItemId = workItemInfo[key];
-                                break;
-
-                            case "TYPE":
-                                workItemType = workItemInfo[key];
-                                break;
-
-                            case "TITLE":
-                                patch_document.push({
-                                    "op": "add",
-                                    "path": field_type_lookup[key.toUpperCase()],
-                                    "from": null,
-                                    "value": workItemInfo[key]
-                                });
-                                break;
-
-                            case "VALUEAREA":
-                                patch_document.push({
-                                    "op": "add",
-                                    "path": field_type_lookup[key.toUpperCase()],
-                                    "value": workItemInfo[key]
-                                });
-                                break;
-
-                            case "DEPENDENCY":
-                                patch_document.push({
-                                    "op": "add",
-                                    "path": field_type_lookup[key.toUpperCase()],
-                                    "value": {
-                                        "rel": (workItemType === 'Bug' ? "Microsoft.VSTS.Common.TestedBy-Forward" : "Microsoft.VSTS.Common.TestedBy-Reverse"),
-                                        //"System.LinkTypes.Related", // "System.LinkTypes.Dependency-forward",
-                                        "url": 'https://' + orgName + ".visualstudio.com/" + projectName + '/_apis/wit/workitems/' + workItemInfo[key],
-                                        "attributes": {
-                                        }
-                                    }
-                                });
-                                break;
-
-                            case "LINK":
-                            case "TESTLINK":
-                            case "RESULTLINK":
-                                patch_document.push({
-                                    "op": "add",
-                                    "path": field_type_lookup[key.toUpperCase()],
-                                    "value": {
-                                        "rel": "Hyperlink",
-                                        "url": workItemInfo[key]
-                                    }
-                                });
-                                break;
-
-                            default:
-                                patch_document.push({
-                                    "op": "add",
-                                    "path": field_type_lookup[key.toUpperCase()],
-                                    "value": workItemInfo[key]
-                                });
-                                break;
-                        }
-                    }
-                );
-
-                return (patch_document);
-            }
-
-            let work_item_constructs = [];
-            if (!Array.isArray(workItemInfo)) {
-                work_item_constructs.push(workItemInfo);
-            }
-            else {
-                work_item_constructs = [...workItemInfo];
-            }
-
-            let requestCount = 0;
-            let requestsProcessed = 0;
-            async function makeRequest(apiUrl, requestMethod, contentType, requestBody) {
-
-                if (typeof requestMethod === 'undefined' || requestMethod === null)
-                    requestMethod = "POST";
-                if (typeof requestBody === 'undefined' || requestBody === null)
-                    requestBody = "";
-
-                // requestBody if an object must be stringified
-                if (typeof requestBody === 'object')
-                    requestBody = JSON.stringify(requestBody);
-
-                let bearer_token = "Basic " + Buffer.from(":" + bearerToken).toString('base64');
-
-                var options = {
-                    url: apiUrl
-                    , method: requestMethod
-                    , headers: {
-                        "Authorization": bearer_token,
-                        "content-type": contentType,
-                        "Content-Length": requestBody.length
-                    }
-                    , body: requestBody
-                    , pretend: false
-                    , followAllRedirects: true
-                };
-
-                await request(options, function (err, response, responseBody) {
-
-                    requestsProcessed += 1;
-
-                    if (typeof err !== 'undefined' && err !== null) {
-                        console.log(err);
-                        reject("err = " + err);
-                    }
-
-                    if (response.statusCode > 200) {
-                        console.log("response.statusCode = ", response.statusCode, "response.statusMessage = ", response.statusMessage);
-                        exportsTest.adoResponse = response;
-                        reject("statusCode = " + response.statusCode + ", statusMessage = " + response.statusMessage + ", body = " + response.body);
-                    }
-
-                    exportsTest.adoResponse = JSON.parse(responseBody);
-
-                    if (typeof exportsTest.adoResponse.id !== 'undefined') {
-                        exportsTest.workItemId = exportsTest.adoResponse.id;
-                    }
-
-                    // Only resolve if this was the last instruction
-                    //
-                    if (requestCount === requestsProcessed)
-                        resolve();
-
-                });
-
-            }
-
-            requestCount = work_item_constructs.length;
-            requestsProcessed = 0;
-            work_item_constructs.forEach(
-
-                function (work_item_construct, index) {
-
-                    workItemId = Number(work_item_construct['id']);
-                    currentWorkItemIndex = index;
-
-                    /*
-                     *  Validate fields as required
-                     */
-                    let operation = (work_item_construct.hasOwnProperty("title") === true && work_item_construct['title'] === null || Number(work_item_construct['id']) > 0) ? "UPDATE" : "NEW";
-                    switch (operation) {
-                        case "NEW":
-                            if (work_item_construct.hasOwnProperty("title") === false) {
-                                throw new Error("New work items require a title to be defined");
-                            }
-                            if (work_item_construct.hasOwnProperty("type") === false) {
-                                throw new Error("New work items require a type to be defined");
-                            }
-                            break;
-                        case "UPDATE":
-                            if (work_item_construct.hasOwnProperty("title") === true && work_item_construct['title'] === null || work_item_construct['title'] === '') {
-                                throw new Error("Work items require a title to be non-null");
-                            }
-                            break;
-                    }
-
-                    /* 
-                        *  Set API URL based on orgName, projectName and workItemId being set
-                        */
-                    let apiUrl = '';
-                    if (operation === "NEW") {
-                        console.log("workItemId undefined.  CREATE new work item");
-                        apiUrl = 'https://' + orgName + ".visualstudio.com/" + projectName + '/_apis/wit/workitems/?Type=' + workItemType + '&validateOnly=' + validateOnly + '&bypassRules=true&suppressNotifications=true&api-version=6.0';
-                    } else {
-                        console.log("workItemId defined.  UPDATE work item ", workItemId);
-                        apiUrl = 'https://' + orgName + ".visualstudio.com/" + projectName + '/_apis/wit/workitems/' + workItemId + '?validateOnly=' + validateOnly + '&bypassRules=true&suppressNotifications=true&api-version=6.0';
-                    }
-
-                    let patch_document = patchDocumentCreate(work_item_construct);
-                    console.log("    patch_document = ", JSON.stringify(patch_document));
-
-                    if (typeof patch_document !== 'undefined' && patch_document !== null && patch_document.length > 0) {
-                        makeRequest(apiUrl, "PATCH", "application/json-patch+json", patch_document);
-                    }
 
                 });
 
         }
-        if (typeof workItemInfo !== 'undefined' && workItemInfo !== null) {
-            AzureDevOpsWorkItemCreateUpdate(workItemInfo, orgName, projectName, bearerToken, validateOnly);
+        else {
+
+            resolve(null);
+
         }
+
     });
 
-}).then(() => {
+}
 
-    console.log("exportsTest.adoResponse ==> " + JSON.stringify(exportsTest.adoResponse));
+return new Promise((resolve, reject) => {
 
-});
+    /* Find a work item (bug) that starts with this test's name
+    */
+    let wiql = "Select [System.TeamProject], [System.Id], [System.Title], [System.State], [System.WorkItemType] "
+        + "From WorkItems "
+        + "Where [System.WorkItemType] = 'Bug' "
+        + "And [System.Title] Contains '" + ((_stepData.testName !== "") ? _stepData.testName + "'" : "unsaved untitled test'")
+        ;
+
+    AzureDevOpsWorkItemQuery({ "query": wiql }, return_variable_name, orgName, projectName, bearerToken, validateOnly, resolve, reject);
+    // AzureDevOpsWorkItemQuery returns workItemId
+
+})
+    .then((workItemId) => {
+
+        /* Prepare WorkItem New/Update Payload with Test Result Data
+         */
+        let workItemInfoJSON = testResult_WorkItemJSON(_stepData, _stepInternalData, workItemId);
+        return (workItemInfoJSON);
+
+    }).then((workItemInfoJSON) => {
+
+        /* Create/Update WorkItem 
+         */
+        if (typeof workItemInfoJSON !== 'undefined' && workItemInfoJSON !== null) {
+            return new Promise((resolve, reject) => {
+                AzureDevOpsWorkItemCreateUpdate(workItemInfoJSON, orgName, projectName, bearerToken, validateOnly, resolve, reject);
+            });
+        }
+
+    }).then(() => {
+
+        console.log("\nAzureDevOpsWorkItemCreateUpdate RESPONSE ==> \n\t" + JSON.stringify(exportsTest.adoResponse));
+
+    });
