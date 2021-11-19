@@ -36,7 +36,7 @@ var test_name = _stepData.testName;
 var test_data = (typeof _test_data !== 'undefined') ? _test_data : null;
 var test_transactions = (typeof transactions !== 'undefined') ? transactions : null;
 var network_request_stats = (typeof networkRequestStats !== 'undefined') ? networkRequestStats : null;
-var test_status_details = ((typeof _stepInternalData.failureReason === 'undefined') ? null : _stepInternalData.failureReason.replaceAll("'", "''"));
+var test_status_details = ((typeof _stepInternalData.failureReason === 'undefined') ? null : _stepInternalData.failureReason.replace(/\'/g, "''"));
 
 var project_id = ((typeof _stepInternalData.projectId === 'undefined') ? null : _stepInternalData.projectId);
 var test_id = ((typeof _stepInternalData.testId === 'undefined') ? null : _stepInternalData.testId);

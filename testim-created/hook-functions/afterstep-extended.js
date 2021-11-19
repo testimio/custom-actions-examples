@@ -29,6 +29,26 @@
 
 //console.log("TEST LEVEL - AfterStep");
 
+function tryParseJSONObject (jsonString)
+{
+    try {
+        let o = JSON.parse(jsonString);
+
+        // Handle non-exception-throwing cases:
+        // Neither JSON.parse(false) or JSON.parse(1234) throw errors, hence the type-checking,
+        // but... JSON.parse(null) returns null, and typeof null === "object", 
+        // so we must check for that, too. Thankfully, null is falsey, so this suffices:
+        if (o && typeof o === "object") {
+            return o;
+        }
+    }
+    catch (e) { 
+        console.log(e);
+    }
+
+    return null;
+}
+
 // eslint-disable-next-line no-shadow-restricted-names
 function testimVariablesGet(arguments) {
 
@@ -102,7 +122,7 @@ function testimVariablesGet(arguments) {
     let keys = Object.keys(sessionStorage);
     for (let key of keys) {
 
-        let session_storage = JSON.parse(sessionStorage[key]);
+        let session_storage = tryParseJSONObject(sessionStorage[key]);
         let session_result = session_storage.result;
         if (typeof session_result !== 'undefined' && session_result !== null) {
 
@@ -134,12 +154,6 @@ function testimVariablesGet(arguments) {
         }
     }
 
-    exportsTest.testVariablesDefined = Object.keys(_test_variables);
-    exportsTest.testVariablesWithValues = _test_variables;
-
-    //console.log("Test Variables Defined => ", JSON.stringify(exportsTest.testVariablesDefined, null, 2));
-    //console.log("Test Variables With Values => ", JSON.stringify(exportsTest.testVariablesWithValues, null, 2));
-
     return _test_variables;
 
 }
@@ -162,10 +176,9 @@ step['page'] = window?.location.href;
 step['pathname'] = window?.location.pathname;
 step['protocol'] = window?.location.protocol;
 
-step['testdata'] = testimVariablesGet(arguments);
-
-
-exportsTest._test_data = step['testdata'];
+let testdata = testimVariablesGet(arguments);
+exportsTest._test_data = testdata;
+step['testdata'] = testdata;
 
 exportsTest._steps.push(step);
 
