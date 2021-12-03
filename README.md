@@ -17,7 +17,7 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [After Test Hook - SQL Server (Hook Function)](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/hook-functions/aftertest-sqlserver.js) - Collect test results gathered during a test run and insert into a SQL Server database table
 
-[Network Validate Request](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/network-validate-requests.js) - Validate that a network request returns the proper status and/or is not slower than maxDuration (ms).
+[Network Performance Summary](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/performance-testing/network-performance-summary.js) - Creates a summary of network requests with min/max/avg duration and request size that can be included in the test report. 
 
 <br/>
 
@@ -49,7 +49,7 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Link Checker](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/link-checker.js) (CLI) - Finds links at the given URL and validates that they are working. 
 
-[Network Validate Request](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/network-validate.js) - Validate that a network request returns the proper status and/or is not slower than maxDuration (ms).
+[Network Validate Request](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/network-validate-requests.js) - Validate that a network request returns the proper status and/or is not slower than maxDuration (ms).
 
 [Numeric Expression Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/numeric-expression-validate.js) - Validate a value using numeric expressions ">", ">=", "==", "<", "<=".
 
@@ -70,6 +70,8 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 [SQL Server Query](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/database-apis/sqlserver-query.js) - Execute a SQL Server Query and return results
 
 [SQL Server - Results Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/database-apis/sqlserver-validate-results.js) - Execute a SQL Server query, validate and return results
+
+[JSONDBFS Query](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/database-apis/jsfsdb-query.js) - Read/write data from/to local json files on disk using NoSQL query syntax.
 
 <br/>
 
