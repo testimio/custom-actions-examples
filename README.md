@@ -29,8 +29,6 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Element Computed Style(s) - Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validate-computed-style.js) - Validate a superset/subset of style for an element
 
-[Set Text (Redacted)](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/text-set-redacted.js) -  Redacts a field and then sets its text
-
 <br/>
 
 [**Data Generation and Redaction**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/)
@@ -40,6 +38,8 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 [Generate Faked Data](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/generate-faked-data.js) (faker.js) - Uses the faker.js library to create fake test data. 
 
 [Redact data](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/redact-data.js) - This custom step creates an overlay element to prevent screenshot capture of private data.
+
+[Set Text (Redacted)](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/text-set-redacted.js) -  Redacts a field and then sets its text
 
 <br/>
 
