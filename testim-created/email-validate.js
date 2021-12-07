@@ -1,18 +1,21 @@
 /**
  *  Email Validate
  * 
- *    Process email inbox and validate/parse last message in for subject/body and regex to pull data
+ *    Process email inbox and validate/parse last message in for subject/body/links and regex to pull data
  * 
  *  Parameters
  * 
- *    expectedSubject (JS) : 
- *    expectedMessage (JS) : 
- *    emailExipirationSeconds (JS) : 
- *    codeRegex (JS) : Regular expression string to extract verification code or other data from email
+ *    expectedSubject (JS) [optional] : 
+ *    expectedMessage (JS) [optional] : 
+ *    emailExipirationSeconds (JS) [optional] : 
+ *    codeRegex (JS) [optional] : Regular expression string to extract verification code or other data from email
+ *    targetLinkText (JS) [optional] : Optionally match text in link for specifying specific links in an email
+ * 	  matchType (JS) [optional] : Text match type when searching for text in links
  * 
  *  Returns
  * 
  *    emailCode - OTP or other data based on codeRegex
+ *    emailLinks - array of links found in the email
  * 
  *  Disclaimer
  * 
@@ -31,6 +34,8 @@
  *        expectedMessage (JS)  
  *        emailExipirationSeconds (JS)  
  *        codeRegex (JS)  
+ *        targetLinkText (JS)  
+ *        matchType (JS)  
  *    Set the new email validation step's function body to this javascript
  *    Exit the step editor
  *    Share the step if not already done so
@@ -38,7 +43,9 @@
  *    Bob's your uncle
  */
 
-/* globals messages, emailAddress, emailExipirationSeconds, expectedSubject, expectedMessage, codeRegex */
+/* globals messages, emailAddress, emailExipirationSeconds, expectedSubject, expectedMessage, codeRegex, DOMParser, targetLinkText, matchType */
+
+let verbose = false;
 
 /* Check that we have emails to validate
  */
@@ -91,7 +98,7 @@ if (typeof expectedSubject !== 'undefined' && expectedSubject !== null) {
 /* VALIDATE EMAIL BODY contains the expected text expectedMessage
  */
 
-let emailText =  "";
+let emailText = "";
 
 if (typeof expectedMessage !== 'undefined' && expectedMessage !== null) {
   emailText = messages[id].html.replace(/ {2}|\r\n|\n|\r/gm, "");
@@ -109,4 +116,45 @@ if (matches !== null) {
   code = code.replace(" ", "").replace(".", "");
   console.log("Onetime use code = " + code);
   exportsTest["emailCode"] = code;
+}
+
+ /* Convenience functions used for matching
+  */
+ const stringMatch = {};
+ stringMatch['exact'] = function (str1, str2) { return (str1 === str2); };
+ stringMatch['startswith'] = function (str1, str2) { return str1.startsWith(str2); };
+ stringMatch['endswith'] = function (str1, str2) { return str1.endsWith(str2); };
+ stringMatch['includes'] = function (str1, str2) { return str1.includes(str2); };
+ stringMatch['contains'] = function (str1, str2) { return str1.includes(str2); };
+
+let matchtype = "exact";
+if (typeof matchType !== 'undefined' && matchType !== null) {
+    matchtype = matchType;
+}
+
+/* Search for and return any links found in the email
+ */
+let target_link_text = null; 
+if (typeof target_link_text !== 'undefined' && target_link_text !== null)
+    target_link_text = targetLinkText;
+
+let parser = new DOMParser();
+let doc = parser.parseFromString(messages[id].html, "text/html");
+let linksElements = Array.from(doc.querySelectorAll("a"));
+if (verbose)
+  console.log("linksElements", linksElements);
+
+exportsTest.emailLinks = [];
+if (linksElements !== null) {
+  linksElements.map(linkElement => ({ text: linkElement.innerText, link: linkElement.getAttribute("href") }));
+
+  for (let i = 0; i < linksElements.length; i++) {
+    if (target_link_text === null || stringMatch[matchtype](linksElements[i].text, target_link_text)) {
+      let link = linksElements[i].getAttribute("href");
+      if (verbose) {
+        console.log("Found link", link);
+      }
+      exportsTest.emailLinks.push(link);
+    }
+  }
 }
