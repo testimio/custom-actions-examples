@@ -59,6 +59,8 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [isVisible](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/is-visible.js) - Vaildate that an element is visible
 
+[isPlaying](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/is-playing.js) - Validate that a video/media element is currently playing video (or not)
+
 <br/>
 
 [**Database Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/database-apis/)
