@@ -37,6 +37,8 @@ This is an CLI action step in testim.io so make sure the agent is running
  in another terminal window if running locally. Command to run is as follows:
 
  npm i -g @testim/testim-cli && testim connect
+ 
+ NOTE code here is AS-IS and you are own your own in terms of support.
 
  save your changes and run!
 */
@@ -62,12 +64,9 @@ console.log('File name is ' +filename);
 let zip = new AdmZip(filename);
 zipEntries = zip.getEntries();   
 
-//fileArray.forEach(file => console.log('File in parameter is ' +file));
 // zip entries is an object so to compare files there is only need for the file name 
 // get file name and load into new array
 zipEntries.forEach(file => newArray.push(file.name)); 
-
-//console.log('new Array ' +newArray);
 
 // perform valiation loop over array of extracted files
 for (let i=0; i<= newArray.length; i++) {
@@ -85,6 +84,7 @@ for (let i=0; i<= newArray.length; i++) {
 }
 
 // print out file content which could be used for validation of what is in a file as well expectedFileContent
+// if there is a need to loop all files uncomment 
 
 /*
 for (let i=0; i<= zipEntries.length; i++ ) {
@@ -126,7 +126,7 @@ if (mySecondFileContent = expectedFileContent[1]) {
 
 
 
-// validate the results array and check if there are any false entries if so throw and error and fail the step 
+// validate the results array and check if there are any false entries if so throw an error and fail the step 
 // in testim.io 
 
 console.log(results);
