@@ -31,14 +31,14 @@
  * 
  *          If including screenshots then one of the following is required:
  * 
- *              testimToken [optional] : CLI token for project to get screenshots accessToken.  
- *                               Can be retrieved from Project Settings => CLI
+ *              testimToken [optional] : Token used to get screenshots.  
+ *                                  Can be retrieved from Project Settings => CLI example
  * 
- *              accessToken [optional] : Temp token for accessing results API 
- *                                  Can be gotten by parsing the URL from the Download Screenshots step menu item
+ *              accessToken [optional] : Token used get screenshots.  
+ *                                  Can be retrieved by parsing the URL from the Download Screenshots step menu item
  * 
- *              accessTokenURL [optional] : URL containing accessToken for accessing results API 
- *                                  Can be gotten by copying the entire URL from the Download Screenshots step menu item
+ *              accessTokenURL [optional] : URL containing accessToken to get screenshots.
+ *                                  Can be retrieved by copying the entire URL from the Download Screenshots step menu item
 
  *      includeTestData [optional]  : true/false (default = false) - If available, test variables as of end of test will be included in report
  * 
