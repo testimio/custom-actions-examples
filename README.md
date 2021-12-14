@@ -25,7 +25,11 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Classes Get](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/classes-get.js) - Get an element's class list as a string array
 
-[Element Computed Style(s) - Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validate-computed-style.js) - Validate a superset/subset of style for an element
+[Element(ByText) - Click](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/element-bytext-click.js) - Find an element by Text and click it
+
+[Element(ByXPath) - Click](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/element-byxpath-click.js) - Find an element by XPath and click it
+
+[Element(ByCSS) - Click](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/element-bycss-click.js) - Find an element by CSS and click it
 
 [Element Neighbor Click/Select](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/element-neighbor-click.js) - Find an element by AI/Text/XPath or CSS and optionally a neighboring element based on xpath or relative position
 
@@ -62,6 +66,8 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 [isPlaying](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/is-playing.js) - Validate that a video/media element is currently playing video (or not)
 
 [hasClass](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/has-class.js) - Check if an element's class list includes certain expected classes
+
+[Element Computed Style(s) - Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validate-computed-style.js) - Validate a superset/subset of style for an element
 
 <br/>
 
