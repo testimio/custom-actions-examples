@@ -43,7 +43,7 @@
  */
 
 /* eslint-disable camelcase */
-/* globals selectedState, maxOffset, stepDelta, matchType, elementLocator, document, contextElement, targetElementTypes, XPathResult, MouseEvent, ignoredElementTypes, relativeElementLocator */
+/* globals selectedState, maxOffset, stepDelta, elementLocator, document, contextElement, targetElementTypes, XPathResult, MouseEvent, ignoredElementTypes, relativeElementLocator */
 
 /* Define target element types for location based searches (siblingFindByDirection)
  */
@@ -128,19 +128,6 @@ function siblingFindByDirection(element, relativeElementLocator) {
 
     if (highlight_elements && highlight_starting_element)
         element.style.border = "1px solid blue";
-
-    /* Convenience functions used for matching
-    */
-    const stringMatch = {};
-    stringMatch['exact'] = function (str1, str2) { return (str1 === str2); };
-    stringMatch['startswith'] = function (str1, str2) { return str1.startsWith(str2); };
-    stringMatch['endswith'] = function (str1, str2) { return str1.endsWith(str2); };
-    stringMatch['includes'] = function (str1, str2) { return str1.includes(str2); };
-    stringMatch['contains'] = function (str1, str2) { return str1.includes(str2); };
-
-    let match_type = "includes";
-    if (typeof matchType !== 'undefined' && matchType === null)
-        match_type = matchType;
 
     let done_searching = false;
     let max_steps = 500;
@@ -231,9 +218,7 @@ function siblingFindByDirection(element, relativeElementLocator) {
 
                 if (verbose)
                     console.log("sibling_element.innerText.toLowerCase()", sibling_element.innerText.toLowerCase(), relativeElementLocator.toLowerCase());
-                if (typeof relativeElementLocator === 'string' && !stringMatch[match_type](sibling_element.innerText.toLowerCase(), relativeElementLocator.toLowerCase())) {
-                    sibling_element = null;
-                }
+
             }
             catch {
                 //sibling_element = null;
