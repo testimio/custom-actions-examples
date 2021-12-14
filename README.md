@@ -27,6 +27,8 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Element Computed Style(s) - Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validate-computed-style.js) - Validate a superset/subset of style for an element
 
+[Element Neighbor Click/Select](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/element-neighbor-click.js) - Find an element by AI/Text/XPath or CSS and optionally a neighboring element based on xpath or relative position
+
 <br/>
 
 [**Data Generation and Redaction**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/)
