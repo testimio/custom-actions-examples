@@ -99,7 +99,7 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [**PDF Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/pdf/)
 
-[PDF - Download-Process-Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/pdf/file-download-processing/pdf-process-validate.js) - Download, parse and optionally validate a PDF document
+[PDF - Download-Process-Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/pdf/pdf-process-validate.js) - Download, parse and optionally validate a PDF document
 
 [PDF - Fields/Texts Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/pdf/pdf-fields-textblocks-validate.js) - Validates text blocks and fields using pdfDocumentTexts and pdfDocumentFields from "Download-Process-Validate PDF" step
 
