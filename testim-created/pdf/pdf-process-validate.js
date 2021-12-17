@@ -1,7 +1,7 @@
 /**
- * Download-Process-Validate PDF 
+ *  Process-Validate PDF 
  *      
- *      Download, parse and validate a PDF document
+ *      Download, parse and optionally validate a PDF document
  *      The sister step "Validate PDF Fields/Texts" can be used after this to do different validation(s) for tracking purposes
  * 
  *  Parameters
@@ -15,7 +15,7 @@
  *                                    4           Page 1-4
  *                                    <unset>     All pages
  *      pdf2json (NPM) - pdf2json NPM Package
- *      clipboardy (NPM) - clipboardy NPM Package
+ *      clipboardy (NPM) - clipboardy NPM Package (Version  2.3.0)
  * 
  *  Output (The following test level variables will be created on successful execution of this step)
  *      pdfActualFieldValues : actual values that can be used as expected values (baseline)
@@ -37,7 +37,7 @@
  *          fieldsToValidate (JS) 
  *          pages (JS) 
  *          pdf2json (NPM) and set its value = pdf2json @ latest 
- *          clipboardy (NPM) and set its value = clipboardy @ latest 
+ *          clipboardy (NPM) and set its value = clipboardy @ 2.3.0 
  *      Set the new custom action's function body to this javascript
  *      Set connection information
  *      Exit the step editor
@@ -47,15 +47,63 @@
  */
 
 // Used for debugging.  Enable/disable writing interim data to the console
-let verbose = true;
+let verbose = false;
+
+// let fileName = "C:\\Users\\barry\\OneDrive\\Projects\\nginx-1.16.1\\html\\OoPdfFormExample.pdf";
+
 const LINE_TEXTBLOCK_SEPARTOR_TOKEN = " ==> ";
 
-let pdfParser = new pdf2json();
+let pdfParser;
+if (typeof pdf2json !== 'undefined' && pdf2json !== null) {
+    pdfParser = new pdf2json();
+}
+else {
+    pdfParser = require("pdf2json");
+}
+
+let _clipboardy;
+if (typeof clipboardy !== 'undefined' && clipboardy !== null) {
+    _clipboardy = clipboardy;
+}
+else {
+    _clipboardy = require("clipboardy");
+}
+
+const fs = require('fs')
 
 var pdfDocumentFields = [];
 var pdfDocumentTexts = [];
 var pdfDocumentTextLines = [];
-var pdfExpectedFieldValues = [];
+var pdfActualFieldValues = [];
+
+function TargetPage_IndexesGet(pdfData) {
+
+    let max_pages = pdfData.Pages.length;
+    let target_pages = [];
+    if (typeof pages === 'undefined' || pages === null) {
+        for (let i = 1; i <= max_pages; i++)
+            target_pages.push(parseInt(i));
+    }
+    else if (parseInt(pages) === pages) {
+        pages = (pages > max_pages) ? max_pages : pages;
+        for (let i = 1; i <= pages; i++)
+            target_pages.push(parseInt(i));
+    }
+    else {
+        pages.split(',').forEach((spec) => {
+            if (spec == Number(spec))
+                target_pages.push(parseInt(spec));
+            else if (spec.includes('-')) {
+                let min = spec.split('-')[0];
+                let max = spec.split('-')[1];
+                for (let i = min; i <= max; i++)
+                    target_pages.push(parseInt(i));
+            }
+        });
+    }
+    console.log('target_pages: ', target_pages);
+    return { max_pages, target_pages };
+}
 
 function pdfFieldValidate(searchToken, expectedValues) {
 
@@ -170,46 +218,16 @@ function pdfFieldValidate(searchToken, expectedValues) {
 
 return new Promise((resolve, reject) => {
 
-    console.log("new Promise");
-
     pdfParser.on("pdfParser_dataError", errData => {
         console.log("pdfParser_dataError");
         reject(errData.parserError);
     });
 
     pdfParser.on("pdfParser_dataReady", pdfData => {
-        console.log("pdfParser_dataReady");
-
-        // Store entire PDF doc into pdfData variable
-        //
-        exportsTest.pdfData = pdfData;
 
         if (verbose) console.log("pdfData.Pages.length", pdfData.Pages.length);
 
-        let max_pages = pdfData.Pages.length;
-        let target_pages = [];
-        if (typeof pages === 'undefined' || pages === null) {
-            for (let i = 1; i <= max_pages; i++)
-                target_pages.push(parseInt(i));
-        }
-        else if (parseInt(pages) === pages) {
-            pages = (pages > max_pages) ? max_pages : pages;
-            for (let i = 1; i <= pages; i++)
-                target_pages.push(parseInt(i));
-        }
-        else {
-            pages.split(',').forEach((spec) => {
-                if (spec == Number(spec))
-                    target_pages.push(parseInt(spec));
-                else if (spec.includes('-')) {
-                    let min = spec.split('-')[0];
-                    let max = spec.split('-')[1];
-                    for (let i = min; i <= max; i++)
-                        target_pages.push(parseInt(i));
-                }
-            });
-        }
-        console.log('target_pages: ', target_pages);
+        let { max_pages, target_pages } = TargetPage_IndexesGet(pdfData);
 
         // Store Texts, Fields in pdfDataTexts, pdfDataFields.  
         //    Note: PageNumber is the index into the arrays
@@ -218,7 +236,7 @@ return new Promise((resolve, reject) => {
         let current_line_number = 0;
         for (var i = 0; i < max_pages; i++) {
 
-            if (!target_pages.includes(i))
+            if (!target_pages.includes((i + 1)))
                 continue;
 
             let current_line_top_y = -1;
@@ -273,7 +291,7 @@ return new Promise((resolve, reject) => {
 
                         var expectedValue = {};
                         expectedValue["TextBlock"] = typeof (textblock.Value) !== 'undefined' ? textblock.Value : "";
-                        pdfExpectedFieldValues.push(expectedValue);
+                        pdfActualFieldValues.push(expectedValue);
 
                         return (typeof textblock.Value !== 'undefined' && textblock.Value !== null);
                     }
@@ -303,7 +321,7 @@ return new Promise((resolve, reject) => {
 
                         var expectedValue = {};
                         expectedValue[field.Id] = typeof (field.Value) !== 'undefined' ? field.Value : "";
-                        pdfExpectedFieldValues.push(expectedValue);
+                        pdfActualFieldValues.push(expectedValue);
 
                         return true;
                     }
@@ -329,6 +347,7 @@ return new Promise((resolve, reject) => {
 
             if (verbose)
                 console.log("pdfDocumentFields[0].forEach", pdfDocumentFields[0].length);
+
             pdfDocumentFields[0].forEach((field, index) => {
 
                 //if (field.Id !== "Given_Name_Text_Box")
@@ -361,26 +380,33 @@ return new Promise((resolve, reject) => {
 
         }
 
-        exportsTest.pdfDocumentFields = pdfDocumentFields;
-        exportsTest.pdfDocumentTexts = pdfDocumentTexts;
-        exportsTest.pdfExpectedFieldValues = pdfExpectedFieldValues;
-        exportsTest.pdfDocumentTextLines = pdfDocumentTextLines;
+        if (typeof exportsTest !== 'undefined' && exportsTest !== null) {
+            exportsTest.pdfDocumentFields = pdfDocumentFields;
+            exportsTest.pdfDocumentTexts = pdfDocumentTexts;
+            exportsTest.pdfActualFieldValues = pdfActualFieldValues;
+            exportsTest.pdfDocumentTextLines = pdfDocumentTextLines;
+        }
 
-        console.log("=======================================================");
-        console.log("============= PARSED FIELD/TEXT VALUES ===================");
-        console.log("=======================================================");
-        console.log("pdfExpectedFieldValues", JSON.stringify(pdfExpectedFieldValues, null, 2));
-        console.log("=======================================================");
+        if (verbose) {
+            console.log("=======================================================");
+            console.log("============ PARSED FIELD/TEXT COUNTS ==================");
+            console.log("=======================================================");
+            console.log("pdfDocumentFields    Pages:  " + pdfDocumentFields?.length, '  [0]: ' + pdfDocumentFields[0].length);
+            console.log("pdfDocumentTexts     Pages:  " + pdfDocumentTexts?.length, '  [0]: ' + pdfDocumentTexts[0].length);
+            console.log("pdfActualFieldValues Counts: " + pdfActualFieldValues?.length);
+            console.log("pdfDocumentTextLines Counts: " + pdfDocumentTextLines?.length);
+            console.log("=======================================================");
+        }
 
         // Save to clipboard
-        //clipboardy.writeSync(JSON.stringify(pdfExpectedFieldValues));
+        _clipboardy.writeSync(JSON.stringify(pdfActualFieldValues));
 
         //if (pdfDocumentFields.length > 0) {
         //    console.log("pdfDocumentFields", JSON.stringify(pdfDocumentFields, null, 2));
         //    console.log("=======================================================");
         //}
-        //console.log("============= pdfExpectedFieldValues ===================");
-        //console.log("pdfExpectedFieldValues", JSON.stringify(pdfExpectedFieldValues,null,2)); 
+        //console.log("============= pdfActualFieldValues ===================");
+        //console.log("pdfActualFieldValues", JSON.stringify(pdfActualFieldValues,null,2)); 
         //var line = 1;
         //pdfDocumentTextLines.forEach(function (field) { console.log("Line#" + line++ + "\t-> ", field); });
 
@@ -426,6 +452,13 @@ return new Promise((resolve, reject) => {
 
     });
 
-    pdfParser.parseBuffer(fileBuffer);
+    if (typeof fileBuffer !== 'undefined' && fileBuffer !== null) {
+        pdfParser.parseBuffer(fileBuffer);
+    }
+    else if (typeof fileName !== 'undefined' && fileName !== null) {
+        pdfParser.loadPDF(fileName);
+    }
 
 });
+
+
