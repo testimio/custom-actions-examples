@@ -56,6 +56,7 @@
  * Notes
  * 
  *      Required "AfterStep - Extended" hook function defined and set
+ *      This will only work if running a test from either the editor or CLI
  * 
  *  Base Step
  *      Custom CLI Action
