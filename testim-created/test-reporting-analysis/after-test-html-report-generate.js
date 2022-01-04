@@ -274,7 +274,7 @@ return new Promise((resolve, reject) => {
 
     let generatePdf = options?.generatePDF ?? false;
     let emailReport = options?.emailReport ?? false;
-    let openReport = options?.openReport ?? true;
+    let openReport = options?.openReport ?? false;
 
     let hiddenParams = options?.hiddenParamshiddenParams ?? DEFAULT_HIDDEN_PARAMS;
     let includeScreenShots = options?.includeScreenShots ?? false;
