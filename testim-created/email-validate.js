@@ -10,7 +10,7 @@
  *    emailExipirationSeconds (JS) [optional] : 
  *    codeRegex (JS) [optional] : Regular expression string to extract verification code or other data from email
  *    targetLinkText (JS) [optional] : Optionally match text in link for specifying specific links in an email
- * 	  matchType (JS) [optional] : Text match type when searching for text in links
+ * 	  matchType (JS) [optional] : Text match type when searching for text in links (Default: includes)
  * 
  *  Returns
  * 
@@ -127,7 +127,7 @@ if (matches !== null) {
  stringMatch['includes'] = function (str1, str2) { return str1.includes(str2); };
  stringMatch['contains'] = function (str1, str2) { return str1.includes(str2); };
 
-let matchtype = "exact";
+let matchtype = "includes";
 if (typeof matchType !== 'undefined' && matchType !== null) {
     matchtype = matchType;
 }
@@ -149,12 +149,13 @@ if (linksElements !== null) {
   linksElements.map(linkElement => ({ text: linkElement.innerText, link: linkElement.getAttribute("href") }));
 
   for (let i = 0; i < linksElements.length; i++) {
-    if (target_link_text === null || stringMatch[matchtype](linksElements[i].text, target_link_text)) {
+    if (target_link_text === null || stringMatch[matchtype](linksElements[i].text, target_link_text || stringMatch[matchtype](linksElements[i].getAttribute("href"), target_link_text))) {
       let link = linksElements[i].getAttribute("href");
       if (verbose) {
         console.log("Found link", link);
       }
-      exportsTest.emailLinks.push(link);
+      if (link !== "#")
+        exportsTest.emailLinks.push(link);
     }
   }
 }
