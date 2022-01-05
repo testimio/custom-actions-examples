@@ -172,7 +172,7 @@ return new Promise((resolve, reject) => {
     const DEFAULT_EMAIL_USER = undefined;
     const DEFAULT_EMAIL_PASS = undefined;
 
-    const DEFAULT_REPORT_DIRECTORY = ".\\TestimReports\\";
+    const DEFAULT_REPORT_DIRECTORY = process.cwd() + "\\TestimReports\\";
 
     const DEFAULT_PDF_OPTIONS = { format: 'A4', scale: 0.5 } // see https://www.npmjs.com/package/html-pdf-node
     const DEFAULT_REPORT_COLUMNS = ["StepNumber", "StepName", "StepType", "StepTime", "ElapsedTime", "Duration", "Status", "PageURL", "ScreenShot"];
