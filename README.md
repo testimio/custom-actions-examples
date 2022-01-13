@@ -35,7 +35,7 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Element Neighbor Click/Select](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/element-neighbor-click.js) - Find an element by AI/Text/XPath or CSS and optionally a neighboring element based on xpath or relative position
 
-[Element Select Text](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/element-neighbor-click.js) - Select text within an element based on index or substring matches
+[Element Select Text](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/element-select-text.js) - Select text within an element based on index or substring matches
 
 <br/>
 
