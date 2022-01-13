@@ -129,7 +129,9 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Popup Killer](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/popup-killer.js) - When you don't know when a popup modal will kill your test, use this to handle it.
 
-[Alert Override](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/alert-override.js) - Overrides the window.alert function to dispaly an alert as a popup div to enable validation of javascript alert
+[Alert Override](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/browser/alert-override.js) - Overrides the window.alert function to dispaly an alert as a popup div to enable validation of javascript alert
+
+[Open New Tab/Window](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/browser/open-new-tab-window.js) - Open a url in a new tab or window
 
 <br/>
 

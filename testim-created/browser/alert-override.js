@@ -43,7 +43,9 @@
  *
 **/
 
-/* globals timeout */
+/* eslint-disable no-unused-vars */
+/* eslint-disable camelcase */
+/* globals $, window, document, Promise, setTimeout, setInterval, timeout */
 
 (function (proxied) {
     window.alert = function () {
@@ -62,7 +64,7 @@ window.alert = function (actualAlert) {
     console.log(`Alert() called with message: ${actualAlert}`);
 
     let alert_html = '<span class="alertDivHelper"></span><div onclick="$(\'.alert_override_popup\').hide();" style="width: 400px; vertical-align: middle; ">'
-        + '<div style="width: 100%; height: 100%; border:0px solid black; padding: 2px; text-align: center; ">'
+        + '<div style="width: 100%; height: 100%; border:0px solid black; padding: 2px; text-align: center; vertical-align: middle; ">'
         + '<table>'
         + '<tr>'
         + '<td>'
@@ -89,7 +91,7 @@ window.alert = function (actualAlert) {
     div.innerHTML = alert_html;
 
     if (typeof timeout !== 'undefined' && timeout > 0) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             setTimeout(function () { $(".alert_override_popup").hide(); resolve(); }, timeout);
         });
     }
@@ -122,7 +124,7 @@ if (typeof _stepData === 'undefined') {
                 + `<br/><input type="button" onclick="$('.alert_override_popup').hide();" value="ok" />`
                 + '</div>';
             + '</div></div>';
-
+    
             let div = document.getElementById("alert_override_popup");
             if (div === null) {
                 let style = document.createElement('style');
@@ -138,7 +140,7 @@ if (typeof _stepData === 'undefined') {
             div.innerHTML = alert_html;
 
             if (typeof timeout !== 'undefined' && timeout > 0) {
-                return new Promise((resolve, reject) => {
+                return new Promise((resolve) => {
                     setTimeout(function () { $(".alert_override_popup").hide(); resolve(); }, timeout);
                 });
             }
