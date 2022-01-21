@@ -183,5 +183,5 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Shell Command Execute](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/shell-command-execute.js) - Runs a shell command and returns stdout
 
-
+[Java Executor](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/java/java-executor.js) - Execute a java method/function in a given jar file
 
