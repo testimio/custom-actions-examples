@@ -135,6 +135,8 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Open New Tab/Window](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/browser/open-new-tab-window.js) - Open a url in a new tab or window
 
+[Cookies Get](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/browser/cookies-get.js) - Get all cookies and return in currentCookies
+
 [Cookies Clear](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/browser/cookies-clear.js) - Clears all cookies 
 
 [Cookies Session Clear](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/browser/cookies-session-clear.js) - Clears all cookies, sessionStorage and localStorage
