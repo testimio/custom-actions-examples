@@ -150,7 +150,7 @@ return new Promise((resolve, reject) => {
     console.log("                                      HTML Report Create                                        ");
     console.log("================================================================================================");
 
-    let moduleNames = ["http", "https", "fs", "open", "nodemailer", "request", "process", "adm-zip", "html-pdf-node"];
+    let moduleNames = ["http", "https", "fs", "nodemailer", "request", "process", "adm-zip", "html-pdf-node"];
     function loadInstallModules(moduleNames) { const { exec } = require("child_process"); let modulesLoaded = []; function loadModule(moduleName, resolve, reject) { return new Promise(() => { let moduleNameVar = moduleName.replace(/\-/g, "_"); eval('try { ' + moduleNameVar + ' = (typeof ' + moduleNameVar + ' !== "undefined" && ' + moduleNameVar + ' !== null) ? ' + moduleNameVar + ' : require("' + moduleName + '"); if (moduleNameVar != null) modulesLoaded.push("' + moduleName + '"); } catch { console.log("Module: ' + moduleName + ' is not installed"); } '); if (!modulesLoaded.includes(moduleName)) { let command = "npm install " + moduleName; console.log("Run command: " + command); exec(command, (error, stdout, stderr) => { console.log("exec " + command); if (error) { console.log(`error: ${error.message}`); reject(`error: ${error.message}`); } if (stderr) { console.log(`stderr: ${stderr}`); reject(`stderr: ${stderr}`); } console.log(`stdout: ${stdout}`); resolve(`stdout: ${stdout}`); }); } else { console.log("Module " + moduleName + " is loaded."); resolve(); } }); } var promises = []; moduleNames.forEach((moduleName) => { promises.push(new Promise((resolve, reject) => { loadModule(moduleName, resolve, reject); })); }); return new Promise((resolve, reject) => { Promise.all(promises) .then(() => { console.log("Modules Loaded"); resolve(); }); }) }
     loadInstallModules(moduleNames);
 
@@ -274,7 +274,6 @@ return new Promise((resolve, reject) => {
 
     let generatePdf = options?.generatePDF ?? false;
     let emailReport = options?.emailReport ?? false;
-    let openReport = options?.openReport ?? false;
 
     let hiddenParams = options?.hiddenParamshiddenParams ?? DEFAULT_HIDDEN_PARAMS;
     let includeScreenShots = options?.includeScreenShots ?? false;
@@ -999,7 +998,7 @@ return new Promise((resolve, reject) => {
     }
 
     /*
-     * Retrieve report data from somewhere and generate/open/email report.
+     * Retrieve report data from somewhere and generate/email report.
      */
 
     function configureReportGenerator() {
@@ -1179,7 +1178,7 @@ return new Promise((resolve, reject) => {
 
                                 .then((data) => /* THEN Create PDF file */ {
 
-                                    let html_file = reportFileDirectory + reportData.reportFilename;
+                                    let html_file    = reportFileDirectory + reportData.reportFilename;
                                     let pdf_filepath = reportFileDirectory + reportData.reportFilename.replace('.html', '.pdf');
 
                                     return new Promise((resolve, reject) => {
@@ -1215,17 +1214,6 @@ return new Promise((resolve, reject) => {
 
                                         }
                                     });
-
-                                })
-                                .then((reportFile) => { /* THEN open generated report file */
-
-                                    console.log("openReport", openReport, reportFile);
-                                    if (openReport) {
-                                        if (verbose)
-                                            console.log("OPEN file://" + reportFile);
-                                        open("file://" + reportFile);
-                                    }
-                                    return (reportFile);
 
                                 })
                                 .then((reportFile) => { /* THEN email generated report file */
