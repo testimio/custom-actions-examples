@@ -47,7 +47,7 @@
 
 /* Define target element types for location based searches (siblingFindByDirection)
  */
-let target_element_types = ["DIV", "INPUT", "BUTTON"];
+let target_element_types = ["DIV", "INPUT", "BUTTON", "A"];
 if (typeof targetElementTypes !== 'undefined' && targetElementTypes !== null && targetElementTypes?.length > 0)
     target_element_types = targetElementTypes.map(e => e.toUpperCase());
 
