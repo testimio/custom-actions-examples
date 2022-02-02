@@ -117,7 +117,7 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Select Items/Options - Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validate-select-items.js) - Validate that expected items are in a list/select.
 
-[Select Items/Options Order - Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/select-order-validate.js) - Validates that the items in a list are sorted properly.
+[Select Items/Options Order - Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/select-list/select-list-items-order-validate.js) -  Validate the items (option/li/<custom>) from a (select/ol/ul/<custom>) element are sorted properly.
 
 <br/>
 
