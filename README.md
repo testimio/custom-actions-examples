@@ -73,6 +73,8 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Element Computed Style(s) - Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validate-computed-style.js) - Validate a superset/subset of style for an element
 
+[Validate Currency](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/validate-currency.js) - Vaildate that an element displays an expected value formatted as currency.
+
 <br/>
 
 [**Database Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/database-apis/)
@@ -121,7 +123,7 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 <br/>
 
-[**Debuging Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/hook-functions/)
+[**Debugging Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/hook-functions/)
 
 [Debug Popup](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/debug-popup.js) - Displays <message> in a modal popup window for debugging purposes
 
