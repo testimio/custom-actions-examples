@@ -89,8 +89,6 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [JSONDBFS Query](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/database-apis/jsfsdb-query.js) - Read/write data from/to local json files on disk using NoSQL query syntax.
 
-[API Request](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/database-apis/api-request.js) - Make an API call and return results to Testim.
-
 <br/>
 
 [**API**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/)
@@ -102,6 +100,8 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 [SOAP Request](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/database-apis/soap-request.js) - Execute a SOAP request and return results
 
 [graphQL Query](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/database-apis/graphQL-query.js) - Execute a graphQL Query and return results
+
+[API Request](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/database-apis/api-request.js) - Make an API call and return results to Testim.
 
 <br/>
 
