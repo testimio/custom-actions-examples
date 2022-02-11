@@ -57,7 +57,7 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Link Checker](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/link-checker.js) (CLI) - Finds links at the given URL and validates that they are working. 
 
-[Network Validate Request](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/network-validate-requests.js) - Validate that a network request returns the proper status and/or is not slower than maxDuration (ms).
+[Network Validate Request](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/network-validate-requests.js) - Validate that network requests were made and optionally validate response status(es) and/or request(s) are not slower than maxDuration (ms).
 
 [Numeric Expression Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/numeric-expression-validate.js) - Validate a value using numeric expressions ">", ">=", "==", "<", "<=".
 

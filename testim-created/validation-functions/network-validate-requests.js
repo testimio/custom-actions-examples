@@ -1,12 +1,13 @@
 /**
  * Network Validate Requests
  * 
- *  Validate that a network request was made and optionally validate that the status is correct and/or is not slower than maxDuration (ms)
+ *      Validate that network requests were made and optionally validate response status(es) and/or request(s) are not slower than maxDuration (ms)
  * 
  *  Parameters
- *      networkRequests (readonly)  : Domain of network requests in consideration
- *      requestUrl (JS)             : Target network request 
- *      statusCode (JS) [optional]  : Expected status code
+ *      requestUrlFilter (JS)       : Target network request filter.  Partial match to URL to pick a subset of requests to validate
+ *                                      Examples: "demo.testim.io" or ["demo.testim.io/login", "demo.testim.io/checkout"]
+ *      statusCode (JS) [optional]  : Expected status code(s) to be returned 
+ *                                      Examples: 200 or [200,204]
  *      maxDuration (JS) [optional] : max response time
  *          
  *  Base Step
@@ -15,22 +16,6 @@
  *  Notes
  *      if statusCode is not set then it will not be checked
  *      if maxDuration is not set then it will not be checked
- * 
- *      networkRequests fields
- *         isBlocked
- *         isDone
- *         method
- *         isCancelled
- *         url
- *         source
- *         tab
- *         type
- *         statusCode
- *         statusText
- *         startTime
- *         protocol
- *         responseSize
- *         endTime
  * 
  *  Disclaimer
  *      This Custom Action is provided "AS IS".  It is for instructional purposes only and is not officially supported by Testim
@@ -54,28 +39,51 @@
  *      Bob's your uncle
  */
 
-/* globals networkRequests, requestUrl, statusCode, maxDuration, networkValidationCheckIndex, networkValidationCheckIndexLast */
+/* eslint-disable no-var */
+/* eslint-disable camelcase */
+/* globals networkRequests, requestUrlFilter, statusCode, maxDuration, networkValidationCheckIndex */
 
 /*  Used for debugging.  Enable/disable writing interim data to the console
  */
-let verbose = false;
+var verbose = false;
 
-// Validate that expectedNetworkRequest is defined
+// Validate that requestUrlFilter is defined
 //
-if (typeof requestUrl === 'undefined' || requestUrl === null)
-    throw new Error("requestUrl is undefined");
+if (typeof requestUrlFilter === 'undefined' || requestUrlFilter === null)
+    throw new Error("requestUrlFilter is undefined");
 
-let expectedNetworkRequest = {
-    "url": requestUrl,
-    "statusCode": statusCode,
-    "maxDuration": maxDuration,
+var expectedNetworkRequests = [];
+if (typeof requestUrlFilter === 'string') {
+    expectedNetworkRequests.push({
+        "url": requestUrlFilter,
+        "statusCode": statusCode,
+        "maxDuration": maxDuration,
+    });
+}
+else {
+    requestUrlFilter.forEach((requestUrl) => {
+        if (typeof requestUrl === 'string') {
+            expectedNetworkRequests.push({
+                "url": requestUrl,
+                "statusCode": statusCode,
+                "maxDuration": maxDuration,
+            });
+        }
+        else {
+            expectedNetworkRequests = requestUrlFilter;
+        }
+    });
+}
+if (verbose) {
+    console.log("requestUrlFilter", requestUrlFilter);
+    console.log("expectedNetworkRequests", JSON.stringify(expectedNetworkRequests));
 }
 
 // Only consider requests since last time 
 //
-let networkPerformanceCheckIndexLast = 0;
+var networkValidationCheckIndexLast = 0;
 if (typeof networkValidationCheckIndex !== 'undefined' && networkValidationCheckIndex !== null)
-    networkPerformanceCheckIndexLast = networkValidationCheckIndex;
+    networkValidationCheckIndexLast = networkValidationCheckIndex;
 
 exportsTest.networkValidationCheckIndex = networkRequests.length;
 
@@ -84,7 +92,7 @@ if (verbose)
 
 // Result object
 //
-let networkValidationResults = {
+var networkValidationResults = {
     success: false,
     numMatchedURLs: 0,
     errorDetails: {
@@ -96,19 +104,29 @@ let networkValidationResults = {
 
 // Loop all requests and look for matches/status
 //
-let _networkRequestMatches = networkRequests.filter((request, index) => {
-
-    if (verbose)
-        console.log("networkRequests.filter", index);
+var _networkRequestMatches = networkRequests.filter((request, index) => {
 
     /* Only consider requests since last instantiation 
      */
-    if (index < networkPerformanceCheckIndexLast) {
+    if (index < networkValidationCheckIndexLast) {
         return false;
     }
 
-    let match = request.url.includes(expectedNetworkRequest.url);
+    var expected_network_request_match = null;
+
+    var expected_network_request_matches = Array.from(expectedNetworkRequests).filter(expectedNetworkRequest => {
+        return request.url.includes(expectedNetworkRequest.url);
+    });
+
+    if (verbose)
+        console.log("expected_network_request_matches?.length", expected_network_request_matches?.length);
+
+    var match = (expected_network_request_matches?.length > 0);
     if (match) {
+
+        expected_network_request_match = expected_network_request_matches[0];
+        if (verbose)
+            console.log("expected_network_request_match", JSON.stringify(expected_network_request_match, null, 2));
 
         // Calculate call duration
         //
@@ -116,8 +134,14 @@ let _networkRequestMatches = networkRequests.filter((request, index) => {
 
         // Run all checks and note statuses
         //
-        request.validateMaxDuration = (typeof expectedNetworkRequest.maxDuration === 'undefined' || expectedNetworkRequest.maxDuration === null || request.duration <= expectedNetworkRequest.maxDuration) ? true : false;
-        request.validateStatusCode = (typeof expectedNetworkRequest.statusCode === 'undefined' || expectedNetworkRequest.statusCode === null || request.statusCode == expectedNetworkRequest.statusCode) ? true : false;
+        var expected_statuses = [];
+        if (typeof expected_network_request_match.statusCode === 'object')
+            expected_statuses = expected_network_request_match.statusCode;
+        else
+            expected_statuses.push(expected_network_request_match.statusCode);
+
+        request.validateStatusCode = (typeof expected_network_request_match.statusCode === 'undefined' || expected_network_request_match.statusCode === null || expected_statuses.includes(request.statusCode)) ? true : false;
+        request.validateMaxDuration = (typeof expected_network_request_match.maxDuration === 'undefined' || expected_network_request_match.maxDuration === null || request.duration <= expected_network_request_match.maxDuration) ? true : false;
 
         // Mark success based on sub-check validations
         //
@@ -130,34 +154,39 @@ let _networkRequestMatches = networkRequests.filter((request, index) => {
                 networkValidationResults.errorDetails.url = request.url;
 
                 if (request.validateMaxDuration === false)
-                    networkValidationResults.errorDetails.errors.push("MaxDuration: Actual: " + request.duration + " Expected MaxDuration " + expectedNetworkRequest.maxDuration);
+                    networkValidationResults.errorDetails.errors.push(request.url + ":: MaxDuration: Actual: " + request.duration + " Expected MaxDuration " + expected_network_request_match.maxDuration);
                 if (request.validateStatusCode === false)
-                    networkValidationResults.errorDetails.errors.push("StatusCode: Expected: " + expectedNetworkRequest.statusCode + ", Actual: " + request.statusCode);
+                    networkValidationResults.errorDetails.errors.push(request.url + ":: StatusCode: Expected: " + expected_network_request_match.statusCode + ", Actual: " + request.statusCode);
             }
 
         }
 
         networkValidationResults.numMatchedURLs += 1;
+
+        request.status = networkValidationResults.success;
     }
 
     return (match);
 
 });
-networkValidationResults.matchingRequests = _networkRequestMatches.map(({ url, validateStatusCode, validateMaxDuration, duration, responseSize, protocol, method, statusCode, statusText, source, isBlocked, isDone, isCancelled, type }) => ({ url, validateStatusCode, validateMaxDuration, duration, responseSize, protocol, method, statusCode, statusText, source, isBlocked, isDone, isCancelled, type }));
+networkValidationResults.matchingRequests = _networkRequestMatches.map(({ url, status, validateStatusCode, validateMaxDuration, duration, responseSize, protocol, method, statusCode, statusText, source, isBlocked, isDone, isCancelled, type }) => ({ url, status, validateStatusCode, validateMaxDuration, duration, responseSize, protocol, method, statusCode, statusText, source, isBlocked, isDone, isCancelled, type }));
 
 if (verbose)
     console.table(networkValidationResults.matchingRequests)
 
 //
-// Validation
-//         
+// Validate all expectedNetworkRequests were found
+//       
+Array.from(expectedNetworkRequests).forEach(expectedNetworkRequest => {
+    // Validate all URLs were found
+    if (!Array.from(networkValidationResults.matchingRequests).some(networkValidationResult => networkValidationResult.url.includes(expectedNetworkRequest.url))) {
+        console.error(`${expectedNetworkRequest.url} not found in networkRequests`);
+        throw new Error(`${expectedNetworkRequest.url} not found in networkRequests`);
+    }
+});
 
-if (networkValidationResults.matchedRequests === null && networkValidationResults.matchedRequests.length === 0) {
-    console.error('No call(s) to URL "' + expectedNetworkRequest + '" found. (LNIID:' + networkValidationCheckIndexLast + ")");
-    throw new Error(JSON.stringify('No call(s) to URL "' + expectedNetworkRequest + '" found. (LNIID:' + networkValidationCheckIndexLast + ")"));
-}
-
-if (networkValidationResults.success === false) {
-    console.error(JSON.stringify(networkValidationResults.errorDetails));
-    throw new Error(JSON.stringify(networkValidationResults.errorDetails));
+// Validate all URLs found have successful validations
+if (networkValidationResults?.errorDetails?.errors?.length > 0) {
+    console.error("Error: " + JSON.stringify(networkValidationResults?.errorDetails?.errors,null,2));
+    throw new Error("Error: " + JSON.stringify(networkValidationResults?.errorDetails?.errors,null,2));
 }
