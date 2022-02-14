@@ -35,9 +35,9 @@
  *      Create parameters
  *          requestUrlsFilter (JS)
  *      Optional - add optional parameters
+ *          statusCode (JS) [optional]
  *          networkRequestMethod (JS) [optional]
  *          networkRequestType (JS) [optional]
- *          statusCode (JS) [optional]
  *          maxDuration (JS) [optional] 
  *      Set the new custom action's function body to this javascript
  *      Override timeout => Step timeout (milliseconds) = 1000
@@ -62,21 +62,27 @@ if (typeof requestUrlsFilter === 'undefined' || requestUrlsFilter === null)
 
 /* Default optional parameters
  */
-eval('networkRequestMethod = (typeof networkRequestMethod !== "undefined" && networkRequestMethod !== null) ? networkRequestMethod.toUpperCase() : null ');
-eval('networkRequestType   = (typeof networkRequestType  !== "undefined" && networkRequestType  !== null) ? networkRequestType.toUpperCase()  : null ');
-eval('maxDuration          = (typeof maxDuration !== "undefined" && maxDuration !== null) ? maxDuration : null ');
+var _networkRequestTypes = null;
+if (typeof networkRequestType !== 'undefined')
+    _networkRequestTypes = (typeof networkRequestType === 'object') ? networkRequestType : [networkRequestType];
+
+var _networkRequestMethods = null;
+if (typeof networkRequestMethod !== 'undefined')
+    _networkRequestMethods = (typeof networkRequestMethod === 'object') ? networkRequestMethod : [networkRequestMethod];
 
 var _statusCodes = null;
 if (typeof statusCode !== 'undefined')
     _statusCodes = (typeof statusCode === 'object') ? statusCode : [statusCode];
+
+eval('maxDuration          = (typeof maxDuration !== "undefined" && maxDuration !== null) ? maxDuration : null ');
 
 var expectedNetworkRequests = [];
 if (typeof requestUrlsFilter === 'string') {
     expectedNetworkRequests.push({
         "url": requestUrlsFilter,
         "statusCodes": _statusCodes,
-        "networkRequestMethod": networkRequestMethod,
-        "networkRequestType": networkRequestType,
+        "networkRequestMethod": _networkRequestMethods.map(function(x){ return x.toUpperCase(); }),
+        "networkRequestType": _networkRequestTypes,
         "maxDuration": maxDuration,
     });
 }
@@ -86,8 +92,8 @@ else {
             expectedNetworkRequests.push({
                 "url": requestUrl,
                 "statusCodes": _statusCodes,
-                "networkRequestMethod": networkRequestMethod,
-                "networkRequestType": networkRequestType,
+                "networkRequestMethod": _networkRequestMethods.map(function(x){ return x.toUpperCase(); }),
+                "networkRequestType": _networkRequestTypes,
                 "maxDuration": maxDuration,
             });
         }
@@ -156,9 +162,9 @@ var _networkRequestMatches = networkRequests.filter((request, index) => {
 
         // Run all checks and note statuses
         //
+        request.validateMethod = (typeof expected_network_request_match.networkRequestMethod === 'undefined' || expected_network_request_match.networkRequestMethod === null || expected_network_request_match.networkRequestMethod.includes(request.method)) ? true : false;
+        request.validateType = (typeof expected_network_request_match.networkRequestType === 'undefined' || expected_network_request_match.networkRequestType === null || expected_network_request_match.networkRequestType.includes(request.type)) ? true : false;
         request.validateStatusCode = (typeof expected_network_request_match.statusCodes === 'undefined' || expected_network_request_match.statusCodes === null || expected_network_request_match.statusCodes.includes(request.statusCode)) ? true : false;
-        request.validateMethod = (typeof expected_network_request_match.networkRequestMethod === 'undefined' || expected_network_request_match.networkRequestMethod === null || request.method == expected_network_request_match.networkRequestMethod) ? true : false;
-        request.validateType = (typeof expected_network_request_match.networkRequestType === 'undefined' || expected_network_request_match.networkRequestType === null || request.type == expected_network_request_match.networkRequestType) ? true : false;
         request.validateMaxDuration = (typeof expected_network_request_match.maxDuration === 'undefined' || expected_network_request_match.maxDuration === null || request.duration <= expected_network_request_match.maxDuration) ? true : false;
 
         // Mark success based on sub-check validations
@@ -171,14 +177,14 @@ var _networkRequestMatches = networkRequests.filter((request, index) => {
             networkValidationResults.errorDetails.url = request.url;
 
             if (request.validateMethod === false)
-                networkValidationResults.errorDetails.errors.push(request.url + ":: Method: Expected: " + expected_network_request_match.networkRequestMethod + ", Actual: " + request.method);
+                networkValidationResults.errorDetails.errors.push("Error: (Method) Expected: " + expected_network_request_match.networkRequestMethod + ", Actual: " + request.method + " ==> " + request.url);
             if (request.validateType === false)
-                networkValidationResults.errorDetails.errors.push(request.url + ":: Type: Expected: " + expected_network_request_match.networkRequestType + ", Actual: " + request.type);
+                networkValidationResults.errorDetails.errors.push(request.url + "Error: (Type) Expected: " + expected_network_request_match.networkRequestType + ", Actual: " + request.type + " ==> " + request.url);
             if (request.validateStatusCode === false)
-                networkValidationResults.errorDetails.errors.push(request.url + ":: StatusCode: Expected: " + expected_network_request_match.statusCodes + ", Actual: " + request.statusCode);
+                networkValidationResults.errorDetails.errors.push(request.url + "Error: (StatusCode) Expected: " + expected_network_request_match.statusCodes + ", Actual: " + request.statusCode + " ==> " + request.url);
             if (request.validateMaxDuration === false)
-                networkValidationResults.errorDetails.errors.push(request.url + ":: MaxDuration: Actual: " + request.duration + " Expected MaxDuration " + expected_network_request_match.maxDuration);
-
+                networkValidationResults.errorDetails.errors.push(request.url + "Error: (MaxDuration) Actual: " + request.duration + " Expected MaxDuration " + expected_network_request_match.maxDuration + " ==> " + request.url);
+        
         }
 
         networkValidationResults.numMatchedURLs += 1;
