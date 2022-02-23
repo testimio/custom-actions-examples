@@ -147,6 +147,8 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Cookies Session Clear](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/browser/cookies-session-clear.js) - Clears all cookies, sessionStorage and localStorage
 
+[Validate Current URL](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/browser/validate-current-url.js) - Validates the current page's URL
+
 <br/>
 
 [**Hook Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/hook-functions/)
