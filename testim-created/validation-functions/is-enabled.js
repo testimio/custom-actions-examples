@@ -16,20 +16,17 @@
  * 
  **/
 
-function isEnabled(element, isEnabled) {
+/* Validate required parameters
+ */
+if (typeof (element) === 'undefined' || element === null)
+    throw new Error("Target element has not been specified.");
 
-    /* Validate required parameters
-     */
-    if (typeof (element) === 'undefined' || element === null)
-        throw new Error("Target element has not been specified.");
+let expected_value = (typeof (isEnabled) !== 'undefined' && isEnabled !== null) ? isEnabled : true;
+let actual_value = !element.hasAttribute('disabled');
+console.log("Element enabled is " + actual_value + " when it should be " + expected_value);
 
-    let expected_value = (typeof (isEnabled) !== 'undefined' && isEnabled !== null) ? isEnabled : true;
-
-    let actual_value = element.hasAttribute('disabled');
-    if (actual_value !== expected_value)
-        return true;
-    else
-        throw new Error("Element is " + ((expected_value) ? "ENABLED" : "DISABLED") + " when it should be " + ((!expected_value) ? "ENABLED" : "DISABLED"));
+if (actual_value === expected_value)
+    return true;
+else {
+    throw new Error("Element is " + ((actual_value) ? "ENABLED" : "DISABLED") + " when it should be " + ((expected_value) ? "ENABLED" : "DISABLED"));
 }
-
-return isEnabled(element, isEnabled);
