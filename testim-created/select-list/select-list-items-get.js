@@ -1,5 +1,5 @@
 /**
- *  Select/List Items Get
+ *  Select List - Items Get
  *
  *      Return items (option/li/<custom>) from a select/ol/ul/<custom> element
  * 

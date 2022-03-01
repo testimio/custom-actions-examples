@@ -1,20 +1,28 @@
 /**
- *  Validate Select/List Items
+ *  Select List - Selected Items Validate
  *
- *      Return and optionally validate select/ol/ul items (option/li entries)
+ *      Validate the selected item(s) text, value, misc attribute(s) are correct
  * 
  *  Parameters
  *
  *      element (HTML) : Target element (or child of) either a <select>, <ol>, <ul>
- *      expectedValues (JS) : expected data example can be gotten by running this step with no expectedValue.  
- *                            The data will be in the clipboard and the variable actualItems (or returnVariableName if specified)
- *	                          If you set index:x key/value of an expected value node it validates that entry in that row of actual values.
+ * 
+ *      expectedValues (JS) : expected data example can be gotten by running this step with no expectedValues.  
+ *                            The data will be in the clipboard and the variable actualValue (or returnVariableName if specified)
+ *                  "First"
+ *                  {"text" : "First"}
+ *                  {"value" : "1"}
+ *                  {"text" : "First", "value" : "1"}
+ *                  [{"text" : "First"}, {"text" : "Second"}]
+ * 
+ *	    matchType [optional] : Text match type when searching for text in lists/selects
+ *		    Examples: exact (default), startswith, endswith, includes
  *
  *      returnVariableName (JS) [optional] : string name of variable to store actual values in that can be used for setting expectedValues
  *
  *  Returns
  * 
- *      actualItems - unless returnVariableName is set whereby data will be in that variable name instead
+ *      actualSelectedItems - unless returnVariableName is set whereby data will be in that variable name instead
  * 
  *  Notes
  * 
@@ -23,19 +31,7 @@
  * 
  *  Base Step
  *      Custom Action
- * 
- *  Installation
- *      Create a new "Custom Action"
- *      Name it "Validate Select Items/Options"
- *      Create parameters
- *          element (HTML)
- *          expectedValues (JS)
- *          returnVariableName (JS) [optional]
- *      Set the new custom action's function body to this javascript
- *      Exit the step editor
- *      Share the step if not already done so
- *      Save the test
- *      Bob's your uncle
+
  *
 **/
 
@@ -46,7 +42,47 @@ let verbose = true;
 /* Validate the target element is defined
  */
 if (typeof element === 'undefined' || element === null) {
-    throw new Error("Target List/Select not found or not visible");
+    throw new Error("Target Select not found or not visible");
+}
+
+/* Process/normalize expected options
+ */
+function isJson(item) { item = typeof item !== "string" ? JSON.stringify(item) : item; try { item = JSON.parse(item); } catch (e) { return false; } if (typeof item === "object" && item !== null) { return true; } return false; }
+
+var expected_values = null;
+console.log("typeof expectedValues", typeof (expectedValues), "expectedValues", expectedValues);
+if (typeof expectedValues !== 'undefined' && expectedValues !== null) {
+
+    expected_values = [];
+
+    if (typeof expectedValues === 'string')
+        expected_values.push({ "text": expectedValues });
+
+    if (typeof expectedValues === 'object') {
+
+        if (isJson(expectedValues) && !Array.isArray(expectedValues)) {
+            expected_values.push(expectedValues);
+        }
+        else {
+            expectedValues.forEach((expected_value) => {
+                if (typeof expected_value == 'string')
+                    expected_values.push({ "text": expected_value });
+                if (typeof expected_value == 'number')
+                    expected_values.push({ "value": expected_value });
+                if (typeof expected_value == 'object')
+                    expected_values.push(expected_value);
+            })
+        }
+
+    }
+
+}
+if (verbose)
+    console.log("expectedValues", expectedValues, "==> expected_values", expected_values);
+
+let match_type = 'exact';
+if (typeof matchType !== 'undefined' && matchType !== null) {
+    match_type = matchType.toLowerCase();
 }
 
 let return_type = 'STRING';
@@ -54,21 +90,9 @@ if (typeof returnType !== 'undefined' && returnType !== null) {
     return_type = returnType;
 }
 
-let match_type = 'exact';
-if (typeof matchType !== 'undefined' && matchType !== null) {
-    match_type = matchType.toLowerCase();
-}
-
-/* If user pointed at a list item, option, table row, table cell for the target element then be nice
- *	try to find the parent element <select>, <ul>, <ol>, <div role~"grid">
- */
-let select_list = selectListFind(element);
-let tagname = select_list?.tagName.toLowerCase();
-
-let select_tags = ["select", "ol", "ul"];
-if (!select_tags.includes(tagname)) {
-    throw new Error("Select Option(s) ==> Target element must be a select, ol, ul, option, li, table or grid");
-}
+let return_variable_name = 'actualSelectedItems';
+if (typeof returnVariableName !== 'undefined' && returnVariableName !== null)
+    return_variable_name = returnVariableName;
 
 const copyToClipboard = str => { const el = document.createElement('textarea'); el.value = str; el.setAttribute('readonly', ''); el.style.position = 'absolute'; el.style.left = '-9999px'; document.body.appendChild(el); const selected = document.getSelection().rangeCount > 0 ? document.getSelection().getRangeAt(0) : false; el.select(); document.execCommand('copy'); document.body.removeChild(el); if (selected) { document.getSelection().removeAllRanges(); document.getSelection().addRange(selected); } };
 
@@ -81,8 +105,6 @@ stringMatch['endswith'] = function (str1, str2) { return str1.endsWith(str2); };
 stringMatch['includes'] = function (str1, str2) { return str1.includes(str2); };
 stringMatch['contains'] = function (str1, str2) { return str1.includes(str2); };
 
-/* Find a target select/listbox/table 
- */
 function selectListFind(startingElement) {
 
     let select_list = startingElement;
@@ -90,19 +112,14 @@ function selectListFind(startingElement) {
 
     /* First search down the DOM tree 
      */
-    let select_tags = ["select", "ol", "ul"];
+    let select_tags = ["select"];
     if (!select_tags.includes(tagname)) {
         select_list = startingElement.getElementsByTagName('select')[0];
-        if (typeof select_list === 'undefined' || select_list === null)
-            select_list = startingElement.getElementsByTagName('ul')[0];
-        if (typeof select_list === 'undefined' || select_list === null)
-            select_list = startingElement.getElementsByTagName('ol')[0];
-        tagname = (typeof select_list == 'undefined' || select_list == null) ? "" : select_list.tagName.toLowerCase();
     }
 
     /* Search up the DOM tree
      */
-    let stop_tags = ["select", "ul", "ol", "html"];
+    let stop_tags = ["select", "html"];
     if (!stop_tags.includes(tagname)) {
         select_list = startingElement;
         while (!stop_tags.includes(tagname)) {
@@ -114,97 +131,61 @@ function selectListFind(startingElement) {
     return select_list;
 }
 
-/* Get select/listbox/table items/rows
- */
-function getSelectOptions(element, returnType) {
+function getSelectedOptions(select) {
 
-    let listSelectOptions = [];
-    let items = null;
+    var options = [];
+    var selected_options = [];
+    var selected_options_matched = [];
 
-    switch (tagname) {
-
+    switch (element_type) {
         case "select":
-
-            items = element.options;
-
-            break;
-
-        case "ul":
-        case "ol":
-
-            items = element.getElementsByTagName("li");
-
-            break;
-
-    }
-    console.log("items.length", items.length);
-
-    let return_item_entry = null;
-
-    for (let i = 0; i < items.length; i++) {
-
-        switch (tagname) {
-
-            case "select":
-
-                switch (returnType) {
-                    case "ITEM":
-                        return_item_entry = { "index": i, "text": items[i].text, "value": items[i].value };
-                        break;
-                    case "VALUE":
-                        return_item_entry = items[i].value;
-                        break;
-                    case "TEXT":
-                    case "STRING":
-                        return_item_entry = items[i].text;
-                        break;
-                    default:
-                        return_item_entry = { "index": i, "text": items[i].text };
-                        return_item_entry[returnType] = items[i].attributes[returnType].value;
-                        break;
+        default:
+            for (var i = 0, iLen = select.options.length; i < iLen; i++) {
+                let option = select.options[i];
+                options.push({ "text": option.text, "value": option.value, "index": i });
+                if (option.selected) {
+                    selected_options.push({ "text": option.text, "value": option.value, "index": i });
+                    if (expected_values?.length > 0
+                        && expected_values.some((expected_value) => {
+                            return stringMatch[match_type](option?.text, expected_value?.text)
+                            || stringMatch[match_type](option?.value, expected_value?.value)
+                        })
+                    ) {
+                        selected_options_matched.push({ "text": option.text, "value": option.value, "index": i });
+                    }
                 }
-                break;
-
-            case "ul":
-            case "ol":
-
-                switch (returnType) {
-                    case "ITEM":
-                        return_item_entry = { "index": i, "text": items[i].textContent }; //, "value": items[i].value };
-                        break;
-                    case "VALUE":
-                        return_item_entry = items[i].value;
-                        break;
-                    case "TEXT":
-                    case "STRING":
-                        return_item_entry = items[i].textContent;
-                        break;
-                    default:
-                        return_item_entry = { "index": i, "text": items[i].textContent };
-                        return_item_entry[returnType] = items[i].attributes[returnType].value;
-                        break;
-                }
-                break;
-
-        }
-
-        if (return_item_entry !== null)
-            listSelectOptions.push(return_item_entry);
+            }
+            break;
     }
 
-    return listSelectOptions;
+    return { options, selected_options, selected_options_matched };
 }
 
-let return_variable_name = 'actualItems';
-if (typeof returnVariableName !== 'undefined' && returnVariableName !== null)
-    return_variable_name = returnVariableName;
+/* Find target select element
+*/
+if (verbose)
+    console.log("Starting element tagName", element.tagName);
+var select_list = selectListFind(element);
+var element_type = select_list?.tagName?.toLowerCase();
 
-let actualValues = getSelectOptions(select_list, return_type);
-copyToClipboard(JSON.stringify(actualValues, null, 1));
-exportsTest[return_variable_name] = actualValues;
+/* Validate that we sound a <select> element from the staritng element
+ */
+if (!["select"].includes(element_type)) {
+    throw new Error(`Target element must be an HTML select.  Found ${select_list?.tagName}`);
+}
+
+/* Get selected options
+ */
+let actualSelectedItems = getSelectedOptions(select_list);
+copyToClipboard(JSON.stringify(actualSelectedItems, null, 1));
+exportsTest[return_variable_name] = actualSelectedItems;
+if (verbose)
+    console.log("Starting element tagName", element.tagName);
+
+return;
 
 if (verbose) {
-    console.log("actualValues", JSON.stringify(actualValues));
+    console.log("actualSelectedItems", JSON.stringify(actualSelectedItems));
     console.log("expectedValues", JSON.stringify(expectedValues));
 }
 

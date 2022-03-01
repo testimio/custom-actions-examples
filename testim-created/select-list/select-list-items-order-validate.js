@@ -1,5 +1,5 @@
 /**
- *  Select/List Items - Order Validate
+ *  Select List - Items Order Validate
  *
  *      Validate the items (option/li/<custom>) from a (select/ol/ul/<custom>) element are sorted properly
  * 

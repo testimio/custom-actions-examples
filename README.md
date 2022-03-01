@@ -113,15 +113,18 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 <br/>
 
-[**Select/Listbox Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/)
+[**Select List Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/select-list/)
 
-[Select/List Items Get](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/select-list/select-list-items-get.js) - Return items (option/li/custom) from a select/ol/ul/custom element
+[Select List - Items Get](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/select-list/select-list-items-get.js) - Return items (option/li/custom) from a select/ol/ul/custom element
 
-[Select Items/Options](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/select-items-options.js) - Select an item by value or text (select/option, ul/li)
+[Select List - Items Select](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/select-list/select-list-items-select.js) - Select an item by value or text (select/option, ul/li)
 
-[Select Items/Options - Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validate-select-items.js) - Validate that expected items are in a list/select.
+[Select List - Items Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/select-list/select-list-items-validate.js) - Validate that expected items are in a list/select.
 
-[Select Items/Options Order - Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/select-list/select-list-items-order-validate.js) -  Validate the items (option/li/<custom>) from a (select/ol/ul/<custom>) element are sorted properly.
+
+[Select List - Items Order Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/select-list/select-list-items-order-validate.js) -  Validate the items (option/li/<custom>) from a (select/ol/ul/<custom>) element are sorted properly.
+
+[Select List - Selected Items Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/select-list/select-list-items-selected-validate.js) - Validate the selected item(s) text, value, misc attribute(s) are correct.
 
 <br/>
 
