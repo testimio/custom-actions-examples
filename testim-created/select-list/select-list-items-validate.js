@@ -9,7 +9,10 @@
  *      expectedValues (JS) : expected data example can be gotten by running this step with no expectedValue.  
  *                            The data will be in the clipboard and the variable actualItems (or returnVariableName if specified)
  *	                          If you set index:x key/value of an expected value node it validates that entry in that row of actual values.
- *
+ *      matchType [optional] : Textual match type when validating URL 
+ *		            Examples: "exact", "startswith", "endswith", "includes", "contains"
+ *                            "notexact", "notstartswith", "notendswith", "notincludes", "notcontains"
+ *                            "NotFound", "NotExists", false
  *      returnVariableName (JS) [optional] : string name of variable to store actual values in that can be used for setting expectedValues
  *
  *  Returns
@@ -56,6 +59,8 @@ if (typeof returnType !== 'undefined' && returnType !== null) {
 
 let match_type = 'exact';
 if (typeof matchType !== 'undefined' && matchType !== null) {
+    if (matchType == false || ["notfound", "notexists"].includes(matchType.toLowerCase()))
+        matchType = "notexact";
     match_type = matchType.toLowerCase();
 }
 
@@ -80,6 +85,11 @@ stringMatch['startswith'] = function (str1, str2) { return str1.startsWith(str2)
 stringMatch['endswith'] = function (str1, str2) { return str1.endsWith(str2); };
 stringMatch['includes'] = function (str1, str2) { return str1.includes(str2); };
 stringMatch['contains'] = function (str1, str2) { return str1.includes(str2); };
+stringMatch['notexact'] = function (str1, str2) { return (str1 !== str2); };
+stringMatch['notstartswith'] = function (str1, str2) { return !str1.startsWith(str2); };
+stringMatch['notendswith'] = function (str1, str2) { return !str1.endsWith(str2); };
+stringMatch['notincludes'] = function (str1, str2) { return !str1.includes(str2); };
+stringMatch['notcontains'] = function (str1, str2) { return !str1.includes(str2); };
 
 /* Find a target select/listbox/table 
  */
@@ -229,7 +239,7 @@ function validateItems(actualValues, expectedValues, matchType) {
 
         if (typeof expected_values === 'string' && typeof actual_values === 'string') {
             if (!stringMatch[matchType](actual_values, expected_values)) {
-                row_differences[evid] = { "row": evid, "Actual": actual_values, "Expected": expected_values };
+                row_differences[evid] = (matchType.startsWith("not")) ? { "matchType": matchType, "Found": actual_values } : { "matchType": matchType, "Not Found": actual_values };
                 if (result)
                     result = false;
             }
@@ -245,9 +255,8 @@ function validateItems(actualValues, expectedValues, matchType) {
                     console.log("Validate " + key + "Expected: [" + expected_values[key] + "], Actual:[" + actual_values[key] + "]");
 
                 if (Object.keys(actual_values).includes(key)) {
-
                     if (!stringMatch[matchType](actual_values[key], expected_values[key])) {
-                        row_differences[key] = { "row": row_id, "Actual": actual_values[key], "Expected": expected_values[key] };
+                        row_differences[key] = (matchType.startsWith("not")) ? { "matchType": matchType, "Found": actual_values[key] } : { "matchType": matchType, "Not Found": expected_values[key] };
                         if (result)
                             result = false;
                         if (verbose)
