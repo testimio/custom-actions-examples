@@ -1,18 +1,53 @@
 /**
  *  Select List - Items Validate
  *
- *      Return and optionally validate select/ol/ul items entries
+ *      Return and optionally validate (option/li/<custom>) from a select/ol/ul/<custom> element
  * 
  *  Parameters
  *
- *      element (HTML) : Target element (or child of) either a <select>, <ol>, <ul>
+ *      element (HTML) : Target element (or child of) either a <select>, <ol>, <ul> or <user-defined>
  *      expectedValues (JS) : expected data example can be gotten by running this step with no expectedValue.  
  *                            The data will be in the clipboard and the variable actualItems (or returnVariableName if specified)
  *	                          If you set index:x key/value of an expected value node it validates that entry in that row of actual values.
  *      matchType [optional] : Textual match type when validating URL 
- *		            Examples: "exact", "startswith", "endswith", "includes", "contains"
+ *		            Examples: "exact", "startswith", "endswith", "includes", ntains"
  *                            "notexact", "notstartswith", "notendswith", "notincludes", "notcontains"
  *                            "NotFound", "NotExists", false
+ *      returnVariableName (JS) [optional] : string name of variable to store actual values in that can be used for setting expectedValues
+ *
+ *      resultsFilter (JS) [optional] : "first", "last", slice index ("5", "-5"), Default: All
+ * 
+ *      resultRegex (JS) [optional] : regex expression to parse each result
+ *                                      Example: '(?<CC>Credit Card: [0-9\-]*)'
+ * 
+ *      customListSelectors (JS) [optional] : Array of one or more custom list selector pairs 
+ *                                            used for defining what a list and list item look like
+ *                                  Example:
+ *                                          [{
+ *                                               custom_list_selector: {
+ *                                                   tagName: "div",
+ *                                                   attributeName: "role",
+ *                                                   attributeValue: "list",
+ *                                                   querySelector: 'div[role="list"]'
+ *                                               },
+ *                                               custom_list_item_selector: {
+ *                                                   tagName: "div",
+ *                                                   attributeName: "role",
+ *                                                   attributeValue: "listitem",
+ *                                                   querySelector: 'div[role="listitem"]'
+ *                                               }
+ *                                           },
+ *                                           {
+ *                                               custom_list_selector: {
+ *                                                   tagName: "table",
+ *                                                   querySelector: 'table'
+ *                                               },
+ *                                               custom_list_item_selector: {
+ *                                                   tagName: "tr",
+ *                                                   querySelector: 'tr'
+ *                                               }
+ *                                           },]
+ * 
  *      returnVariableName (JS) [optional] : string name of variable to store actual values in that can be used for setting expectedValues
  *
  *  Returns
@@ -44,6 +79,53 @@
 
 /* globals document, element, matchType, returnType, expectedValues, returnVariableName */
 
+let custom_list_selector = null;
+let custom_list_item_selector = null;
+
+let custom_list_selectors = [
+    {
+        custom_list_selector: {
+            tagName: "div",
+            attributeName: "class",
+            attributeValue: "styled__NavItemsContainer",
+            querySelector: 'div[class^="styled__NavItemsContainer"]'
+        },
+
+        custom_list_item_selector: {
+            tagName: "div",
+            attributeName: "class",
+            attributeValue: "styled__NavItemLabel",
+            querySelector: 'div[class^="styled__NavItemLabel"]'
+        }
+    },
+    {
+        custom_list_selector: {
+            tagName: "div",
+            attributeName: "role",
+            attributeValue: "list",
+            querySelector: 'div[role="list"]'
+        },
+        custom_list_item_selector: {
+            tagName: "div",
+            attributeName: "role",
+            attributeValue: "listitem",
+            querySelector: 'div[role="listitem"]'
+        }
+    },
+    {
+        custom_list_selector: {
+            tagName: "table",
+            querySelector: 'table'
+        },
+        custom_list_item_selector: {
+            tagName: "tr",
+            querySelector: 'tr'
+        }
+    },
+];
+if (typeof customListSelectors === 'object')
+    custom_list_selectors = customListSelectors;
+
 let verbose = true;
 
 /* Validate the target element is defined
@@ -57,22 +139,25 @@ if (typeof returnType !== 'undefined' && returnType !== null) {
     return_type = returnType;
 }
 
+let return_variable_name = 'actualItems';
+if (typeof returnVariableName !== 'undefined' && returnVariableName !== null)
+    return_variable_name = returnVariableName;
+
+let result_filter = "All";
+if (typeof resultsFilter !== 'undefined' && resultsFilter !== null) {
+    result_filter = resultsFilter;
+}
+
+let result_regex = null;
+if (typeof resultRegex !== 'undefined' && resultRegex !== null) {
+    result_regex = resultRegex;
+}
+
 let match_type = 'exact';
 if (typeof matchType !== 'undefined' && matchType !== null) {
     if (matchType == false || ["notfound", "notexists"].includes(matchType.toLowerCase()))
         matchType = "notexact";
     match_type = matchType.toLowerCase();
-}
-
-/* If user pointed at a list item, option, table row, table cell for the target element then be nice
- *	try to find the parent element <select>, <ul>, <ol>, <div role~"grid">
- */
-let select_list = selectListFind(element);
-let tagname = select_list?.tagName.toLowerCase();
-
-let select_tags = ["select", "ol", "ul"];
-if (!select_tags.includes(tagname)) {
-    throw new Error("Select Option(s) ==> Target element must be a select, ol, ul, option, li, table or grid");
 }
 
 const copyToClipboard = str => { const el = document.createElement('textarea'); el.value = str; el.setAttribute('readonly', ''); el.style.position = 'absolute'; el.style.left = '-9999px'; document.body.appendChild(el); const selected = document.getSelection().rangeCount > 0 ? document.getSelection().getRangeAt(0) : false; el.select(); document.execCommand('copy'); document.body.removeChild(el); if (selected) { document.getSelection().removeAllRanges(); document.getSelection().addRange(selected); } };
@@ -91,7 +176,7 @@ stringMatch['notendswith'] = function (str1, str2) { return !str1.endsWith(str2)
 stringMatch['notincludes'] = function (str1, str2) { return !str1.includes(str2); };
 stringMatch['notcontains'] = function (str1, str2) { return !str1.includes(str2); };
 
-/* Find a target select/listbox/table 
+/* Find a target select/listbox 
  */
 function selectListFind(startingElement) {
 
@@ -107,46 +192,81 @@ function selectListFind(startingElement) {
             select_list = startingElement.getElementsByTagName('ul')[0];
         if (typeof select_list === 'undefined' || select_list === null)
             select_list = startingElement.getElementsByTagName('ol')[0];
-        tagname = (typeof select_list == 'undefined' || select_list == null) ? "" : select_list.tagName.toLowerCase();
+        if (typeof select_list === 'undefined' || select_list === null) {
+            custom_list_selectors.forEach((_custom_list_selector) => {
+                if (typeof select_list === 'undefined' || select_list === null) {
+
+                    select_list = startingElement.querySelectorAll(_custom_list_selector.custom_list_selector?.querySelector)[0];
+                    if (select_list === undefined || select_list === null)
+                        select_list = startingElement.parentNode.querySelectorAll(_custom_list_selector.custom_list_selector?.querySelector)[0];
+                    if (typeof select_list !== 'undefined' && select_list !== null) {
+                        tagname = 'custom';
+                        custom_list_selector = _custom_list_selector.custom_list_selector;
+                        custom_list_item_selector = _custom_list_selector.custom_list_item_selector;
+                    }
+
+                }
+            })
+        }
+        else
+            tagname = (typeof select_list == 'undefined' || select_list == null) ? "" : select_list.tagName.toLowerCase();
     }
 
     /* Search up the DOM tree
      */
-    let stop_tags = ["select", "ul", "ol", "html"];
+    let stop_tags = ["select", "ul", "ol", "html", "custom"];
     if (!stop_tags.includes(tagname)) {
         select_list = startingElement;
         while (!stop_tags.includes(tagname)) {
+
             select_list = select_list.parentNode;
             tagname = (typeof select_list === 'undefined' || select_list == null) ? "" : select_list.tagName.toLowerCase();
+
+            custom_list_selectors.forEach((_custom_list_selector) => {
+                if (tagname === _custom_list_selector.custom_list_selector?.tagName && select_list.attributes[_custom_list_selector.custom_list_selector?.attributeName]?.nodeValue === _custom_list_selector.custom_list_selector?.attributeValue) {
+                    tagname = 'custom';
+                    custom_list_selector = _custom_list_selector.custom_list_selector;
+                    custom_list_item_selector = _custom_list_selector.custom_list_item_selector;
+                }
+            })
+
         }
     }
 
-    return select_list;
+    return { select_list, tagname };
 }
 
-/* Get select/listbox/table items/rows
+/* Get select/listbox/custom items/rows
  */
-function getSelectOptions(element, returnType) {
+function getSelectOptions(selectList, returnType) {
 
+    let select_list = selectList.select_list;
     let listSelectOptions = [];
     let items = null;
 
-    switch (tagname) {
+    switch (selectList.tagname) {
 
         case "select":
 
-            items = element.options;
+            items = select_list.options;
 
             break;
 
         case "ul":
         case "ol":
 
-            items = element.getElementsByTagName("li");
+            items = select_list.getElementsByTagName("li");
+
+            break;
+
+        case "custom":
+
+            items = select_list.querySelectorAll(custom_list_item_selector?.querySelector);
 
             break;
 
     }
+
     console.log("items.length", items.length);
 
     let return_item_entry = null;
@@ -196,6 +316,26 @@ function getSelectOptions(element, returnType) {
                 }
                 break;
 
+            case "custom":
+
+                switch (returnType) {
+                    case "ITEM":
+                        return_item_entry = { "index": i, "innerHTML": items[i].innerHTML };
+                        break;
+                    case "VALUE":
+                        return_item_entry = items[i].value;
+                        break;
+                    case "TEXT":
+                    case "STRING":
+                        return_item_entry = items[i].textContent;
+                        break;
+                    default:
+                        return_item_entry = { "index": i, "text": items[i].textContent };
+                        return_item_entry[returnType] = items[i].attributes[returnType].value;
+                        break;
+                }
+                break;
+
         }
 
         if (return_item_entry !== null)
@@ -205,15 +345,55 @@ function getSelectOptions(element, returnType) {
     return listSelectOptions;
 }
 
-let return_variable_name = 'actualItems';
-if (typeof returnVariableName !== 'undefined' && returnVariableName !== null)
-    return_variable_name = returnVariableName;
-
-let actualValues = getSelectOptions(select_list, return_type);
-copyToClipboard(JSON.stringify(actualValues, null, 1));
-exportsTest[return_variable_name] = actualValues;
+/* If user pointed at a list item, option for the target element then be nice
+ *	try to find the parent element <select>, <ul>, <ol>
+ */
+let select_list = selectListFind(element);
+let tagname = select_list?.tagname.toLowerCase();
 
 if (verbose) {
+    console.log("select_list found", select_list);
+}
+
+let select_tags = ["select", "ol", "ul", "custom"];
+if (!select_tags.includes(tagname)) {
+    throw new Error("Select Option(s) ==> Target element must be a select, ol, ul, option, li or custom");
+}
+
+let actualValues = getSelectOptions(select_list, return_type);
+
+let resultValues = null;
+switch (result_filter) {
+    case "first":
+        resultValues = actualValues[0];
+        break;
+    case "last":
+        resultValues = actualValues[actualValues.length - 1];
+        break;
+    default:
+        if (isNaN(result_filter))
+            resultValues = actualValues;
+        else
+            resultValues = (result_filter < 0) ? actualValues.slice(result_filter) : actualValues.slice(0, result_filter);
+        break;
+}
+
+if (typeof result_regex !== 'undefined' && result_regex !== null && ["TEXT", "STRING"].includes(return_type)) {
+    result_regex = resultRegex;
+    resultValues.forEach((result, index) => {
+        let pattern = new RegExp(result_regex);
+        let matches = result.match(pattern);
+        if (matches !== null) {
+            resultValues[index] = matches[0];
+        }
+    });
+}
+
+copyToClipboard(JSON.stringify(resultValues, null, 1));
+exportsTest[return_variable_name] = resultValues;
+
+if (verbose) {
+    console.log("resultValues", JSON.stringify(resultValues));
     console.log("actualValues", JSON.stringify(actualValues));
     console.log("expectedValues", JSON.stringify(expectedValues));
 }
@@ -239,7 +419,7 @@ function validateItems(actualValues, expectedValues, matchType) {
 
         if (typeof expected_values === 'string' && typeof actual_values === 'string') {
             if (!stringMatch[matchType](actual_values, expected_values)) {
-                row_differences[evid] = (matchType.startsWith("not")) ? { "matchType": matchType, "Found": actual_values } : { "matchType": matchType, "Not Found": actual_values };
+                row_differences[evid] = (matchType.startsWith("not")) ? { "matchType": matchType, "Found": actual_values } : { "matchType": matchType, "Not Found": expected_values };
                 if (result)
                     result = false;
             }
