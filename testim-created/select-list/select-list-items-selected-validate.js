@@ -37,7 +37,7 @@
 
 /* globals document, element, matchType, returnType, expectedValues, returnVariableName */
 
-let verbose = true;
+let verbose = false;
 
 /* Validate the target element is defined
  */
@@ -148,7 +148,7 @@ function getSelectedOptions(select) {
                     if (expected_values?.length > 0
                         && expected_values.some((expected_value) => {
                             return stringMatch[match_type](option?.text, expected_value?.text)
-                            || stringMatch[match_type](option?.value, expected_value?.value)
+                                || stringMatch[match_type](option?.value, expected_value?.value)
                         })
                     ) {
                         selected_options_matched.push({ "text": option.text, "value": option.value, "index": i });
@@ -182,8 +182,6 @@ exportsTest[return_variable_name] = actualSelectedItems;
 if (verbose)
     console.log("Starting element tagName", element.tagName);
 
-return;
-
 if (verbose) {
     console.log("actualSelectedItems", JSON.stringify(actualSelectedItems));
     console.log("expectedValues", JSON.stringify(expectedValues));
@@ -208,7 +206,11 @@ function validateItems(actualValues, expectedValues, matchType) {
 
         row_differences = {};
 
-        if (typeof expected_values === 'string' && typeof actual_values === 'string') {
+        if (actual_values === undefined) {
+            row_differences[evid] = { "row": evid, "Actual": "<<No Selection>>", "Expected": expected_values };
+            result = false;
+        }
+        else if (typeof expected_values === 'string' && typeof actual_values === 'string') {
             if (!stringMatch[matchType](actual_values, expected_values)) {
                 row_differences[evid] = { "row": evid, "Actual": actual_values, "Expected": expected_values };
                 if (result)
@@ -257,6 +259,6 @@ function validateItems(actualValues, expectedValues, matchType) {
 
 if (typeof expectedValues !== 'undefined' && expectedValues !== null) {
 
-    validateItems(actualValues, expectedValues, match_type);
+    validateItems(actualSelectedItems?.selected_options, expected_values, match_type);
 
 }
