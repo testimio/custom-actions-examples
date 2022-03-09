@@ -7,17 +7,33 @@
  * 
  *      element (HTML) : Target textual element
  *
- *      startPosition (JS) [optional] : String or index of selection
+ *      startPosition (JS) [optional] : String or index of startOffset of selection
  * 
- *      endPosition (JS) [optional] : String or index of selection
+ *      endPosition (JS) [optional] : String or index of endOffset of selection
  * 
+ *      returnVariableName (JS) : string name of variable to store selected text
+ *
+ *  Returns
+ *      selectedText (or returnVariableName if specified) will contain actual text selected
+ *
  *  Notes
  * 
  *      The selection will include the end search string if using string matching
  */
 
 /* eslint-disable camelcase */
-/* globals window, document, element, startPosition, endPosition */
+/* eslint-disable no-var */
+/* globals window, document, element, startPosition, endPosition, returnVariableName, Event */
+
+function doEvent(element, eventName, lastValue = null) {
+    var event = new Event(eventName, { target: element, bubbles: true, composed: true });
+    event.simulated = true; // React 15   
+    let tracker = element._valueTracker; // React 16
+    if (tracker) {
+        tracker.setValue(lastValue);
+    }
+    return element.dispatchEvent(event);
+}
 
 let verbose = false;
 
@@ -42,6 +58,12 @@ if (typeof endPosition !== 'undefined' && endPosition !== null) {
         endOffset = endPosition;
 }
 
+let return_variable_name = 'selectedText';
+if (typeof returnVariableName !== 'undefined' && returnVariableName === null)
+    return_variable_name = returnVariableName;
+
+const copyToClipboard = str => { const el = document.createElement('textarea'); el.value = str; el.setAttribute('readonly', ''); el.style.position = 'absolute'; el.style.left = '-9999px'; document.body.appendChild(el); const selected = document.getSelection().rangeCount > 0 ? document.getSelection().getRangeAt(0) : false; el.select(); document.execCommand('copy'); document.body.removeChild(el); if (selected) { document.getSelection().removeAllRanges(); document.getSelection().addRange(selected); } };
+
 if (verbose)
     console.log("startOffset", startOffset, "endOffset", endOffset);
 
@@ -53,12 +75,18 @@ if (startOffset >= endOffset) {
     throw new Error("startOffseting position (" + startOffset + ") can not be after endOffset positon (" + endOffset + ")");
 }
 
-let selection = window.getSelection();
+doEvent(element, "mousedown");
+
 let range = document.createRange();
-
-selection.removeAllRanges();
-
 range.setStart(textNode, startOffset);
 range.setEnd(textNode, endOffset);
 
+let selection = window.getSelection();
+selection.removeAllRanges();
 selection.addRange(range);
+//window.getSelection().selectAllChildren(element);
+
+copyToClipboard(selection.toString());
+exportsTest[return_variable_name] = selection.toString();
+
+doEvent(element, "mouseup");
