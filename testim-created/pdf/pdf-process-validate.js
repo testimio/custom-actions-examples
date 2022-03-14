@@ -14,7 +14,7 @@
  *                                    '1,2,4-6'   Pages 1,2,4,5,6
  *                                    4           Page 1-4
  *                                    <unset>     All pages
- *      pdf2json (NPM) - pdf2json NPM Package
+ *      pdf2json (NPM) - pdf2json NPM Package (Version: 1.3.1)
  *      clipboardy (NPM) - clipboardy NPM Package (Version  2.3.0)
  * 
  *  Output (The following test level variables will be created on successful execution of this step)
@@ -218,12 +218,15 @@ function pdfFieldValidate(searchToken, expectedValues) {
 
 return new Promise((resolve, reject) => {
 
+    console.log("new Promise");
+
     pdfParser.on("pdfParser_dataError", errData => {
         console.log("pdfParser_dataError");
         reject(errData.parserError);
     });
 
     pdfParser.on("pdfParser_dataReady", pdfData => {
+        console.log("pdfParser_dataReady");
 
         if (verbose) console.log("pdfData.Pages.length", pdfData.Pages.length);
 
