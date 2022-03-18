@@ -37,6 +37,8 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Element Select Text](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/element-select-text.js) - Select text within an element based on index or substring matches
 
+[Element Value Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/element-value-validate) - Validate an element's value/text using numeric, statistical or text comparison expressions
+
 <br/>
 
 [**Data Generation and Redaction**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/)
