@@ -1,11 +1,12 @@
 /**
  *  isVisible
  * 
- *      Vaildate that an element is visible
+ *      Vaildate that an element is visible (or not visible)
  * 
  *  Parameters
  *  
  *      element (HTML)
+ *      isVisible (JS) - Element visible/not visible flag true/false.  Default (true). 
  * 
  *  Base Step
  *      Custom Validation
@@ -13,8 +14,14 @@
  *  Disclaimer
  *      This Custom Action is provided "AS IS".  It is for instructional purposes only and is not officially supported by Testim
  * 
+ **/
+
+/* Validate required parameters
  */
-function isVisible(element) {
+if (typeof (element) === 'undefined')
+    throw new Error("Target element has not been specified.");
+
+function _isVisible(element) {
 
     while (element) {
         if (element === document) {
@@ -38,8 +45,17 @@ function isVisible(element) {
             return false;
         }
         else {
-            return $style.position === 'fixed' || isVisible(element.parentNode);
+            return $style.position === 'fixed' || _isVisible(element.parentNode);
         }
     }
 }
-return isVisible(element);
+
+let expected_value = (typeof (isVisible) !== 'undefined' && isVisible !== null) ? isVisible : true;
+let actual_value = (element === null) ? false : _isVisible(element);
+console.log("Element visible is " + actual_value + " when it should be " + expected_value);
+
+if (actual_value === expected_value)
+    return true;
+else {
+    throw new Error("Element is " + ((actual_value) ? "VISIBLE" : "NOTVISIBLE") + " when it should be " + ((expected_value) ? "VISIBLE" : "NOTVISIBLE"));
+}
