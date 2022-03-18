@@ -37,7 +37,17 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Element Select Text](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/element-select-text.js) - Select text within an element based on index or substring matches
 
-[Element Value Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/element-value-validate) - Validate an element's value/text using numeric, statistical or text comparison expressions
+[Element Value Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/element-value-validate.js) - Validate an element's value/text using numeric, statistical or text comparison expressions
+
+[isEnabled](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/is-enabled.js) - Vaildate that an element is enabled (or disabled)
+
+[isVisible](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/is-visible.js) - Vaildate that an element is visible
+
+[isPlaying](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/is-playing.js) - Validate that a video/media element is currently playing video (or not)
+
+[hasAttribute](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/has-attribute.js) - Validate that an element does/does not have an attribute defined and optionally validate its value
+
+[hasClass](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/has-class.js) - Check if an element's class list includes certain expected classes
 
 <br/>
 
@@ -64,14 +74,6 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 [Numeric Expression Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/numeric-expression-validate.js) - Validate a value using numeric expressions ">", ">=", "==", "<", "<=".
 
 [Email - Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/email-validate.js) -  Process email inbox and validate/parse last message for subject/body and optional regex to pull specific data and links
-
-[isEnabled](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/is-enabled.js) - Vaildate that an element is enabled (or disabled)
-
-[isVisible](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/is-visible.js) - Vaildate that an element is visible
-
-[isPlaying](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/is-playing.js) - Validate that a video/media element is currently playing video (or not)
-
-[hasClass](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/has-class.js) - Check if an element's class list includes certain expected classes
 
 [Element Computed Style(s) - Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validate-computed-style.js) - Validate a superset/subset of style for an element
 
