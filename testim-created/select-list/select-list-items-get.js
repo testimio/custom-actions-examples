@@ -70,7 +70,6 @@ let custom_list_selectors = [
             attributeValue: "list",
             querySelector: 'div[role="list"]'
         },
-
         custom_list_item_selector: {
             tagName: "div",
             attributeName: "role",
@@ -140,7 +139,10 @@ function selectListFind(startingElement) {
         if (typeof select_list === 'undefined' || select_list === null) {
             custom_list_selectors.forEach((_custom_list_selector) => {
                 if (typeof select_list === 'undefined' || select_list === null) {
+
                     select_list = startingElement.querySelectorAll(_custom_list_selector.custom_list_selector?.querySelector)[0];
+                    if (select_list === undefined || select_list === null)
+                        select_list = startingElement.parentNode.querySelectorAll(_custom_list_selector.custom_list_selector?.querySelector)[0];
                     if (typeof select_list !== 'undefined' && select_list !== null) {
                         tagname = 'custom';
                         custom_list_selector = _custom_list_selector.custom_list_selector;

@@ -51,15 +51,17 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 <br/>
 
-[**Data Generation and Redaction**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/)
+[**Data Generation and Redaction**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/test-data/)
 
-[Excel - Import Data](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/excel-import-data.js) - Process Excel download file and save sheet data values as test data (testData)
+[Excel - Import Data](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/test-data/excel-import-data.js) - Process Excel download file and save sheet data values as test data variable (testData)
 
-[Generate Faked Data](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/generate-faked-data.js) (faker.js) - Uses the faker.js library to create fake test data. 
+[Excel - Import File](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/test-data/excel-import-file.js) - Read Excel file for use as test data variable (excelData)
 
-[Redact data](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/redact-data.js) - This custom step creates an overlay element to prevent screenshot capture of private data.
+[Generate Faked Data](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/test-data/generate-faked-data.js) (faker.js) - Uses the faker.js library to create fake test data. 
 
-[Set Text (Redacted)](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/text-set-redacted.js) -  Redacts a field and then sets its text
+[Redact data](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/test-data/redact-data.js) - This custom step creates an overlay element to prevent screenshot capture of private data.
+
+[Set Text (Redacted)](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/test-data/text-set-redacted.js) -  Redacts a field and then sets its text
 
 <br/>
 
