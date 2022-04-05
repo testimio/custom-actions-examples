@@ -17,8 +17,6 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [After Test Hook - SQL Server (Hook Function)](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/hook-functions/aftertest-sqlserver.js) - Collect test results gathered during a test run and insert into a SQL Server database table
 
-[AfterTest Hook - HTML Report Generate (Hook Function)](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/test-reporting-analysis/after-test-html-report-generate.js) - Collect test results gathered during a test run and generate and/or email an HTML/PDF report
-
 [Network Performance Summary](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/performance-testing/network-performance-summary.js) - Creates a summary of network requests with min/max/avg duration and request size that can be included in the test report. 
 
 <br/>
