@@ -198,6 +198,8 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Table - Column Order Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/table-functions/table-column-order-validate.js) - Validate the values in a column are sorted properly
 
+[Table - Row Count Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/table-functions/table-row-count-validate.js) - Validate number of rows in a table
+
 <br/>
 
 [**Misc Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/)
