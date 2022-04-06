@@ -1,7 +1,7 @@
 /** 
  *  Element Value Validate
  * 
- *      Validate an element's value/text using numeric or text comparison expressions 
+ *      Validate an element's value/text using numeric, statistical or text comparison expressions 
  * 
  *  Parameters
  *      element (HTML):             element with the value to be checked

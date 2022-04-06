@@ -47,6 +47,7 @@ function clickOnElem(elem, offsetX, offsetY) {
     let evt = new MouseEvent('click', { bubbles: true, clientX: posX, clientY: posY });
     elem.dispatchEvent(evt); // trigger the event on elem
 }
+
 // Helper function to encode elementText so it can be used in XPath below
 function escapeXml(unsafe) {
     return unsafe.replace(/[<>&'"]/g, function (c) {
@@ -142,7 +143,5 @@ try {
 
 }
 catch (err) {
-
     console.log(err);
-
 }

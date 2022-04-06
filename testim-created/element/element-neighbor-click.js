@@ -7,20 +7,20 @@
  * 
  *      contextElement (HTML) [optional] : Container for either localizing the search area or a jump point
  * 
- *      elementLocator (JS) : used in initial object location by text or xpath
+ *      elementLocator (JS) [optional] : used in initial object location by text or xpath
  *                          Example: "xpath://div"
  *                                   "xpath://*[@data-testid='login-button']"
  *                                   "Log In" - Find by innerText
  *                                   "css:tr:nth-child(2) > td:nth-child(1)"
  *                                   if unset then contextElement is the target element jump point
  * 
- *      relativeElementLocator (JS) [optional] : Method to find neighboring element - "right", "left", "up", "down", <xpath>
+ *      relativeElementLocator (JS) [optional] : Method to find neighboring element - "RIGHT", "LEFT", "UP", "DOWN", <xpath>
  *             Examples:  "left", "right", "up", "down" 
  *                        "ancestor-or-self::div"
  *                        "/div"
  * 
  *      targetElementTypes (JS) [optional] : When using direction to find neighbor, filters target element type
- *                          Default  ["div", "input", "span", "svg"]
+ *                          Default  ["DIV", "INPUT", "BUTTON", "A"]
  * 
  *      selectedState (JS) [optional] : Only select item(s) if not checked/selected		
  *		    Examples: 	true    - Check
@@ -34,6 +34,8 @@
  * 
  *  Notes
  * 
+ *      Either contextElement or elementLocator must be defined
+ * 
  *  Disclaimer
  *      This Custom Action is provided "AS IS".  It is for instructional purposes only and is not officially supported by Testim
  * 
@@ -44,6 +46,12 @@
 
 /* eslint-disable camelcase */
 /* globals selectedState, maxOffset, stepDelta, elementLocator, document, contextElement, targetElementTypes, XPathResult, MouseEvent, ignoredElementTypes, relativeElementLocator */
+
+/* Validate either contextElement or elementLocator is defined
+ */
+if ((typeof contextElement === 'undefined' || contextElement === null) && (typeof elementLocator === 'undefined' || elementLocator === null)) {
+    throw new Error("Either contextElement or elementLocator must be defined");
+}
 
 /* Define target element types for location based searches (siblingFindByDirection)
  */

@@ -25,6 +25,12 @@
 /* eslint-disable no-var */
 /* globals window, document, element, startPosition, endPosition, returnVariableName, Event */
 
+let verbose = false;
+
+let return_variable_name = 'selectedText';
+if (typeof returnVariableName !== 'undefined' && returnVariableName !== null)
+    return_variable_name = returnVariableName;
+
 function doEvent(element, eventName, lastValue = null) {
     var event = new Event(eventName, { target: element, bubbles: true, composed: true });
     event.simulated = true; // React 15   
@@ -35,7 +41,7 @@ function doEvent(element, eventName, lastValue = null) {
     return element.dispatchEvent(event);
 }
 
-let verbose = false;
+const copyToClipboard = str => { const el = document.createElement('textarea'); el.value = str; el.setAttribute('readonly', ''); el.style.position = 'absolute'; el.style.left = '-9999px'; document.body.appendChild(el); const selected = document.getSelection().rangeCount > 0 ? document.getSelection().getRangeAt(0) : false; el.select(); document.execCommand('copy'); document.body.removeChild(el); if (selected) { document.getSelection().removeAllRanges(); document.getSelection().addRange(selected); } };
 
 let textNode = Array.from(element.childNodes).find(node => node.nodeType === 3);
 if (!textNode) {
@@ -57,12 +63,6 @@ if (typeof endPosition !== 'undefined' && endPosition !== null) {
     else
         endOffset = endPosition;
 }
-
-let return_variable_name = 'selectedText';
-if (typeof returnVariableName !== 'undefined' && returnVariableName !== null)
-    return_variable_name = returnVariableName;
-
-const copyToClipboard = str => { const el = document.createElement('textarea'); el.value = str; el.setAttribute('readonly', ''); el.style.position = 'absolute'; el.style.left = '-9999px'; document.body.appendChild(el); const selected = document.getSelection().rangeCount > 0 ? document.getSelection().getRangeAt(0) : false; el.select(); document.execCommand('copy'); document.body.removeChild(el); if (selected) { document.getSelection().removeAllRanges(); document.getSelection().addRange(selected); } };
 
 if (verbose)
     console.log("startOffset", startOffset, "endOffset", endOffset);
