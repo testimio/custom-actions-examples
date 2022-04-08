@@ -31,9 +31,7 @@
  *      https://docs.microsoft.com/en-us/azure/devops/boards/queries/wiql-syntax?view=azure-devops#operators
  * 
  *  Version
- *      1.1.0 - Added Result URL to comments/history
- *      1.1.1 - Added Result URL to work item's "Links"
- *      1.2.0 - Refactored for better readability and logic flow
+ *      1.2.1 - If request npm package is installed use it (makes request NPM var optional).  
  * 
  *  Base Step
  *      Custom CLI Action
@@ -123,6 +121,15 @@ if (typeof validateOnly === 'undefined' || validateOnly === null)
 let workItemType = "Bug";
 let workItemTags = "";
 let testResultWorkItem = {};
+
+let _request = undefined;
+try {
+    // Testim param either exists or the package is installed locally
+    _request = (typeof request !== 'undefined' && request !== null) ? request : require("request");
+}
+catch (e) {
+    throw new Error("Module 'request' is not found.  If running remote then the 'request' NPM variable is not set.  If running locally then make sure the module is installed via 'npm i request -g'");
+}
 
 function testResult_WorkItemJSON(_stepData, _stepInternalData, workItemId) {
 
@@ -336,10 +343,7 @@ async function makeRequest(apiUrl, requestMethod, contentType, requestBody) {
 
     return new Promise((resolve, reject) => {
 
-        request(options, function (err, response, responseBody) {
-
-            exportsTest.lastResponse = response;
-            exportsTest.lastResponseBody = responseBody;
+        _request(options, function (err, response, responseBody) {
 
             if (typeof err !== 'undefined' && err !== null) {
                 console.log(err);
@@ -420,7 +424,7 @@ function AzureDevOpsWorkItemQuery(wiqlQuery, returnVariableName, orgName, projec
             , followAllRedirects: true
         };
 
-        await request(options, function (err, response, responseBody) {
+        await _request(options, function (err, response, responseBody) {
             if (typeof err !== 'undefined' && err !== null) {
                 console.log(err);
                 reject(err);
@@ -573,6 +577,7 @@ function AzureDevOpsWorkItemGet(workItemId) {
 
 return new Promise((resolve, reject) => {
 
+
     /* Find a work item (bug) that starts with this test's name
     */
     let wiql = "Select [System.TeamProject], [System.Id], [System.Title], [System.State], [System.WorkItemType] "
@@ -580,6 +585,7 @@ return new Promise((resolve, reject) => {
         + "Where [System.WorkItemType] = 'Bug' "
         + "And [System.Title] Contains '" + ((_stepData.testName !== "") ? _stepData.testName + "'" : "unsaved untitled test'")
         ;
+
 
     AzureDevOpsWorkItemQuery({ "query": wiql }, return_variable_name, orgName, projectName, bearerToken, validateOnly, resolve, reject);
     // AzureDevOpsWorkItemQuery returns workItemId
@@ -592,7 +598,8 @@ return new Promise((resolve, reject) => {
         let workItemInfoJSON = testResult_WorkItemJSON(_stepData, _stepInternalData, workItemId);
         return (workItemInfoJSON);
 
-    }).then((workItemInfoJSON) => {
+    })
+    .then((workItemInfoJSON) => {
 
         /* Create/Update WorkItem 
          */
@@ -602,7 +609,8 @@ return new Promise((resolve, reject) => {
             });
         }
 
-    }).then(() => {
+    })
+    .then(() => {
 
         console.log("\nAzureDevOpsWorkItemCreateUpdate RESPONSE ==> \n\t" + JSON.stringify(exportsTest.adoResponse));
 
