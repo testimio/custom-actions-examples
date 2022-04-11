@@ -27,7 +27,7 @@
  *      Network Validation
  * 
  *  Installation
- *      Create a new "Network Validation"
+ *      Create a new "Network Performance Summary"
  *      Name it "Network Performance Summary"
  *      Optional - add optional parameters
  *          networkRequestURLs  (JS) 
@@ -104,7 +104,7 @@ const filteredNetworkRequests = networkRequests.filter((request, index) => {
 })
 exportsTest.networkRequestStats = filteredNetworkRequests.map(({ url, count, minDuration, maxDuration, aveDuration, totDuration, minResponseSize, maxResponseSize, aveResponseSize, totResponseSize }) => ({ url, count, minDuration, maxDuration, aveDuration, totDuration, minResponseSize, maxResponseSize, aveResponseSize, totResponseSize }));
 
-if (typeof consoleLogDisable === 'undefined' || consoleLogDisable === true) {
+if (typeof consoleLogDisable === 'undefined' || consoleLogDisable !== true) {
     console.table(exportsTest.networkRequestStats.sort((a, b) => b.maxDuration - a.maxDuration));
     console.table(JSON.stringify(exportsTest.networkRequestStats.sort((a, b) => b.maxDuration - a.maxDuration)));
 }

@@ -16,7 +16,7 @@
  * 
  **/
 
-function isEnabled(element, isEnabled) {
+ function isEnabled(element, isEnabled) {
 
     /* Validate required parameters
      */
@@ -25,7 +25,7 @@ function isEnabled(element, isEnabled) {
 
     let expected_value = (typeof (isEnabled) !== 'undefined' && isEnabled !== null) ? isEnabled : true;
 
-    let actual_value = element.hasAttribute('disabled');
+    let actual_value = element.hasAttribute('disabled'); // is-disabled
     if (actual_value !== expected_value)
         return true;
     else

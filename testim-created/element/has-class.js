@@ -1,5 +1,5 @@
 /**
- *  Classes Validate
+ *  hasClass
  *
  *      Check if an element's class list contains expected classes
  *
@@ -19,7 +19,7 @@
  *
  *  Installation:
  *      Create a new shared custom action
- *      Name it "Classes Validate"
+ *      Name it "hasClass"
  *      Create parameters
  *          element (HTML)
  *          expectedClasses (JS)

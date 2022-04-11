@@ -25,21 +25,41 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Classes Get](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/classes-get.js) - Get an element's class list as a string array
 
-[Classes Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/classes-validate.js) - Check if an element's class list includes certain expected classes
+[Element(ByText) - Click](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/element-bytext-click.js) - Find an element by Text and click it
 
-[Element Computed Style(s) - Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validate-computed-style.js) - Validate a superset/subset of style for an element
+[Element(ByXPath) - Click](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/element-byxpath-click.js) - Find an element by XPath and click it
+
+[Element(ByCSS) - Click](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/element-bycss-click.js) - Find an element by CSS and click it
+
+[Element Neighbor Click/Select](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/element-neighbor-click.js) - Find an element by AI/Text/XPath or CSS and optionally a neighboring element based on xpath or relative position
+
+[Element Select Text](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/element-select-text.js) - Select text within an element based on index or substring matches
+
+[Element Value Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/element-value-validate.js) - Validate an element's value/text using numeric, statistical or text comparison expressions
+
+[isEnabled](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/is-enabled.js) - Vaildate that an element is enabled (or disabled)
+
+[isVisible](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/is-visible.js) - Vaildate that an element is visible
+
+[isPlaying](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/is-playing.js) - Validate that a video/media element is currently playing video (or not)
+
+[hasAttribute](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/has-attribute.js) - Validate that an element does/does not have an attribute defined and optionally validate its value
+
+[hasClass](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/has-class.js) - Check if an element's class list includes certain expected classes
 
 <br/>
 
-[**Data Generation and Redaction**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/)
+[**Data Generation and Redaction**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/test-data/)
 
-[Excel - Import Data](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/excel-import-data.js) - Process Excel download file and save sheet data values as test data (testData)
+[Excel - Import Data](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/test-data/excel-import-data.js) - Process Excel download file and save sheet data values as test data variable (testData)
 
-[Generate Faked Data](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/generate-faked-data.js) (faker.js) - Uses the faker.js library to create fake test data. 
+[Excel - Import File](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/test-data/excel-import-file.js) - Read Excel file for use as test data variable (excelData)
 
-[Redact data](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/redact-data.js) - This custom step creates an overlay element to prevent screenshot capture of private data.
+[Generate Faked Data](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/test-data/generate-faked-data.js) (faker.js) - Uses the faker.js library to create fake test data. 
 
-[Set Text (Redacted)](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/text-set-redacted.js) -  Redacts a field and then sets its text
+[Redact data](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/test-data/redact-data.js) - This custom step creates an overlay element to prevent screenshot capture of private data.
+
+[Set Text (Redacted)](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/test-data/text-set-redacted.js) -  Redacts a field and then sets its text
 
 <br/>
 
@@ -49,17 +69,15 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Link Checker](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/link-checker.js) (CLI) - Finds links at the given URL and validates that they are working. 
 
-[Network Validate Request](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/network-validate-requests.js) - Validate that a network request returns the proper status and/or is not slower than maxDuration (ms).
+[Network Validate Request](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/network/network-validate-requests.js) - Validate that network requests were made and optionally validate response status(es) and/or request(s) are not slower than maxDuration (ms).
 
 [Numeric Expression Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/numeric-expression-validate.js) - Validate a value using numeric expressions ">", ">=", "==", "<", "<=".
 
 [Email - Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/email-validate.js) -  Process email inbox and validate/parse last message for subject/body and optional regex to pull specific data and links
 
-[isEnabled](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/is-enabled.js) - Vaildate that an element is enabled (or disabled)
+[Element Computed Style(s) - Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validate-computed-style.js) - Validate a superset/subset of style for an element
 
-[isVisible](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/is-visible.js) - Vaildate that an element is visible
-
-[isPlaying](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/is-playing.js) - Validate that a video/media element is currently playing video (or not)
+[Validate Currency](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/validate-currency.js) - Validate that an element displays an expected value formatted as currency.
 
 <br/>
 
@@ -87,27 +105,34 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [graphQL Query](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/database-apis/graphQL-query.js) - Execute a graphQL Query and return results
 
-<br/>
-
-[**PDF Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/)
-
-[PDF - Download-Process-Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/file-download-processing/pdf-download-validation.js) - Download, parse and validate a PDF document
-
-[PDF - Fields/Texts Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/pdf-fields-textblocks-validate.js) - Validates text blocks and fields using pdfDocumentTexts and pdfDocumentFields from "Download-Process-Validate PDF" step
+[API Request](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/database-apis/api-request.js) - Make an API call and return results to Testim.
 
 <br/>
 
-[**Select/Listbox Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/)
+[**PDF Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/pdf/)
 
-[Select Items/Options](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/select-items-options.js) - Select an item by value or text (select/option, ul/li)
+[PDF - Download-Process-Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/pdf/pdf-process-validate.js) - Download, parse and optionally validate a PDF document
 
-[Select Items/Options - Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validate-select-items.js) - Validate that expected items are in a list/select.
-
-[Select Items/Options Order - Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/select-order-validate.js) - Validates that the items in a list are sorted properly.
+[PDF - Fields/Texts Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/pdf/pdf-fields-textblocks-validate.js) - Validates text blocks and fields using pdfDocumentTexts and pdfDocumentFields from "Download-Process-Validate PDF" step
 
 <br/>
 
-[**Debuging Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/hook-functions/)
+[**Select List Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/select-list/)
+
+[Select List - Items Get](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/select-list/select-list-items-get.js) - Return items (option/li/custom) from a select/ol/ul/custom element
+
+[Select List - Items Select](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/select-list/select-list-items-select.js) - Select an item by value or text (select/option, ul/li)
+
+[Select List - Items Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/select-list/select-list-items-validate.js) - Validate that expected items are in a list/select.
+
+
+[Select List - Items Order Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/select-list/select-list-items-order-validate.js) -  Validate the items (option/li/<custom>) from a (select/ol/ul/<custom>) element are sorted properly.
+
+[Select List - Selected Items Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/select-list/select-list-items-selected-validate.js) - Validate the selected item(s) text, value, misc attribute(s) are correct.
+
+<br/>
+
+[**Debugging Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/hook-functions/)
 
 [Debug Popup](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/debug-popup.js) - Displays <message> in a modal popup window for debugging purposes
 
@@ -119,7 +144,17 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Popup Killer](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/popup-killer.js) - When you don't know when a popup modal will kill your test, use this to handle it.
 
-[Alert Override](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/alert-override.js) - Overrides the window.alert function to dispaly an alert as a popup div to enable validation of javascript alert
+[Alert Override](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/browser/alert-override.js) - Overrides the window.alert function to dispaly an alert as a popup div to enable validation of javascript alert
+
+[Open New Tab/Window](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/browser/open-new-tab-window.js) - Open a url in a new tab or window
+
+[Cookies Get](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/browser/cookies-get.js) - Get all cookies and return in currentCookies
+
+[Cookies Clear](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/browser/cookies-clear.js) - Clears all cookies 
+
+[Cookies Session Clear](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/browser/cookies-session-clear.js) - Clears all cookies, sessionStorage and localStorage
+
+[Validate Current URL](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/browser/validate-current-url.js) - Validates the current page's URL
 
 <br/>
 
@@ -163,11 +198,14 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Table - Column Order Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/table-functions/table-column-order-validate.js) - Validate the values in a column are sorted properly
 
+[Table - Row Count Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/table-functions/table-row-count-validate.js) - Validate number of rows in a table
+
 <br/>
 
 [**Misc Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/)
 
 [Shell Command Execute](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/shell-command-execute.js) - Runs a shell command and returns stdout
 
+[Java Executor](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/java/java-executor.js) - Execute a java method/function in a given jar file
 
-
+[Python Program Execute](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/python-program-execute.js) - Execute a Python program and return stdout, exit signal and exit code

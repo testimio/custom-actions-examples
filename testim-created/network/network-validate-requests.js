@@ -81,7 +81,7 @@ if (typeof requestUrlsFilter === 'string') {
     expectedNetworkRequests.push({
         "url": requestUrlsFilter,
         "statusCodes": _statusCodes,
-        "networkRequestMethod": _networkRequestMethods.map(function(x){ return x.toUpperCase(); }),
+        "networkRequestMethod": _networkRequestMethods?.map(function(x){ return x.toUpperCase(); }),
         "networkRequestType": _networkRequestTypes,
         "maxDuration": maxDuration,
     });
@@ -92,7 +92,7 @@ else {
             expectedNetworkRequests.push({
                 "url": requestUrl,
                 "statusCodes": _statusCodes,
-                "networkRequestMethod": _networkRequestMethods.map(function(x){ return x.toUpperCase(); }),
+                "networkRequestMethod": _networkRequestMethods?.map(function(x){ return x.toUpperCase(); }),
                 "networkRequestType": _networkRequestTypes,
                 "maxDuration": maxDuration,
             });
@@ -197,7 +197,9 @@ var _networkRequestMatches = networkRequests.filter((request, index) => {
     return (match);
 
 });
-networkValidationResults.matchingRequests = _networkRequestMatches.map(({ url, status, validateStatusCode, validateMethod, validateType, validateMaxDuration, duration, responseSize, protocol, networkRequestMethod, statusCode, statusText, source, isBlocked, isDone, isCancelled, networkRequestType }) => ({ url, status, validateStatusCode, validateMethod, validateType, validateMaxDuration, duration, responseSize, protocol, networkRequestMethod, statusCode, statusText, source, isBlocked, isDone, isCancelled, networkRequestType }));
+
+if (_networkRequestMatches != null)
+    networkValidationResults.matchingRequests = _networkRequestMatches.map(({ url, status, validateStatusCode, validateMethod, validateType, validateMaxDuration, duration, responseSize, protocol, networkRequestMethod, statusCode, statusText, source, isBlocked, isDone, isCancelled, networkRequestType }) => ({ url, status, validateStatusCode, validateMethod, validateType, validateMaxDuration, duration, responseSize, protocol, networkRequestMethod, statusCode, statusText, source, isBlocked, isDone, isCancelled, networkRequestType }));
 
 if (verbose)
     console.table(networkValidationResults.matchingRequests)
