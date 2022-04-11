@@ -1,0 +1,37 @@
+
+Watch the youtube video
+
+https://www.youtube.com/watch?v=cg31Xymr_ac
+
+Here are the instructions:
+
+if your repo create the following directory:
+
+.github/workflows
+create the following file called 'testimdemo-github-actions.yml'
+
+edit the file 'testimdemo-github-actions.yml' and add the following lines:
+
+name: testim-github-actions
+on: [push]
+jobs:
+  run-testimio-cli:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+      - run: npm install -g @testim/testim-cli
+      - run: testim --version
+      - run: testim --label "githubactions" --token ${{ secrets.TESTIM_TOKEN }} --project ${{ secrets.TESTIM_PROJECTID }} --grid "Testim-Grid" --result-label "githubactionsExample" --turbo-mode
+
+
+
+NOTES:
+
+Because of this line 'on: [push]'
+
+This will build on commits, you can also change it to run if theres a comment or pull request as well. We do recommend using secrets so that the testim token
+and project are not exposed in the github actions log.
+Finally in this example is going to kick off any test with the label called 'githubactions' but you can also have done a test plan, test name, or test suite.
