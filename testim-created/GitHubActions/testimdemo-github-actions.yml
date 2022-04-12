@@ -1,0 +1,14 @@
+name: testim-github-actions
+on: [push]
+jobs:
+  run-testimio-cli:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+      - run: npm install -g @testim/testim-cli 
+      - run: testim --version
+      - run: testim --label "githubactions" --token ${{ secrets.TESTIM_TOKEN }} --project ${{ secrets.TESTIM_PROJECTID }} --grid "Testim-Grid" --result-label "githubactionsExample" --turbo-mode 
+
