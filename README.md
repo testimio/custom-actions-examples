@@ -73,7 +73,7 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Numeric Expression Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/numeric-expression-validate.js) - Validate a value using numeric expressions ">", ">=", "==", "<", "<=".
 
-[Email - Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/email-validate.js) -  Process email inbox and validate/parse last message for subject/body and optional regex to pull specific data and links
+[Email - Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/email/email-validate.js) -  Process email inbox and validate/parse last message for subject/body and optional regex to pull specific data and links
 
 [Element Computed Style(s) - Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validate-computed-style.js) - Validate a superset/subset of style for an element
 
