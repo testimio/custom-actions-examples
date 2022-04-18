@@ -9,7 +9,7 @@
  *              Uses queryResults if not defined
  * 	    connectionString (JS) [optional] : 'mssql://TestimSQL:wh4t3v3r4!@AuggieTheDoggie/TestData'
  *				You can also use config instead of connectionString
- *      sql  (npm)   : mssql@latest
+ *      mssql  (npm)   : mssql@latest (not used if using trusted connections)
  * 
  *  Returns
  *      queryResults or returnVariableName if defined
@@ -25,40 +25,60 @@
  *  Notes
  *      https://bertwagner.com/posts/converting-json-to-sql-server-create-table-statements/
  *      https://www.pauric.blog/How-To-Import-JSON-To-SQL-Server/#5-save-the-rowsets-into-a-table
+ *
+ *      mssql@latest Does not support trusted connections.  
+ *          If trustedConnection use is desired, do not set username/password in connection config 
+ *          and make sure that mssql/msnodesqlv8 is installed locally (npm i mssql/msnodesqlv8 -g)
  * 
  *  Disclaimer
  *      This Custom Action is provided "AS IS".  It is for instructional purposes only and is not officially supported by Testim
  * 
  *  Base Step
  *      CLI Action
- * 
- *  Installation
- *      Create a new "CLI action" step
- *      Name it "SQL Server Query"
- *      Create parameters
- *          sqlQuery (JS) 
- *          returnVariableName (JS) 
- *          connectionString (JS)
- *          sql (NPM) and set its value = mssql @ latest 
- *      Set the new custom action's function body to this javascript
- *      Set connection information
- *      Exit the step editor
- *      Share the step if not already done so
- *      Save the test
- *      Bob's your uncle
  */
 
-let verbose = true;
+let verbose = false;
 
-const config = {
+var config = {
+    server: 'localhost', // You can use 'localhost\\instance' to connect to named instance
     user: 'TestimSQL',
     password: 'wh4t3v3r4!',
-    server: 'AuggieTheDoggie', // You can use 'localhost\\instance' to connect to named instance
     database: 'TestData',
     options: {
         enableArithAbort: true,
         trustServerCertificate: true,
     }
+}
+
+function loadModules(moduleNames) {
+
+    let modulesLoaded = [];
+    function loadModule(moduleName) {
+        let moduleNameVar = moduleName.replace(/\-/g, "_").replace(/\//g, "_");
+        let _moduleNameVar = moduleName.replace(/\-/g, "_").replace(/\//g, "_");
+        eval('try { ' + moduleNameVar + ' = (typeof ' + moduleNameVar + ' !== "undefined" && ' + moduleNameVar + ' !== null) ? ' + moduleNameVar + ' : require("' + moduleName + '"); if (moduleNameVar != null) modulesLoaded.push("' + moduleName + '"); } catch { console.log("Module: ' + moduleName + ' is not installed"); } ');
+        if (modulesLoaded.includes(moduleName)) {
+            console.log("Module " + moduleName + " is loaded as " + _moduleNameVar);
+        }
+    }
+
+    moduleNames.forEach((moduleName) => {
+        loadModule(moduleName);
+    });
+
+    console.log("Module " + modulesLoaded + " is loaded.");
+
+}
+
+var sql = null;
+if (typeof config.user !== 'undefined' && typeof config.password !== 'undefined') {
+    loadModules(["mssql"]);
+    sql = mssql;
+}
+else {
+    loadModules(["mssql/msnodesqlv8"]);
+    sql = mssql_msnodesqlv8;
+    config.options['trustedConnection'] = true;
 }
 
 if (typeof connectionString === 'undefined' || connectionString === null) {

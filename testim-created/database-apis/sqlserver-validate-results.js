@@ -29,58 +29,75 @@
  *              Uses queryResults if not defined
  * 	    connectionString (JS) [optional] : 'mssql://TestimSQL:wh4t3v3r4!@AuggieTheDoggie/TestData'
  *				You can also use config instead of connectionString
- *      sql  (npm)   : mssql@latest
+ *      mssql  (npm)   : mssql@latest (not used if using trusted connections)
  * 
  *  Returns
  *      queryResults or returnVariableName if defined
  * 
  *      Automatically created variables created from the first row of values in the recordset where each variable name equals a column name
- * 
+ * 			
  *		    For example, if the recordset contains data with the columns ["firstName", "lastName"], 
- * 
+ *
  *          Two variables will be created: "firstName" and "lastName" with values that match the first set of data generated
  *				    firstName === queryResults[0].firstName 
  *			      lastName  === queryResults[0].lastName
- * 
+ *
  *  Notes
  * 
  *      When run without expectedValues being set the step will pass and simply return the actual values
  *          The data will be in the clipboard and the variable actualItems (or returnVariableName if specified)
  *      If you set PK then validation of that entry will be row specific by PK
- * 
- *  Disclaimer
- *      This Custom Action is provided "AS IS".  It is for instructional purposes only and is not officially supported by Testim
+ *
+ *      mssql@latest Does not support trusted connections.  
+ *          If trustedConnection use is desired, do not set username/password in connection config 
+ *          and make sure that mssql/msnodesqlv8 is installed locally (npm i mssql/msnodesqlv8 -g)
  * 
  *  Base Step
  *      CLI Action
- * 
- *  Installation
- *      Create a new "CLI action" step
- *      Name it "SQL Server Query"
- *      Create parameters
- *          sqlQuery (JS) 
- *          returnVariableName (JS) 
- *          connectionString (JS)
- *          sql (NPM) and set its value = mssql @ latest 
- *      Set the new custom action's function body to this javascript
- *      Set connection information
- *      Exit the step editor
- *      Share the step if not already done so
- *      Save the test
- *      Bob's your uncle
- **/
+ */
 
 let verbose = true;
 
-const config = {
+var config = {
+    server: 'localhost', // You can use 'localhost\\instance' to connect to named instance
     user: 'TestimSQL',
     password: 'wh4t3v3r4!',
-    server: 'AuggieTheDoggie', // You can use 'localhost\\instance' to connect to named instance
     database: 'TestData',
     options: {
         enableArithAbort: true,
         trustServerCertificate: true,
     }
+}
+
+function loadModules(moduleNames) {
+
+    let modulesLoaded = [];
+    function loadModule(moduleName) {
+        let moduleNameVar = moduleName.replace(/\-/g, "_").replace(/\//g, "_");
+        let _moduleNameVar = moduleName.replace(/\-/g, "_").replace(/\//g, "_");
+        eval('try { ' + moduleNameVar + ' = (typeof ' + moduleNameVar + ' !== "undefined" && ' + moduleNameVar + ' !== null) ? ' + moduleNameVar + ' : require("' + moduleName + '"); if (moduleNameVar != null) modulesLoaded.push("' + moduleName + '"); } catch { console.log("Module: ' + moduleName + ' is not installed"); } ');
+        if (modulesLoaded.includes(moduleName)) {
+            console.log("Module " + moduleName + " is loaded as " + _moduleNameVar);
+        }
+    }
+
+    moduleNames.forEach((moduleName) => {
+        loadModule(moduleName);
+    });
+
+    console.log("Module " + modulesLoaded + " is loaded.");
+
+}
+
+var sql = null;
+if (typeof config.user !== 'undefined' && typeof config.password !== 'undefined') {
+    loadModules(["mssql"]);
+    sql = mssql;
+}
+else {
+    loadModules(["mssql/msnodesqlv8"]);
+    sql = mssql_msnodesqlv8;
+    config.options['trustedConnection'] = true;
 }
 
 if (typeof connectionString === 'undefined' || connectionString === null) {
@@ -108,8 +125,8 @@ stringMatch['endswith'] = function (str1, str2) { return str1.endsWith(str2); };
 stringMatch['includes'] = function (str1, str2) { return str1.includes(str2); };
 stringMatch['contains'] = function (str1, str2) { return str1.includes(str2); };
 
-/* Validate
- */
+// Validate
+//
 function validateDataSet(actualValues, options, expectedValues) {
 
     if (verbose)
