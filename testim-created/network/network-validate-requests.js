@@ -81,7 +81,7 @@ if (typeof requestUrlsFilter === 'string') {
     expectedNetworkRequests.push({
         "url": requestUrlsFilter,
         "statusCodes": _statusCodes,
-        "networkRequestMethod": _networkRequestMethods?.map(function(x){ return x.toUpperCase(); }),
+        "networkRequestMethod": _networkRequestMethods?.map(function (x) { return x.toUpperCase(); }),
         "networkRequestType": _networkRequestTypes,
         "maxDuration": maxDuration,
     });
@@ -92,13 +92,13 @@ else {
             expectedNetworkRequests.push({
                 "url": requestUrl,
                 "statusCodes": _statusCodes,
-                "networkRequestMethod": _networkRequestMethods?.map(function(x){ return x.toUpperCase(); }),
+                "networkRequestMethod": _networkRequestMethods?.map(function (x) { return x.toUpperCase(); }),
                 "networkRequestType": _networkRequestTypes,
                 "maxDuration": maxDuration,
             });
         }
         else {
-            expectedNetworkRequests = requestUrlsFilter;
+            expectedNetworkRequests = requestUrl;
         }
     });
 }
@@ -116,7 +116,7 @@ if (typeof networkValidationCheckIndex !== 'undefined' && networkValidationCheck
 exportsTest.networkValidationCheckIndex = networkRequests.length;
 
 if (verbose)
-    console.table(networkRequests)
+    console.table(networkRequests);
 
 // Result object
 //
@@ -145,9 +145,6 @@ var _networkRequestMatches = networkRequests.filter((request, index) => {
     var expected_network_request_matches = Array.from(expectedNetworkRequests).filter(expectedNetworkRequest => {
         return (request.url.includes(expectedNetworkRequest.url));
     });
-
-    if (verbose)
-        console.log("expected_network_request_matches?.length", expected_network_request_matches?.length);
 
     var match = (expected_network_request_matches?.length > 0);
     if (match) {
@@ -184,7 +181,7 @@ var _networkRequestMatches = networkRequests.filter((request, index) => {
                 networkValidationResults.errorDetails.errors.push(request.url + "Error: (StatusCode) Expected: " + expected_network_request_match.statusCodes + ", Actual: " + request.statusCode + " ==> " + request.url);
             if (request.validateMaxDuration === false)
                 networkValidationResults.errorDetails.errors.push(request.url + "Error: (MaxDuration) Actual: " + request.duration + " Expected MaxDuration " + expected_network_request_match.maxDuration + " ==> " + request.url);
-        
+
         }
 
         networkValidationResults.numMatchedURLs += 1;
