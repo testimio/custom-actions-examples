@@ -28,7 +28,7 @@
  *
  *      mssql@latest Does not support trusted connections.  
  *          If trustedConnection use is desired, do not set username/password in connection config 
- *          and make sure that mssql/msnodesqlv8 is installed locally (npm i mssql/msnodesqlv8 -g)
+ *          and make sure that msnodesqlv8 is installed locally (npm i msnodesqlv8 -g)
  * 
  *  Disclaimer
  *      This Custom Action is provided "AS IS".  It is for instructional purposes only and is not officially supported by Testim
@@ -76,8 +76,8 @@ if (typeof config.user !== 'undefined' && typeof config.password !== 'undefined'
     sql = mssql;
 }
 else {
-    loadModules(["mssql/msnodesqlv8"]);
-    sql = mssql_msnodesqlv8;
+    loadModules(["msnodesqlv8"]);
+    sql = msnodesqlv8;
     config.options['trustedConnection'] = true;
 }
 
