@@ -5,8 +5,13 @@
  *
  *  Parameters
  *      request (NPM)     - NPM request@latest package
+ * 
+ *      workitemType (JS) [optional] - Work item type ("Bug" or "Test Case") Default: "Bug"
+ *      workitemTags (JS) [optional] - Work item tags comma separates string
+ * 
  *      orgName      (JS) [optional] - Name of DevOps org.                        If not supplied then DEFAULT_ORGANIZATION must be specified
  *      projectName  (JS) [optional] - Name of target project within DevOps org.  If not supplied then DEFAULT_PROJECT must be specified
+ *      bearerToken  (JS) [optional] - DevOps access token.                       If not supplied then DEFAULT_BEARER_TOKEN must be specified
  *      bearerToken  (JS) [optional] - DevOps access token.                       If not supplied then DEFAULT_BEARER_TOKEN must be specified
  *
  *  Notes
@@ -31,7 +36,7 @@
  *      https://docs.microsoft.com/en-us/azure/devops/boards/queries/wiql-syntax?view=azure-devops#operators
  * 
  *  Version
- *      1.2.1 - If request npm package is installed use it (makes request NPM var optional).  
+ *      1.3.0 - Support creating "Test Case" work items in addition to Bug work items
  * 
  *  Base Step
  *      Custom CLI Action
@@ -65,31 +70,41 @@
 
 const DEFAULT_BEARER_TOKEN = null;
 const DEFAULT_ORGANIZATION = null;
-const DEFAULT_PROJECT = null;
+const DEFAULT_PROJECT      = null;
 const DEFAULT_VALIDATION_ONLY_MODE = 'false';
 
-let WORKITEM_TESTIM_TAG = "TestimMade";
+let WORKITEM_DEFAULT_TAG = "Testim";
 let WORKITEM_ITERATION_PATH = null;
 let WORKITEM_AREA_PATH = null;
 let WORKITEM_PRIORITY = null;
 let WORKITEM_SEVERITY = null;
 
-let TEST_FAIL_WORKITEM_EXISTING_STATE = "Committed";
+let TEST_FAIL_WORKITEM_EXISTING_STATE = "Approved";
 let TEST_FAIL_WORKITEM_NEW_STATE = "New";
 let TEST_PASS_WORKITEM_STATE = "Done";
 
-/**** DEBUG ****
-// Uncomment this block to run this as a regular step for initial debugging.  
+/**** DEBUG ****/
+
+// Uncomment this DEBUG block to run this as a regular step for initial debugging.  
 // Note, if uncommented and used in both a the test case and as a hook function then the following error will occur in the hook instance:
 //     SyntaxError: Identifier '_stepData' has already been declared
 //   Not a biggie, just something to be aware of
 //
-let _stepData = {};
-let _stepInternalData = {};
-//let _steps = [];
-_stepData['testName'] = "Demo - Azure DevOps Integration";
-_stepInternalData['errorType'] = "Debug Error Type"
-_stepInternalData['failureReason'] = "Because"
+let _stepData = { testName: 'Demo - Azure DevOps Integration' }
+let _stepInternalData = {
+  hookType: 'afterTest',
+  projectId: 'iaItwcLyLKuidfsueatwcDP',
+  branch: 'master',
+  testId: 'aiOEfxSxasdfwzbV4',
+  testResultId: 'lasdI56lHfABefxrl',
+  failureReason: "Expected: 'Hello, Nicole'. Actual: 'Hello, John '",
+  errorType: 'text-compare-failure'
+}
+let _steps = [{ "branch": "master", "endTime": 1650486511884, "errorType": "aut-injected-code-exception", "failureReason": "Error while running step: Error: die", "hookType": "afterStep", "name": "Force Fail w/ Message", "path": "UiYNfR8y9xgDtAzl", "projectId": "iLyLKuuWLZ2UaItwcRDP", "stepId": "K5ue4EFgNj2sF8ns", "stepNumber": 1, "testId": "aiOEfxSxxtSTzbV4", "testName": "Demo - Azure DevOps Integration", "testResultId": "yprgS8h5YVtdsm7O", "type": "action-code-step" }, { "branch": "master", "endTime": 1650486513330, "hookType": "afterStep", "name": "Log Browser Type", "path": "GQz30jh0MDLzSjVG", "projectId": "iLyLKuuWLZ2UaItwcRDP", "stepId": "PDVs9mnmJP", "stepNumber": 2, "testId": "aiOEfxSxxtSTzbV4", "testName": "Demo - Azure DevOps Integration", "testResultId": "yprgS8h5YVtdsm7O", "type": "action-code-step" }, { "branch": "master", "endTime": 1650486514587, "hookType": "afterStep", "name": "Click \"LOG IN\"", "projectId": "iLyLKuuWLZ2UaItwcRDP", "stepId": "cHxybgFhJsmZPfE9", "stepNumber": 3, "testId": "aiOEfxSxxtSTzbV4", "testName": "Demo - Azure DevOps Integration", "testResultId": "yprgS8h5YVtdsm7O", "type": "click" }, { "branch": "master", "endTime": 1650486515637, "hookType": "afterStep", "name": "Set username", "projectId": "iLyLKuuWLZ2UaItwcRDP", "stepId": "RCfpLV2umtLZ6IMw", "stepNumber": 4, "testId": "aiOEfxSxxtSTzbV4", "testName": "Demo - Azure DevOps Integration", "testResultId": "yprgS8h5YVtdsm7O", "type": "text" }, { "branch": "master", "endTime": 1650486516631, "hookType": "afterStep", "name": "Click password", "projectId": "iLyLKuuWLZ2UaItwcRDP", "stepId": "dVLpfa8cxnEiT2ho", "stepNumber": 5, "testId": "aiOEfxSxxtSTzbV4", "testName": "Demo - Azure DevOps Integration", "testResultId": "yprgS8h5YVtdsm7O", "type": "click" }, { "branch": "master", "endTime": 1650486517900, "hookType": "afterStep", "name": "Set password", "projectId": "iLyLKuuWLZ2UaItwcRDP", "stepId": "basMtPSV7SxGmvxR", "stepNumber": 6, "testId": "aiOEfxSxxtSTzbV4", "testName": "Demo - Azure DevOps Integration", "testResultId": "yprgS8h5YVtdsm7O", "type": "text" }, { "branch": "master", "endTime": 1650486518668, "hookType": "afterStep", "name": "Click \"LOG IN\"", "projectId": "iLyLKuuWLZ2UaItwcRDP", "stepId": "NmQsoLi7nvxS2nX8", "stepNumber": 7, "testId": "aiOEfxSxxtSTzbV4", "testName": "Demo - Azure DevOps Integration", "testResultId": "yprgS8h5YVtdsm7O", "type": "click" }, { "branch": "master", "endTime": 1650486519529, "errorType": "text-compare-failure", "failureReason": "Expected: 'Hello, Nicole'. Actual: 'Hello, John '", "hookType": "afterStep", "name": "Validate Welcome Message", "projectId": "iLyLKuuWLZ2UaItwcRDP", "stepId": "xoV4u2kHP8UUbiXg", "stepNumber": 8, "testId": "aiOEfxSxxtSTzbV4", "testName": "Demo - Azure DevOps Integration", "testResultId": "yprgS8h5YVtdsm7O", "type": "text-validation" }];
+
+let workitemType = "Bug"; // "Test Case", "Bug"
+let workitemTags = "Barry, Smoke";
+
 /**** DEBUG ****/
 
 /*
@@ -118,18 +133,35 @@ if (typeof returnVariableName !== 'undefined' && returnVariableName !== null)
 if (typeof validateOnly === 'undefined' || validateOnly === null)
     validateOnly = DEFAULT_VALIDATION_ONLY_MODE;
 
-let workItemType = "Bug";
-let workItemTags = "";
+let workitem_type = "Bug";
+if (typeof workitemType !== 'undefined' && workitemType !== null)
+    workitem_type = workitemType;
+
+let workitem_tags = "";
+if (typeof workitemTags !== 'undefined' && workitemTags !== null)
+    workitem_tags = workitemTags;
+
 let testResultWorkItem = {};
 
-let _request = undefined;
-try {
-    // Testim param either exists or the package is installed locally
-    _request = (typeof request !== 'undefined' && request !== null) ? request : require("request");
+function loadModules(moduleNames) {
+
+    let modulesLoaded = [];
+    function loadModule(moduleName) {
+        let moduleNameVar = moduleName.replace(/\-/g, "_");
+        eval('try { ' + moduleNameVar + ' = (typeof ' + moduleNameVar + ' !== "undefined" && ' + moduleNameVar + ' !== null) ? ' + moduleNameVar + ' : require("' + moduleName + '"); if (moduleNameVar != null) modulesLoaded.push("' + moduleName + '"); } catch { console.log("Module: ' + moduleName + ' is not installed"); } ');
+        if (modulesLoaded.includes(moduleName)) {
+            console.log("Module " + moduleName + " is loaded.")
+        }
+    }
+
+    moduleNames.forEach((moduleName) => {
+        loadModule(moduleName);
+    });
+
+    console.log("Module " + modulesLoaded + " is loaded.");
+
 }
-catch (e) {
-    throw new Error("Module 'request' is not found.  If running remote then the 'request' NPM variable is not set.  If running locally then make sure the module is installed via 'npm i request -g'");
-}
+loadModules(["request"]);
 
 function testResult_WorkItemJSON(_stepData, _stepInternalData, workItemId) {
 
@@ -149,7 +181,7 @@ function testResult_WorkItemJSON(_stepData, _stepInternalData, workItemId) {
     if (typeof (workItemId) !== 'undefined' && workItemId > 0)
         testResultWorkItem["id"] = workItemId;
 
-    testResultWorkItem["type"] = "Bug";
+    testResultWorkItem["type"] = workitem_type;
     testResultWorkItem["title"] = bugTitle;
 
     /* HISTORY
@@ -165,31 +197,59 @@ function testResult_WorkItemJSON(_stepData, _stepInternalData, workItemId) {
 
     /* TAGS
      */
-    if (typeof (WORKITEM_TESTIM_TAG) !== 'undefined' && WORKITEM_TESTIM_TAG !== null)
-        testResultWorkItem["tags"] = workItemTags + ((workItemTags === "") ? "" : ", ") + WORKITEM_TESTIM_TAG;
+    if (typeof (WORKITEM_DEFAULT_TAG) !== 'undefined' && WORKITEM_DEFAULT_TAG !== null)
+        testResultWorkItem["tags"] = workitem_tags + ((workitem_tags === "") ? "" : ", ") + WORKITEM_DEFAULT_TAG;
 
-    testResultWorkItem["state"] =
-        (typeof _stepInternalData.failureReason !== 'undefined')
-            ? (typeof (workItemId) !== 'undefined' && workItemId > 0)
-                ? TEST_FAIL_WORKITEM_EXISTING_STATE
-                : TEST_FAIL_WORKITEM_NEW_STATE
-            : TEST_PASS_WORKITEM_STATE;
+    switch (workitem_type.toUpperCase()) {
+        case "BUG":
+            testResultWorkItem["state"] =
+                (typeof _stepInternalData.failureReason !== 'undefined')
+                    ? (typeof (workItemId) !== 'undefined' && workItemId > 0)
+                        ? TEST_FAIL_WORKITEM_EXISTING_STATE
+                        : TEST_FAIL_WORKITEM_NEW_STATE
+                    : TEST_PASS_WORKITEM_STATE;
+            break;
+        case "TEST CASE":
+            //if (typeof (workItemId) !== 'undefined' && workItemId > 0)
+            testResultWorkItem["state"] = "Design";
+            break;
+
+        default:
+            break;
+    }
 
     /* REPRO STEPS
      */
-    let reprosteps = null;
     if (typeof _steps !== 'undefined' && _steps !== null) {
-        reprosteps = "<div><b>Steps</b></div>";
-        _steps.forEach((step) => {
-            let step_string = "";
-            step_string = "<div>Step " + step.stepNumber + ": " + step.name + "</div>";
-            reprosteps += step_string;
-        });
-        if (typeof _stepInternalData.failureReason !== 'undefined')
-            reprosteps += "<div>" + _stepInternalData.failureReason + "</div>";
+
+        switch (workitem_type.toUpperCase()) {
+            case "TEST CASE":
+                let steps = "<steps id=\"0\" last=\"1\">";
+                _steps.forEach((step, index) => {
+                    let step_string = "<step id=\"" + step.stepNumber + "\" type=\"ValidateStep\">"
+                    step_string += "<parameterizedString isformatted=\"true\">" + step.name + "</parameterizedString>";
+                    step_string += "<parameterizedString isformatted=\"true\"></parameterizedString><description/>";
+                    step_string += "</step>";
+                    steps += step_string;
+                });
+                steps += "<steps>";
+                testResultWorkItem["steps"] = steps;
+                break;
+            case "BUG":
+                let reprosteps = "<div><b>Steps</b></div>";
+                _steps.forEach((step) => {
+                    let step_string = "";
+                    step_string = "<div>Step " + step.stepNumber + ": " + step.name + "</div>";
+                    reprosteps += step_string;
+                });
+                if (typeof _stepInternalData.failureReason !== 'undefined')
+                    reprosteps += "<div>" + _stepInternalData.failureReason + "</div>";
+
+                testResultWorkItem["reprosteps"] = reprosteps;
+                break;
+        }
+
     }
-    if (typeof (reprosteps) !== 'undefined' && reprosteps !== null)
-        testResultWorkItem["reprosteps"] = reprosteps;
 
     /* Other fields available to be set
      */
@@ -199,8 +259,9 @@ function testResult_WorkItemJSON(_stepData, _stepInternalData, workItemId) {
     if (typeof (WORKITEM_AREA_PATH) !== 'undefined' && WORKITEM_AREA_PATH !== null) testResultWorkItem["areapath"] = WORKITEM_AREA_PATH;
 
     console.log("\ntestResult_WorkItemJSON => testResultWorkItem ==> \n\t" + JSON.stringify(testResultWorkItem));
-
-    exportsTest.testResultWorkItem = testResultWorkItem;
+    if (typeof exportsTest !== 'undefined') {
+        exportsTest.testResultWorkItem = testResultWorkItem;
+    }
 
     return (testResultWorkItem);
 }
@@ -254,7 +315,7 @@ function patchDocumentCreate(workItemInfoJSON) {
                     break;
 
                 case "TYPE":
-                    workItemType = workItemInfoJSON[key];
+                    workitem_type = workItemInfoJSON[key];
                     break;
 
                 case "TITLE":
@@ -279,7 +340,7 @@ function patchDocumentCreate(workItemInfoJSON) {
                         "op": "add",
                         "path": field_type_lookup[key.toUpperCase()],
                         "value": {
-                            "rel": (workItemType === 'Bug' ? "Microsoft.VSTS.Common.TestedBy-Forward" : "Microsoft.VSTS.Common.TestedBy-Reverse"),
+                            "rel": (workitem_type === 'Bug' ? "Microsoft.VSTS.Common.TestedBy-Forward" : "Microsoft.VSTS.Common.TestedBy-Reverse"),
                             //"System.LinkTypes.Related", // "System.LinkTypes.Dependency-forward",
                             "url": 'https://' + orgName + ".visualstudio.com/" + projectName + '/_apis/wit/workitems/' + workItemInfoJSON[key],
                             "attributes": {
@@ -343,18 +404,17 @@ async function makeRequest(apiUrl, requestMethod, contentType, requestBody) {
 
     return new Promise((resolve, reject) => {
 
-        _request(options, function (err, response, responseBody) {
+        request(options, function (err, response, responseBody) {
 
             if (typeof err !== 'undefined' && err !== null) {
-                console.log(err);
-                reject(err);
+                console.log("request() :" + err);
+                reject("request() :" + err);
             }
 
             if (response.statusCode != 200) {
-                console.log("response.statusCode = ", response.statusCode, "response.statusMessage = ", response.statusMessage);
-                reject("statusCode = " + response.statusCode + ", statusMessage = " + response.statusMessage + ", body = " + response.body);
+                console.log("request(): response.statusCode = ", response.statusCode, "response.statusMessage = ", response.statusMessage);
+                reject("request(): statusCode = " + response.statusCode + ", statusMessage = " + response.statusMessage + ", body = " + response.body);
             }
-
             resolve(responseBody);
 
         });
@@ -394,8 +454,11 @@ function AzureDevOpsWorkItemQuery(wiqlQuery, returnVariableName, orgName, projec
     if (typeof returnVariableName !== 'undefined' && returnVariableName !== null)
         return_variable_name = returnVariableName;
 
-    exportsTest.wiqlResponse = null;
-    exportsTest[return_variable_name] = null;
+    if (typeof exportsTest !== 'undefined') {
+        exportsTest.wiqlResponse = null;
+        exportsTest[return_variable_name] = null;
+    }
+
 
 
     async function makeRequest(apiUrl, requestMethod, contentType, requestBody) {
@@ -424,7 +487,7 @@ function AzureDevOpsWorkItemQuery(wiqlQuery, returnVariableName, orgName, projec
             , followAllRedirects: true
         };
 
-        await _request(options, function (err, response, responseBody) {
+        await request(options, function (err, response, responseBody) {
             if (typeof err !== 'undefined' && err !== null) {
                 console.log(err);
                 reject(err);
@@ -432,16 +495,18 @@ function AzureDevOpsWorkItemQuery(wiqlQuery, returnVariableName, orgName, projec
 
             if (response.statusCode != 200) {
                 console.log("response.statusCode = ", response.statusCode, "response.statusMessage = ", response.statusMessage);
-                exportsTest.adoResponse = response;
+                if (typeof exportsTest !== 'undefined')
+                    exportsTest.adoResponse = response;
                 reject("statusCode = " + response.statusCode + ", statusMessage = " + response.statusMessage + ", body = " + response.body);
             }
-
-            exportsTest.adoResponse = JSON.parse(responseBody);
-            exportsTest[return_variable_name] = exportsTest.adoResponse.workItems;
-
+            if (typeof exportsTest !== 'undefined') {
+                exportsTest.adoResponse = JSON.parse(responseBody);
+                exportsTest[return_variable_name] = exportsTest.adoResponse.workItems;
+            }
             let work_item_id;
-            if (typeof exportsTest.adoResponse.workItems !== 'undefined' && exportsTest.adoResponse.workItems.length > 0) {
-                work_item_id = exportsTest.adoResponse.workItems[0].id;
+            let response_body = JSON.parse(responseBody);
+            if (typeof response_body.workItems !== 'undefined' && response_body.workItems.length > 0) {
+                work_item_id = response_body.workItems[0].id;
             }
 
             resolve(work_item_id);
@@ -508,7 +573,7 @@ function AzureDevOpsWorkItemCreateUpdate(workItemInfoJSON, orgName, projectName,
     let apiUrl = '';
     if (operation === "NEW") {
         console.log("\nworkItemId undefined.  CREATE new work item");
-        apiUrl = 'https://' + orgName + ".visualstudio.com/" + projectName + '/_apis/wit/workitems/?Type=' + workItemType + '&validateOnly=' + validateOnly + '&bypassRules=true&suppressNotifications=true&api-version=6.0';
+        apiUrl = 'https://' + orgName + ".visualstudio.com/" + projectName + '/_apis/wit/workitems/?Type=' + workitem_type + '&validateOnly=' + validateOnly + '&bypassRules=true&suppressNotifications=true&api-version=6.0';
     } else {
         console.log("\nworkItemId defined.  UPDATE work item ", workItemId);
         apiUrl = 'https://' + orgName + ".visualstudio.com/" + projectName + '/_apis/wit/workitems/' + workItemId + '?validateOnly=' + validateOnly + '&bypassRules=true&suppressNotifications=true&api-version=6.0';
@@ -548,15 +613,16 @@ function AzureDevOpsWorkItemGet(workItemId) {
 
                 .then((responseBody) => {
 
-                    exportsTest.workItem = JSON.parse(responseBody);
-                    exportsTest[return_variable_name] = exportsTest.workItem;
-
+                    if (typeof exportsTest !== 'undefined') {
+                        exportsTest.workItem = JSON.parse(responseBody);
+                        exportsTest[return_variable_name] = exportsTest.workItem;
+                    }
                     let work_item_id;
                     if (typeof exportsTest.workItem !== 'undefined') {
                         work_item_id = exportsTest.workItem.id;
-                        workItemTags = "";
+                        workitem_tags = "";
                         if (Object.keys(exportsTest.workItem.fields).includes("System.Tags")) {
-                            workItemTags = exportsTest.workItem.fields["System.Tags"];
+                            workitem_tags = exportsTest.workItem.fields["System.Tags"];
                         }
                     }
 
@@ -577,12 +643,11 @@ function AzureDevOpsWorkItemGet(workItemId) {
 
 return new Promise((resolve, reject) => {
 
-
-    /* Find a work item (bug) that starts with this test's name
+    /* Find a work item (workitem_type) that starts with this test's name
     */
     let wiql = "Select [System.TeamProject], [System.Id], [System.Title], [System.State], [System.WorkItemType] "
         + "From WorkItems "
-        + "Where [System.WorkItemType] = 'Bug' "
+        + "Where [System.WorkItemType] = '" + workitem_type + "' "
         + "And [System.Title] Contains '" + ((_stepData.testName !== "") ? _stepData.testName + "'" : "unsaved untitled test'")
         ;
 
@@ -609,9 +674,9 @@ return new Promise((resolve, reject) => {
             });
         }
 
-    })
-    .then(() => {
+    }).then(() => {
 
-        console.log("\nAzureDevOpsWorkItemCreateUpdate RESPONSE ==> \n\t" + JSON.stringify(exportsTest.adoResponse));
+        if (typeof exportsTest !== 'undefined')
+            console.log("\nAzureDevOpsWorkItemCreateUpdate RESPONSE ==> \n\t" + JSON.stringify(exportsTest.adoResponse));
 
     });
