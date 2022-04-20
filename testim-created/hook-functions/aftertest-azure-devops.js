@@ -83,7 +83,7 @@ let TEST_FAIL_WORKITEM_EXISTING_STATE = "Approved";
 let TEST_FAIL_WORKITEM_NEW_STATE = "New";
 let TEST_PASS_WORKITEM_STATE = "Done";
 
-/**** DEBUG ****/
+/**** DEBUG ****
 
 // Uncomment this DEBUG block to run this as a regular step for initial debugging.  
 // Note, if uncommented and used in both a the test case and as a hook function then the following error will occur in the hook instance:
