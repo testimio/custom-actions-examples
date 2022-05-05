@@ -47,7 +47,9 @@
  *    Bob's your uncle
  */
 
-/* globals messages, emailAddress, emailExipirationSeconds, expectedSubject, expectedMessage, codeRegex, DOMParser, targetLinkText, matchType */
+/* eslint-disable no-var */
+/* eslint-disable no-redeclare */
+/* globals messages, emailAddress, emailExipirationSeconds, expectedSubject, expectedMessage, codeRegex, matchType, DOMParser, targetLinkText */
 
 let verbose = false;
 
@@ -116,10 +118,8 @@ if (typeof expectedSubject !== 'undefined' && expectedSubject !== null) {
 /* VALIDATE EMAIL BODY contains the expected text expectedMessage
  */
 
-let emailText = "";
-
+let emailText = messages[id].html.replace(/ {2}|\r\n|\n|\r/gm, "");
 if (typeof expectedMessage !== 'undefined' && expectedMessage !== null) {
-  emailText = messages[id].html.replace(/ {2}|\r\n|\n|\r/gm, "");
   if (!emailText.includes(expectedMessage)) {
     throw new Error("Email text not include expected text " + emailText);
   }
@@ -130,11 +130,14 @@ if (typeof expectedMessage !== 'undefined' && expectedMessage !== null) {
 if (typeof codeRegex !== 'undefined' && codeRegex !== null) {
   let pattern = new RegExp(codeRegex); // / [0-9]*\./; // new RegExp(codeRegex); // 
   let matches = emailText.match(pattern);
-  if (matches !== null) {
-    let code = matches.join();
+  if (matches !== null && matches.length > 0) {
+    if (verbose)
+      console.log("matches = " + matches);
+    let code = matches[matches.length - 1]; // .join();
     code = code.replace(" ", "").replace(".", "");
     console.log("Onetime use code = " + code);
-    exportsTest["emailCode"] = code;
+    if (typeof (exportsTest) !== 'undefined')
+      exportsTest["emailCode"] = code;
   }
 }
 
@@ -144,24 +147,28 @@ let target_link_text = null;
 if (typeof target_link_text !== 'undefined' && target_link_text !== null)
   target_link_text = targetLinkText;
 
-let parser = new DOMParser();
-let doc = parser.parseFromString(messages[id].html, "text/html");
-let linksElements = Array.from(doc.querySelectorAll("a"));
-if (verbose)
-  console.log("linksElements", linksElements);
+if (typeof (DOMParser) !== 'undefined') {
 
-exportsTest.emailLinks = [];
-if (linksElements !== null) {
-  linksElements.map(linkElement => ({ text: linkElement.innerText, link: linkElement.getAttribute("href") }));
+  let parser = new DOMParser();
+  let doc = parser.parseFromString(messages[id].html, "text/html");
+  let linksElements = Array.from(doc.querySelectorAll("a"));
+  if (verbose)
+    console.log("linksElements", linksElements);
 
-  for (let i = 0; i < linksElements.length; i++) {
-    if (target_link_text === null || stringMatch[matchtype](linksElements[i].text, target_link_text || stringMatch[matchtype](linksElements[i].getAttribute("href"), target_link_text))) {
-      let link = linksElements[i].getAttribute("href");
-      if (verbose) {
-        console.log("Found link", link);
+  exportsTest.emailLinks = [];
+  if (linksElements !== null) {
+    linksElements.map(linkElement => ({ text: linkElement.innerText, link: linkElement.getAttribute("href") }));
+
+    for (let i = 0; i < linksElements.length; i++) {
+      if (target_link_text === null || stringMatch[matchtype](linksElements[i].text, target_link_text)) {
+        let link = linksElements[i].getAttribute("href");
+        if (verbose) {
+          console.log("Found link", link);
+        }
+        if (typeof (exportsTest) !== 'undefined')
+          exportsTest.emailLinks.push(link);
       }
-      if (link !== "#")
-        exportsTest.emailLinks.push(link);
     }
   }
+
 }
