@@ -47,6 +47,8 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [hasClass](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/has-class.js) - Check if an element's class list includes certain expected classes
 
+[Checkbox - Check](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/checkbox-check.js) - Check/Uncheck/Toggle a checkbox.  Supports custom checkbox controls and states (some assembly required)
+
 <br/>
 
 [**Data Generation and Redaction**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/test-data/)
