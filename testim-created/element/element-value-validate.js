@@ -132,8 +132,8 @@ else {
 
     if (typeof expectedValue !== 'undefined' && expectedValue !== null) {
 
-        actualValue = actualValue.toFixed(sdPrecision);
-        expectedValue = expectedValue.toFixed(sdPrecision);
+        actualValue   = Number(actualValue).toFixed(sdPrecision);
+        expectedValue = Number(expectedValue).toFixed(sdPrecision);
 
         try {
             result = eval("(" + actualValue + " " + expression.toString() + " " + expectedValue + ")");
@@ -149,3 +149,4 @@ else {
 console.log("Validation (" + actualValue + " " + expression.toString() + " " + expectedValue + ") result: ", result);
 if ((typeof expectedValue !== 'undefined' && expectedValue !== null) && result == false)
     throw new Error("Validation (" + actualValue + " " + expression.toString() + " " + expectedValue + ") failed");
+    
