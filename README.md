@@ -97,6 +97,8 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [JSONDBFS Query](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/database-apis/jsfsdb-query.js) - Read/write data from/to local json files on disk using NoSQL query syntax.
 
+[Postgres Query](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/database-apis/postgres-query.js) - Execute a Postgres DB Query and return results
+
 <br/>
 
 [**API**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/)
