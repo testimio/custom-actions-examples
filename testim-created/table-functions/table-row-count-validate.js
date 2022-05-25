@@ -7,6 +7,7 @@
  *
  *      element (HTML)       : Target element (or child of) either a <table> or <ag-grid> 
  *      expectedCount  (JS)  : Number of rows expected
+ *      compareExpression  (JS) : Expression to compare number of rows against ( "==", ">", ">=", etc)
  * 
  *  Returns
  * 
@@ -37,7 +38,8 @@
 
 /* eslint-disable camelcase */
 /* eslint-disable no-unused-vars */
-/* globals document, element, expectedCount, returnVariableName, highlight */
+/* eslint-disable no-var */
+/* globals document, element, expectedCount, compareExpression, returnVariableName, highlight */
 
 let verbose = false;
 
@@ -46,12 +48,15 @@ let grid_css = "div[role='grid']";
 let grid_rowgroup_css = "div[role='rowgroup']";
 let grid_row_css = "div[role='row']";
 
-//let grid_header_css = "div[role='grid']>div[role='row']";
-
 /* Validate the target element is defined
  */
 if (typeof element === 'undefined' || element === null) {
     throw new Error("element must be defined");
+}
+
+var compare_expression = "==";
+if (typeof compareExpression !== 'undefined' && compareExpression !== null) {
+    compare_expression = (compareExpression == "=") ? "==" : compareExpression;
 }
 
 /* If user pointed at a table row or cell for the target element then be nice
@@ -232,7 +237,18 @@ copyToClipboard(actualCount);
 //
 if (typeof expectedCount !== 'undefined' && expectedCount !== null) {
 
-    if (actualCount != expectedCount)
-        throw new Error(`expectedCount(${expectedCount}) != actualCount(${actualCount})`)
+    var result = false;
 
+    try {
+        result = eval("(" + actualCount + " " + compare_expression.toString() + " " + expectedCount + ")");
+        console.log(`Validating (Expression) ${actualCount}  ${compare_expression.toString()} ${expectedCount} is ${result}`);
+    }
+    catch (error) {
+        throw new Error(error.message);
+    }
+
+    console.log("Validation (" + actualCount + " " + compare_expression.toString() + " " + expectedCount + ") result: ", result);
+    if (result === false)
+        throw new Error("Table - Row Count Validate: actualCount(" + actualCount + ") " + compare_expression.toString() + " expectedCount(" + expectedCount + ") ) is FALSE");
+        
 }
