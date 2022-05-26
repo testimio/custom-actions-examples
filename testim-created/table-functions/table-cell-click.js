@@ -172,7 +172,7 @@ function tableRowFind(theGrid, rowSelector, matchType) {
             if (columnheader_row !== null)
                 columnheader_nodes = columnheader_row.querySelectorAll('th');
 
-            rows = theGrid.getElementsByTagName("tr");
+            rows = theGrid.querySelectorAll("tbody tr");
 
             break;
 
