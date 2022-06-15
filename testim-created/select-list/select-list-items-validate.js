@@ -4,17 +4,19 @@
  *      Return and optionally validate (option/li/<custom>) from a select/ol/ul/<custom> element
  * 
  *  Parameters
- *
+ * 
  *      element (HTML) : Target element (or child of) either a <select>, <ol>, <ul> or <user-defined>
+ *      
  *      expectedValues (JS) : expected data example can be gotten by running this step with no expectedValue.  
  *                            The data will be in the clipboard and the variable actualItems (or returnVariableName if specified)
  *	                          If you set index:x key/value of an expected value node it validates that entry in that row of actual values.
- *      matchType [optional] : Textual match type when validating URL 
- *		            Examples: "exact", "startswith", "endswith", "includes", ntains"
- *                            "notexact", "notstartswith", "notendswith", "notincludes", "notcontains"
- *                            "NotFound", "NotExists", false
+ *
  *      returnVariableName (JS) [optional] : string name of variable to store actual values in that can be used for setting expectedValues
  *
+ *      matchType [optional] : Textual match type when validating URL 
+ *		            Examples: "exact", "startswith", "endswith", "includes", "contains"
+ *                            "notexact", "notstartswith", "notendswith", "notincludes", "notcontains"
+ *                            "NotFound", "NotExists", false
  *      resultsFilter (JS) [optional] : "first", "last", slice index ("5", "-5"), Default: All
  * 
  *      resultRegex (JS) [optional] : regex expression to parse each result
@@ -36,25 +38,17 @@
  *                                                   attributeValue: "listitem",
  *                                                   querySelector: 'div[role="listitem"]'
  *                                               }
- *                                           },
- *                                           {
- *                                               custom_list_selector: {
- *                                                   tagName: "table",
- *                                                   querySelector: 'table'
- *                                               },
- *                                               custom_list_item_selector: {
- *                                                   tagName: "tr",
- *                                                   querySelector: 'tr'
- *                                               }
- *                                           },]
+ *                                           }]
  * 
  *      returnVariableName (JS) [optional] : string name of variable to store actual values in that can be used for setting expectedValues
  *
  *  Returns
- * 
  *      actualItems - unless returnVariableName is set whereby data will be in that variable name instead
  * 
  *  Notes
+ * 
+ *  Version     Date        Author          Notes             
+ *      1.5.0   06/14/2022  Barry Solomon   Support out of order item validation
  * 
  *  Disclaimer
  *      This Custom Action is provided "AS IS".  It is for instructional purposes only and is not officially supported by Testim
@@ -63,22 +57,18 @@
  *      Custom Action
  * 
  *  Installation
- *      Create a new "Custom Action"
- *      Name it "Validate Select Items/Options"
- *      Create parameters
- *          element (HTML)
- *          expectedValues (JS)
- *          returnVariableName (JS) [optional]
+ *      Create a new shared "Custom Action" named "Validate Select Items/Options"
  *      Set the new custom action's function body to this javascript
- *      Exit the step editor
- *      Share the step if not already done so
- *      Save the test
- *      Bob's your uncle
+ *      Create parameters as outlined above
+ *      Save the test and "Bob's your uncle"
  *
 **/
 
-/* globals document, element, matchType, returnType, expectedValues, returnVariableName */
+/* eslint-disable camelcase */
+/* eslint-disable no-global-assign */
+/* globals document, element, matchType, returnType, expectedValues, returnVariableName, customListSelectors, resultsFilter, resultRegex */
 
+// eslint-disable-next-line no-unused-vars
 let custom_list_selector = null;
 let custom_list_item_selector = null;
 
@@ -122,6 +112,17 @@ let custom_list_selectors = [
             querySelector: 'tr'
         }
     },
+    {
+        custom_list_selector: {
+            tagName: "div",
+            querySelector: 'div'
+        },
+        custom_list_item_selector: {
+            tagName: "div",
+            querySelector: 'div'
+        }
+    },
+
 ];
 if (typeof customListSelectors === 'object')
     custom_list_selectors = customListSelectors;
@@ -362,7 +363,7 @@ if (!select_tags.includes(tagname)) {
 
 let actualValues = getSelectOptions(select_list, return_type);
 
-let resultValues = null;
+let resultValues = actualValues;
 switch (result_filter) {
     case "first":
         resultValues = actualValues[0];
@@ -400,61 +401,54 @@ if (verbose) {
 
 // Validate
 //
-function validateItems(actualValues, expectedValues, matchType) {
+function validateItems(actualValues, expectedValues, matchType, enforceOrder) {
 
     let result = true;
-    let expected_values;
-    let actual_values;
+    let expected_value;
+    let actual_value;
     let row_differences;
     let differences = [];
 
     for (let evid = 0; evid < expectedValues.length; evid++) {
 
-        expected_values = expectedValues[evid];
+        expected_value = expectedValues[evid];
 
-        let row_id = Object.keys(expected_values).includes("index") ? expected_values["index"] : evid;
-        actual_values = (actualValues[row_id] !== null) ? actualValues[row_id] : "";
+        let row_id = Object.keys(expected_value).includes("index") ? expected_value["index"] : evid;
+        actual_value = (actualValues?.length >= actualValues && actualValues[row_id] !== null) ? actualValues[row_id] : undefined;
 
         row_differences = {};
 
-        if (typeof expected_values === 'string' && typeof actual_values === 'string') {
-            if (!stringMatch[matchType](actual_values, expected_values)) {
-                row_differences[evid] = (matchType.startsWith("not")) ? { "matchType": matchType, "Found": actual_values } : { "matchType": matchType, "Not Found": expected_values };
-                if (result)
-                    result = false;
-            }
+        if (actualValues === undefined) {
+
+            row_differences[evid] = { "index": evid, "Actual": "<<No Selection>>", "Expected": expected_value };
+            result = false;
+
         }
-        else {
+        else if (typeof expected_value === 'string') {
 
-            for (let key in expected_values) {
-
-                if (key === 'index')
-                    continue;
-
-                if (verbose)
-                    console.log("Validate " + key + "Expected: [" + expected_values[key] + "], Actual:[" + actual_values[key] + "]");
-
-                if (Object.keys(actual_values).includes(key)) {
-                    if (!stringMatch[matchType](actual_values[key], expected_values[key])) {
-                        row_differences[key] = (matchType.startsWith("not")) ? { "matchType": matchType, "Found": actual_values[key] } : { "matchType": matchType, "Not Found": expected_values[key] };
-                        if (result)
-                            result = false;
-                        if (verbose)
-                            console.log("    MISMATCH:: " + key + " => \nExpected: [" + expected_values[key] + "], \nActual: [" + actual_values[key] + "]");
-                    }
+            result = false;
+            actualValues.forEach((actual_value) => {
+                if (stringMatch[matchType](actual_value, expected_value)) {
+                    if (!result)
+                        result = true;
                 }
-            }
+            });
+            if (!result)
+                row_differences[evid] = { "Actual": "<<No match>>", "Expected": expected_value, "MatchType" : matchType };
+
         }
+
         if (Object.keys(row_differences).length > 0)
             differences.push(row_differences);
+
     }
 
     // If failed, echo to console and report an error
     //
     if (!result) {
         if (verbose) {
-            console.log("expected_values", JSON.stringify(expectedValues));
-            console.log("actual_values", JSON.stringify(actual_values));
+            console.log("expected_value", JSON.stringify(expectedValues));
+            console.log("actual_value", JSON.stringify(actual_value));
         }
         console.log("Validate Select/List Options/Items: ", JSON.stringify(differences, null, 2));
         throw new Error("Validate Select/List Options/Items\n" + JSON.stringify(differences, null, 2));
@@ -465,6 +459,6 @@ function validateItems(actualValues, expectedValues, matchType) {
 
 if (typeof expectedValues !== 'undefined' && expectedValues !== null) {
 
-    validateItems(actualValues, expectedValues, match_type);
+    validateItems(resultValues, expectedValues, match_type);
 
 }
