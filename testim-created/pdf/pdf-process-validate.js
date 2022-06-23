@@ -5,6 +5,7 @@
  *      The sister step "Validate PDF Fields/Texts" can be used after this to do different validation(s) for tracking purposes
  * 
  *  Parameters
+ * 
  *      fieldsToValidate (JS) [optional] - JSON expected text/data that can be used to validate data in a PDF file
  *                          Example:  [{"Family Name" : "Solomon" }, { "Gender_List_Box": "Man" }, { "Height_Formatted_Field": "150" }, { "Favourite_Colour_List_Box": "Red" } ]
  *                                    [{  "TextBlock": "PDF Form Example" } ]
@@ -15,7 +16,6 @@
  *                                    4           Page 1-4
  *                                    <unset>     All pages
  *      pdf2json (NPM) - pdf2json NPM Package (Version: 1.3.1)
- *      clipboardy (NPM) - clipboardy NPM Package (Version  2.3.0)
  * 
  *  Output (The following test level variables will be created on successful execution of this step)
  *      pdfActualFieldValues : actual values that can be used as expected values (baseline)
@@ -27,31 +27,18 @@
  *      This Custom CLI Action is provided "AS IS".  It is for instructional purposes only and is not officially supported by Testim
  * 
  *  Base Step
- * 
  *      Validate Download 
  * 
- *  Installation
- *      Create a new "Validate Download" step
- *      Name it "Download-Process-Validate PDF"
- *      Create parameters
- *          fieldsToValidate (JS) 
- *          pages (JS) 
- *          pdf2json (NPM) and set its value = pdf2json @ latest 
- *          clipboardy (NPM) and set its value = clipboardy @ 2.3.0 
- *      Set the new custom action's function body to this javascript
- *      Set connection information
- *      Exit the step editor
- *      Share the step if not already done so
- *      Save the test
- *      Bob's your uncle
  */
 
 // Used for debugging.  Enable/disable writing interim data to the console
-let verbose = false;
+let verbose = true;
+
+// pdfData.Pages pdfData.formImage.Pages
 
 // let fileName = "C:\\Users\\barry\\OneDrive\\Projects\\nginx-1.16.1\\html\\OoPdfFormExample.pdf";
 
-const LINE_TEXTBLOCK_SEPARTOR_TOKEN = " ==> ";
+const LINE_TEXTBLOCK_SEPARTOR_TOKEN = " "; //" ==> ";
 
 let pdfParser;
 if (typeof pdf2json !== 'undefined' && pdf2json !== null) {
@@ -59,14 +46,6 @@ if (typeof pdf2json !== 'undefined' && pdf2json !== null) {
 }
 else {
     pdfParser = require("pdf2json");
-}
-
-let _clipboardy;
-if (typeof clipboardy !== 'undefined' && clipboardy !== null) {
-    _clipboardy = clipboardy;
-}
-else {
-    _clipboardy = require("clipboardy");
 }
 
 const fs = require('fs')
@@ -226,8 +205,12 @@ return new Promise((resolve, reject) => {
     });
 
     pdfParser.on("pdfParser_dataReady", pdfData => {
+
         console.log("pdfParser_dataReady");
 
+        // if (verbose) console.log("pdfData", JSON.stringify(pdfData));
+        // if (verbose) console.log("pdfData.formImage", JSON.stringify(pdfData.formImage));
+        //if (verbose) console.log("pdfData.Pages", JSON.stringify(pdfData.Pages));
         if (verbose) console.log("pdfData.Pages.length", pdfData.Pages.length);
 
         let { max_pages, target_pages } = TargetPage_IndexesGet(pdfData);
@@ -394,15 +377,14 @@ return new Promise((resolve, reject) => {
             console.log("=======================================================");
             console.log("============ PARSED FIELD/TEXT COUNTS ==================");
             console.log("=======================================================");
-            console.log("pdfDocumentFields    Pages:  " + pdfDocumentFields?.length, '  [0]: ' + pdfDocumentFields[0].length);
-            console.log("pdfDocumentTexts     Pages:  " + pdfDocumentTexts?.length, '  [0]: ' + pdfDocumentTexts[0].length);
+            console.log("pdfDocumentFields    Pages:  " + pdfDocumentFields?.length, '  [0]: ' + pdfDocumentFields[0]?.length);
+            console.log("pdfDocumentTexts     Pages:  " + pdfDocumentTexts?.length, '  [0]: ' + pdfDocumentTexts[0]?.length);
             console.log("pdfActualFieldValues Counts: " + pdfActualFieldValues?.length);
             console.log("pdfDocumentTextLines Counts: " + pdfDocumentTextLines?.length);
             console.log("=======================================================");
         }
 
-        // Save to clipboard
-        _clipboardy.writeSync(JSON.stringify(pdfActualFieldValues));
+        console.log("pdfDocumentTextLines ", JSON.stringify(pdfDocumentTextLines,null,2));
 
         //if (pdfDocumentFields.length > 0) {
         //    console.log("pdfDocumentFields", JSON.stringify(pdfDocumentFields, null, 2));
