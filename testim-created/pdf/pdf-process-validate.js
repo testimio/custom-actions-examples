@@ -6,9 +6,11 @@
  * 
  *  Parameters
  * 
- *      fieldsToValidate (JS) [optional] - JSON expected text/data that can be used to validate data in a PDF file
- *                          Example:  [{"Family Name" : "Solomon" }, { "Gender_List_Box": "Man" }, { "Height_Formatted_Field": "150" }, { "Favourite_Colour_List_Box": "Red" } ]
- *                                    [{  "TextBlock": "PDF Form Example" } ]
+ *      expectedData (JS) [optional] - JSON expected text/data that can be used to validate data in a PDF file
+ *                          Example:  [ {"Family Name" : "Solomon" }, { "Gender_List_Box": "Man" }, { "Height_Formatted_Field": "150" }, { "Favourite_Colour_List_Box": "Red" } ]
+ *                                    [ {"TextBlock": "PDF Form Example" } ]
+ *                                    [ {"TextLine": "PDF Form Example" } ]
+ *                                    [ "PDF Form Example", "Man" ]
  *      pages (JS) - Limits processing to just certain pages
  *                          Example:  '1-3'       Pages 1,2,3
  *                                    '3-5'       Pages 3,4,5
@@ -29,6 +31,9 @@
  *  Base Step
  *      Validate Download 
  * 
+ *  Notes
+ * 
+ *      npm i pdf2json@1.3.1
  */
 
 // Used for debugging.  Enable/disable writing interim data to the console
@@ -37,6 +42,13 @@ let verbose = true;
 // pdfData.Pages pdfData.formImage.Pages
 
 // let fileName = "C:\\Users\\barry\\OneDrive\\Projects\\nginx-1.16.1\\html\\OoPdfFormExample.pdf";
+// let fileName = "C:\\Users\\barry\\OneDrive\\Projects\\nginx-1.16.1\\html\\pdfs\\Terma A_S_Q-00044132_SO_Original_SO V6.11_2022-05-27.pdf";
+// var expectedData = ["SERVICE ORDER", "SERViiICE ORDER"];
+
+let fieldsToValidate = null;
+if (typeof (expectedData) !== 'undefined' && expectedData !== null) {
+    fieldsToValidate = expectedData;
+}
 
 const LINE_TEXTBLOCK_SEPARTOR_TOKEN = " "; //" ==> ";
 
@@ -45,7 +57,8 @@ if (typeof pdf2json !== 'undefined' && pdf2json !== null) {
     pdfParser = new pdf2json();
 }
 else {
-    pdfParser = require("pdf2json");
+    let PDFParser = require("pdf2json");
+    pdfParser = new PDFParser();
 }
 
 const fs = require('fs')
@@ -54,6 +67,19 @@ var pdfDocumentFields = [];
 var pdfDocumentTexts = [];
 var pdfDocumentTextLines = [];
 var pdfActualFieldValues = [];
+
+/* Convenience functions used for matching
+ */
+const stringMatch = {};
+stringMatch['exact'] = function (str1, str2) { return (str1 === str2); };
+stringMatch['startswith'] = function (str1, str2) { return str1.startsWith(str2); };
+stringMatch['endswith'] = function (str1, str2) { return str1.endsWith(str2); };
+stringMatch['includes'] = function (str1, str2) { return str1.includes(str2); };
+stringMatch['contains'] = function (str1, str2) { return str1.includes(str2); };
+
+let matchtype = "includes";
+if (typeof matchType !== 'undefined' && matchType !== null)
+    matchtype = matchType;
 
 function TargetPage_IndexesGet(pdfData) {
 
@@ -195,9 +221,43 @@ function pdfFieldValidate(searchToken, expectedValues) {
 
 }
 
+function textMultiMatch(sourceTexts, expectedTexts, matchType) {
+
+    let expected_texts = (Array.isArray(expectedTexts)) ? expectedTexts : [expectedTexts];
+    let source_texts = (Array.isArray(sourceTexts)) ? sourceTexts : [sourceTexts];
+    let mismatches = [];
+
+    expected_texts.forEach((expectedText) => {
+
+        let matched = false;
+
+        source_texts.forEach(function (textLine) {
+            if (textLine !== null && stringMatch[matchType](textLine, expectedText)) {
+                matched = true;
+            }
+        });
+
+        if (!matched) {
+            mismatches.push(expectedText);
+            if (verbose)
+                console.error("sourceTexts does not include: ", expectedText, matchType);
+        }
+
+    })
+
+    return mismatches;
+
+}
+
 return new Promise((resolve, reject) => {
 
     console.log("new Promise");
+    console.log("\n");
+
+    pdfParser.on("readable", meta => {
+        console.log("============= PDF Metadata ===================");
+        console.log(JSON.stringify(meta));
+    });
 
     pdfParser.on("pdfParser_dataError", errData => {
         console.log("pdfParser_dataError");
@@ -210,7 +270,7 @@ return new Promise((resolve, reject) => {
 
         // if (verbose) console.log("pdfData", JSON.stringify(pdfData));
         // if (verbose) console.log("pdfData.formImage", JSON.stringify(pdfData.formImage));
-        //if (verbose) console.log("pdfData.Pages", JSON.stringify(pdfData.Pages));
+        // if (verbose) console.log("pdfData.Pages", JSON.stringify(pdfData.Pages));
         if (verbose) console.log("pdfData.Pages.length", pdfData.Pages.length);
 
         let { max_pages, target_pages } = TargetPage_IndexesGet(pdfData);
@@ -222,7 +282,7 @@ return new Promise((resolve, reject) => {
         let current_line_number = 0;
         for (var i = 0; i < max_pages; i++) {
 
-            if (!target_pages.includes((i + 1)))
+            if (!target_pages.includes((i + 1))) // not sure what this is.  might be stupid
                 continue;
 
             let current_line_top_y = -1;
@@ -384,57 +444,7 @@ return new Promise((resolve, reject) => {
             console.log("=======================================================");
         }
 
-        console.log("pdfDocumentTextLines ", JSON.stringify(pdfDocumentTextLines,null,2));
-
-        //if (pdfDocumentFields.length > 0) {
-        //    console.log("pdfDocumentFields", JSON.stringify(pdfDocumentFields, null, 2));
-        //    console.log("=======================================================");
-        //}
-        //console.log("============= pdfActualFieldValues ===================");
-        //console.log("pdfActualFieldValues", JSON.stringify(pdfActualFieldValues,null,2)); 
-        //var line = 1;
-        //pdfDocumentTextLines.forEach(function (field) { console.log("Line#" + line++ + "\t-> ", field); });
-
-        //console.log("=======================================================");
-
-        /* if fieldsToValidate is defined then validate 
-         */
-        if (typeof fieldsToValidate !== 'undefined' && fieldsToValidate !== null) {
-            /*
-            * Normalize fields to validate
-            *	[{ "Given_Name_Text_Box": "Barry" }, { "Given": "Barry" }, { "Family_Name_Text_Box": "Solomon"}]
-            */
-            var fields_to_validate = [];
-            if (typeof fieldsToValidate !== 'object')
-                fields_to_validate.push(fieldsToValidate);
-            else
-                fields_to_validate = fieldsToValidate;
-
-            /*
-            * Execute (Loops each field to validate)
-            */
-            fields_to_validate.forEach(function (field_to_validate) {
-
-                switch (field_to_validate) {
-
-                    case "Page":
-                    case "LineNumber":
-                        break;
-
-                    default:
-
-                        field = Object.keys(field_to_validate)[0];
-                        expected_values = field_to_validate[field];
-
-                        pdfFieldValidate(field, expected_values);
-                        break;
-                }
-
-            });
-        }
-
-        resolve(pdfData);
-
+        resolve();
     });
 
     if (typeof fileBuffer !== 'undefined' && fileBuffer !== null) {
@@ -444,6 +454,69 @@ return new Promise((resolve, reject) => {
         pdfParser.loadPDF(fileName);
     }
 
-});
+})
+    .then(() => {
+
+        console.log("pdfDocumentTextLines ", JSON.stringify(pdfDocumentTextLines, null, 2));
+        console.log("=======================================================");
+
+        /* if fieldsToValidate is defined then validate 
+         */
+        if (typeof fieldsToValidate !== 'undefined' && fieldsToValidate !== null) {
+
+            var fields_to_validate = [];
+            if (typeof fieldsToValidate !== 'object')
+                fields_to_validate.push(fieldsToValidate);
+            else
+                fields_to_validate = fieldsToValidate;
+
+            if (typeof (fields_to_validate[0]) === "string") { // Validate Text pdfDocumentTextLines
+
+                let misses = textMultiMatch(pdfDocumentTextLines, fields_to_validate, matchtype);
+                if (misses?.length > 0) {
+                    console.error(`textMultiMatch(${JSON.stringify(matchtype)})  DOES NOT include the following: ${JSON.stringify(misses)}`);
+                    throw new Error(`textMultiMatch(${JSON.stringify(matchtype)})  DOES NOT include the following: ${JSON.stringify(misses)}`);
+                }
+                else {
+                    if (verbose)
+                        console.log(`textMultiMatch(${JSON.stringify(matchtype)}) includes the following: ${JSON.stringify(fields_to_validate)}`);
+                }
+
+            }
+            else { // Validate pdf form fields/text blocks
+
+                fields_to_validate.forEach(function (field_to_validate) {
+
+                    switch (field_to_validate) {
+
+                        case "Page":
+                        case "LineNumber":
+                            break;
+
+                        default:
+
+                            switch (typeof (field_to_validate)) {
+
+                                default:
+
+                                    field = Object.keys(field_to_validate)[0];
+                                    expected_values = field_to_validate[field];
+
+                                    pdfFieldValidate(field, expected_values);
+
+                                    break;
+
+                            }
+
+                            break;
+                    }
+
+                });
+
+            }
+
+        }
+
+    });
 
 
