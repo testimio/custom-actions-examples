@@ -1,5 +1,5 @@
 /**
- *  Table - Cell Click
+ *  Table - Row Click
  *
  *      Click a specific cell within a specific row in a table
  * 
@@ -12,12 +12,12 @@
  *                               { "2" : "Nicole" }  - find "Nicole" in column 3
  *                               { "index" : 4 }     - row 5
  *                               2                   - row 3
- *      columnSelector  (JS)   : Column name or index to click within a row
+ *      columnSelector [optional] (JS)   : Column name or index to click within a row
  *                       example "Value"
  *                               0
- *      matchType [optional] : Text match type when searching for text in lists/selects
+ *      matchType (JS) [optional] : Text match type when searching for text in lists/selects
  *		            Examples: exact (default), startswith, endswith, includes 
- * 
+ *
  *      returnVariableName (JS) [optional] : string name of variable to store actual value in 
  * 
  *      gridTypeSearchOrder (JS) [optional] : Order of custom grid(s) to consider (Default is ["KENDO", "AGGRID", "HTML", "SALESFORCE"])
@@ -26,7 +26,7 @@
  * 
  *  Returns
  * 
- *      cellValue (or returnVariableName if specified) will contain actual cell value
+ *      rowInnerText (or returnVariableName if specified) will contain actual found rowSelector Column Values
  * 
  *  Notes
  * 
@@ -58,7 +58,7 @@
 
 /* User setable parameters
  */
-var return_variable_name = 'undefined';
+var return_variable_name = 'rowInnerText';
 var grid_type_search_order = ["KENDO", "AGGRID", "HTML", "SALESFORCE"]; // Most unique to most common
 var compare_expression = "==";
 var row_selector = undefined;
@@ -113,26 +113,19 @@ exportsTest["tableCellValues"] = table_cell_values;
 /*** Function Specific Logic Below ***/
 
 let target_table_row = tableRowFind(table_rows, table_columnnames, row_selector, matchtype);
-let target_table_cell = undefined;
 
-if (typeof target_table_row !== 'undefined' && target_table_row !== null)
-    target_table_cell = tableCellFind(target_table_row, column_selector, matchtype);
-
-if (verbose)
-    console.log("target_table_cell = ", target_table_cell);
-
-if (typeof target_table_cell !== 'undefined' && target_table_cell !== null) {
+if (typeof target_table_row !== 'undefined' && target_table_row !== null) {
 
     if (verbose)
-        console.log("Click on cell with innerText = ", target_table_cell.innerText);
+        console.log("Click on row with innerText = ", target_table_row.innerText);
 
-    copyToClipboard(target_table_cell.innerText);
-    exportsTest[return_variable_name] = target_table_cell.innerText;
+    copyToClipboard(target_table_row.innerText);
+    exportsTest[return_variable_name] = target_table_row.innerText;
 
     if (highlight_elements && highlight_target_cell)
-        target_table_cell.style.border = TABLE_TARGET_CELL_HIGHLIGHT_BORDER;
+        target_table_row.style.border = TABLE_TARGET_CELL_HIGHLIGHT_BORDER;
 
-    let target_element = (target_table_cell.children.length == 0) ? target_table_cell : target_table_cell.children[0]
+    let target_element = (target_table_row.children.length == 0) ? target_table_row : target_table_row.children[0]
     return new Promise((resolve, reject) => {
 
         function doEvent(obj, eventName) {
@@ -159,5 +152,5 @@ if (typeof target_table_cell !== 'undefined' && target_table_cell !== null) {
                 }
             }
         })
-        
+
 }
