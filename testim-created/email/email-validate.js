@@ -8,18 +8,23 @@
  *    expectedSubject (JS) [optional] : 
  *    expectedMessage (JS) [optional] : 
  *    emailExipirationSeconds (JS) [optional] : 
- *    codeRegex (JS) [optional] : Regular expression string to extract verification code or other data from email
+ *    emailCode (JS) [optional] : Specification on how to extract text from the email
+ *         /regex/  - Return matched regex
+ *         { "start" : <string>/<number> } - return text from start <string>/<number> to end of email
+ *         { "end" : <string>/<number> } - return text from start of email  to end <string>/<number>
+ *         { "start" : 10, "end" : <string>/<number> } - return text from charater 10 to end <string>/<number>
+ *         { "start" : <string>/<number>, "end" : <string>/<number> } - return text bracketed by start <string> and end <string>/<number>
+ *
  *    targetLinkText (JS) [optional] : Optionally match text in link for specifying specific links in an email
  * 	  matchType (JS) [optional] : Text match type when searching for text in links (Default: includes)
  * 
  *  Returns
  * 
- *    emailCode - OTP or other data based on codeRegex
+ *    emailCode - OTP or other data based on emailCode
  *    emailLinks - array of links found in the email
  * 
- *  Author
- * 
- *      Barry Solomon 2022, Tricentis Testim
+ *  Version       Date        Author          Details
+ *      2.0.1     07/11/2022  Barry Solomon   Enhanced email code parsing logic
  * 
  *  Disclaimer
  * 
@@ -28,28 +33,12 @@
  *  Base Step
  * 
  *    Email validation 
- * 
- *  Installation
- * 
- *    Create a new "Email validation" step
- *    Name it "Email Validate"
- *    Create parameters
- *        expectedSubject (JS)
- *        expectedMessage (JS)  
- *        emailExipirationSeconds (JS)  
- *        codeRegex (JS)  
- *        targetLinkText (JS)  
- *        matchType (JS)  
- *    Set the new email validation step's function body to this javascript
- *    Exit the step editor
- *    Share the step if not already done so
- *    Save the test
- *    Bob's your uncle
- */
+ *
+ **/
 
 /* eslint-disable no-var */
 /* eslint-disable no-redeclare */
-/* globals messages, emailAddress, emailExipirationSeconds, expectedSubject, expectedMessage, codeRegex, matchType, DOMParser, targetLinkText */
+/* globals messages, emailAddress, emailExipirationSeconds, expectedSubject, expectedMessage, emailCode, matchType, DOMParser, targetLinkText */
 
 let verbose = false;
 
@@ -127,18 +116,76 @@ if (typeof expectedMessage !== 'undefined' && expectedMessage !== null) {
 
 /* Parse a One Time Code from the email body
  */
-if (typeof codeRegex !== 'undefined' && codeRegex !== null) {
-  let pattern = new RegExp(codeRegex); // / [0-9]*\./; // new RegExp(codeRegex); // 
-  let matches = emailText.match(pattern);
-  if (matches !== null && matches.length > 0) {
-    if (verbose)
-      console.log("matches = " + matches);
-    let code = matches[matches.length - 1]; // .join();
-    code = code.replace(" ", "").replace(".", "");
-    console.log("Onetime use code = " + code);
-    if (typeof (exportsTest) !== 'undefined')
-      exportsTest["emailCode"] = code;
+function codeParser(sourceText, codeDef) {
+
+  let codeRegex = (typeof (codeDef) == "string") ? codeDef : null; //"\\d+";
+  let startPosition = codeDef?.start ?? 0;
+  let endPosition = codeDef?.end ?? sourceText.length;
+
+  let code = "";
+  let startOffset = 0;
+  let endOffset = sourceText.length;
+
+  if (typeof codeRegex !== 'undefined' && codeRegex !== null) {
+
+    let pattern = new RegExp(codeRegex); // / [0-9]*\./; // new RegExp(codeRegex); // 
+
+    let matches = sourceText.match(pattern);
+    if (matches !== null && matches.length > 0) {
+
+      if (verbose)
+        console.log("matches.length=" + matches.length + ", matches = " + matches);
+
+      code = matches[matches.length - 1]; // .join();
+
+      code = code.toString().replace(" ", "");
+
+      if (typeof (exportsTest) !== 'undefined')
+        exportsTest["emailCode"] = code;
+    }
+
   }
+  else if (typeof startPosition !== 'undefined' && startPosition !== null) {
+
+    if (typeof startPosition !== 'undefined' && startPosition !== null) {
+      if (typeof startPosition === 'string')
+        startOffset = sourceText.toLowerCase().indexOf(startPosition.toLowerCase()) + startPosition.length;
+      else
+        startOffset = startPosition;
+    }
+    if (typeof endPosition !== 'undefined' && endPosition !== null) {
+      if (typeof endPosition === 'string')
+        endOffset = sourceText.toLowerCase().indexOf(endPosition.toLowerCase());
+      else
+        endOffset = endPosition;
+    }
+
+    if (verbose)
+      console.log("startOffset", startOffset, "endOffset", endOffset);
+
+    if (startOffset < 0 || startOffset >= sourceText.length)
+      startOffset = 0;
+    if (endOffset < 0 || endOffset >= sourceText.length)
+      endOffset = sourceText.length;
+    if (startOffset >= endOffset) {
+      throw new Error("startOffseting position (" + startOffset + ") can not be after endOffset positon (" + endOffset + ")");
+    }
+
+    code = sourceText.substring(startOffset, endOffset).trim();
+
+  }
+
+  return code;
+
+}
+if (typeof emailCode !== 'undefined' && emailCode !== null) {
+
+  let code = codeParser(emailText, emailCode);
+
+  console.log("Onetime use code = " + code);
+  if (typeof (exportsTest) !== 'undefined')
+    exportsTest["emailCode"] = code;
+
 }
 
 /* Search for and return any links found in the email
