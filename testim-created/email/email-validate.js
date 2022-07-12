@@ -25,6 +25,7 @@
  * 
  *  Version       Date        Author          Details
  *      2.0.2     07/12/2022  Barry Solomon   Update logic to optionally only consider emails of subject <expectedSubject>
+ *      2.0.3     07/12/2022  Barry Solomon   Parse links that are simple text and not an href of a link
  * 
  *  Disclaimer
  * 
@@ -219,6 +220,7 @@ if (typeof (DOMParser) !== 'undefined') {
 
   exportsTest.emailLinks = [];
   if (linksElements !== null) {
+
     linksElements.map(linkElement => ({ text: linkElement.innerText, link: linkElement.getAttribute("href") }));
 
     for (let i = 0; i < linksElements.length; i++) {
@@ -231,6 +233,23 @@ if (typeof (DOMParser) !== 'undefined') {
           exportsTest.emailLinks.push(link);
       }
     }
+
+    var expression = /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/gi;
+    var regex = new RegExp(expression);
+    var urls = emailText.match(regex);
+    if (urls !== undefined) {
+      urls.filter((url) => {
+        if (!linksElements.includes(url)) {
+          if (verbose) {
+            console.log("Found url", url);
+          }
+          if (typeof (exportsTest) !== 'undefined')
+            exportsTest.emailLinks.push(url.replace(/'/g, '').replace('>', '').replace('&#x3D;', '='));
+        }
+      });
+
+    }
+
   }
 
 }
