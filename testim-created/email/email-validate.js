@@ -24,7 +24,7 @@
  *    emailLinks - array of links found in the email
  * 
  *  Version       Date        Author          Details
- *      2.0.1     07/11/2022  Barry Solomon   Enhanced email code parsing logic
+ *      2.0.2     07/12/2022  Barry Solomon   Update logic to optionally only consider emails of subject <expectedSubject>
  * 
  *  Disclaimer
  * 
@@ -37,6 +37,7 @@
  **/
 
 /* eslint-disable no-var */
+/* eslint-disable camelcase */
 /* eslint-disable no-redeclare */
 /* globals messages, emailAddress, emailExipirationSeconds, expectedSubject, expectedMessage, emailCode, matchType, DOMParser, targetLinkText */
 
@@ -44,8 +45,8 @@ let verbose = false;
 
 /* Check that we have emails to validate
  */
-if (messages === null || messages.length === 0) {
-  throw new Error("Failed to find message in inbox " + emailAddress);
+if (messages === undefined || messages === null || messages.length === 0) {
+  throw new Error("Failed to find any message in inbox (" + emailAddress + ") ");
 }
 
 /* Convenience functions used for matching
@@ -64,7 +65,46 @@ if (typeof matchType !== 'undefined' && matchType !== null) {
 
 /* The latest message in our inbox is last in the email message list
  */
-let id = messages.length - 1;
+let email_message = messages.reverse().find((email_message) => {
+
+  /* Only condsider emails that arrived in last emailExipirationSeconds seconds
+   */
+  if (typeof emailExipirationSeconds !== 'undefined' && emailExipirationSeconds > 0) {
+
+    if (verbose)
+      console.log("Validate email expiration");
+
+    let emailDate = Date.parse(email_message.date);
+    let time_diff = (Date.now() - emailDate) / 1000;
+
+    if (time_diff > emailExipirationSeconds) {
+      if (verbose)
+        console.log("EXPIRED");
+      return false;
+    }
+  }
+
+  /* VALIDATE SUBJECT by only considering emails with the expected
+   */
+  if (typeof expectedSubject !== 'undefined' && expectedSubject !== null) {
+    let emailSubject = email_message.subject;
+    if (!stringMatch[matchtype](emailSubject, expectedSubject)) {
+      return false;
+    }
+  }
+
+  return true;
+
+});
+
+/* Check that we have emails to validate
+ */
+if (email_message === undefined) {
+  if (typeof expectedSubject !== 'undefined' && expectedSubject !== null) {
+    throw new Error("Failed to find any messages in inbox (" + emailAddress + ") with subject " + expectedSubject);
+  }
+  throw new Error("Failed to find any messages in inbox (" + emailAddress + ")");
+}
 
 /* Print out parameters for debugging purposes
  */
@@ -74,40 +114,15 @@ console.log("expectedMessage: " + (typeof expectedMessage === 'undefined') ? 'un
 
 /* Print out the last email's information for debugging purposes
  */
-console.log("Subject = " + messages[id].subject);
-console.log("Message = " + messages[id].html);
-console.log("Date    = " + messages[id].date);
-console.log("To      = " + JSON.stringify(messages[id].to));
-console.log("From    = " + JSON.stringify(messages[id].from));
-
-/* If an email expiration date has been set
- *  then only condsider emails that arrived in last emailExipirationSeconds seconds
- */
-if (typeof emailExipirationSeconds !== 'undefined' && emailExipirationSeconds > 0) {
-  console.log("Validate email expiration");
-
-  let emailDate = Date.parse(messages[id].date);
-  let time_diff = (Date.now() - emailDate) / 1000;
-
-  if (time_diff > emailExipirationSeconds) {
-    console.log("EXPIRED");
-    throw new Error("Emails have expired");
-  }
-}
-
-/* VALIDATE SUBJECT
- */
-if (typeof expectedSubject !== 'undefined' && expectedSubject !== null) {
-  let emailSubject = messages[id].subject;
-  if (emailSubject !== expectedSubject) {
-    throw new Error("Email subject not match " + emailSubject);
-  }
-}
+console.log("Subject = " + email_message.subject);
+console.log("Message = " + email_message.html);
+console.log("Date    = " + email_message.date);
+console.log("To      = " + JSON.stringify(email_message.to));
+console.log("From    = " + JSON.stringify(email_message.from));
 
 /* VALIDATE EMAIL BODY contains the expected text expectedMessage
  */
-
-let emailText = messages[id].html.replace(/ {2}|\r\n|\n|\r/gm, "");
+let emailText = email_message.html.replace(/ {2}|\r\n|\n|\r/gm, "");
 if (typeof expectedMessage !== 'undefined' && expectedMessage !== null) {
   if (!emailText.includes(expectedMessage)) {
     throw new Error("Email text not include expected text " + emailText);
@@ -197,7 +212,7 @@ if (typeof target_link_text !== 'undefined' && target_link_text !== null)
 if (typeof (DOMParser) !== 'undefined') {
 
   let parser = new DOMParser();
-  let doc = parser.parseFromString(messages[id].html, "text/html");
+  let doc = parser.parseFromString(email_message.html, "text/html");
   let linksElements = Array.from(doc.querySelectorAll("a"));
   if (verbose)
     console.log("linksElements", linksElements);
