@@ -190,7 +190,6 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Transaction Summary Report](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/performance-testing/transaction-summary-report-to-disk.js) - Log/Report all transactions to disk in an HTML format.
 
-transaction-summary-report
 [Network Performance Checker](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/performance-testing/network-performance-checker.js) - Validate that all network requests are completed under maxResponseTime milliseconds. 
 
 [Network Performance Summary](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/performance-testing/network-performance-summary.js) - Creates a summary of network requests with min/max/avg duration and request size. 
