@@ -7,20 +7,6 @@ If you have an idea for a custom action example feel free to submit a GitHub iss
 
 Initially it includes custom action steps (JavaScript) that we have created for customers. The code can be copied from here and added to a custom step in a Testim test. Instructions on how to use each example are included in the linked file with the JavaScript code needed. Typically it will involve copying the file and code into a custom step, making a change or two to the properties panel, checking your variables, and perhaps pointing to the correct element. 
 
-[**Test Reporting and Analysis**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/test-reporting-analysis/)
-
-[Testim Test Result Report Generator](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/test-reporting-analysis/testim-test-result-report-generate.js) - Generate Detailed HTML/PDF Test Report(s) with optional screenshots, test data and network summary performance data
-
-[AfterStep - Extended (Hook Function)](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/hook-functions/afterstep-extended.js) - Collect enhanced step information for AfterTest reporting
-
-[After Test Hook - JSONDBFS (Hook Function)](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/hook-functions/aftertest-jsondbfs.js) - Collect test results gathered during a test run and insert into a JSONDBFS Database Collection (file)
-
-[After Test Hook - SQL Server (Hook Function)](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/hook-functions/aftertest-sqlserver.js) - Collect test results gathered during a test run and insert into a SQL Server database table
-
-[Network Performance Summary](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/performance-testing/network-performance-summary.js) - Creates a summary of network requests with min/max/avg duration and request size that can be included in the test report. 
-
-<br/>
-
 [**Element Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/)
 
 [Classes Get](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/classes-get.js) - Get an element's class list as a string array
@@ -65,26 +51,6 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 <br/>
 
-[**Validation Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/)
-
-[Image Element Capture-Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/image-element-capture-validate.js) - Capture an image of a DOM element and optionally validate (pixel exact match)
-
-[Link Checker](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/link-checker.js) (CLI) - Finds links at the given URL and validates that they are working. 
-
-[Network Validate Request](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/network/network-validate-requests.js) - Validate that network requests were made and optionally validate response status(es) and/or request(s) are not slower than maxDuration (ms).
-
-[Numeric Expression Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/numeric-expression-validate.js) - Validate a value using numeric expressions ">", ">=", "==", "<", "<=".
-
-[Email - Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/email/email-validate.js) -  Process email inbox and validate/parse last message for subject/body and optional regex to pull specific data and links
-
-[Element Computed Style(s) - Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validate-computed-style.js) - Validate a superset/subset of style for an element
-
-[Validate Currency](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/validate-currency.js) - Validate that an element displays an expected value formatted as currency.
-
-[Validate HTML Markup](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/validate-html-markup.js) - Validates the current page's HTML markup contains certain markup.
-
-<br/>
-
 [**Database Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/database-apis/)
 
 [MongoDB Query](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/database-apis/mongodb-query.js) - Execute a MongoDB Query and return results
@@ -120,21 +86,6 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 [PDF - Download-Process-Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/pdf/pdf-process-validate.js) - Download, parse and optionally validate a PDF document
 
 [PDF - Fields/Texts Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/pdf/pdf-fields-textblocks-validate.js) - Validates text blocks and fields using pdfDocumentTexts and pdfDocumentFields from "Download-Process-Validate PDF" step
-
-<br/>
-
-[**Select List Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/select-list/)
-
-[Select List - Items Get](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/select-list/select-list-items-get.js) - Return items (option/li/custom) from a select/ol/ul/custom element
-
-[Select List - Items Select](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/select-list/select-list-items-select.js) - Select an item by value or text (select/option, ul/li)
-
-[Select List - Items Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/select-list/select-list-items-validate.js) - Validate that expected items are in a list/select.
-
-
-[Select List - Items Order Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/select-list/select-list-items-order-validate.js) -  Validate the items (option/li/<custom>) from a (select/ol/ul/<custom>) element are sorted properly.
-
-[Select List - Selected Items Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/select-list/select-list-items-selected-validate.js) - Validate the selected item(s) text, value, misc attribute(s) are correct.
 
 <br/>
 
@@ -184,8 +135,6 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Transaction End](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/performance-testing/transaction-end.js) - End a transaction.
 
-[Transaction End](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/performance-testing/transaction-end.js) - End a transaction.
-
 [Transaction Summary Report](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/performance-testing/transaction-summary-report.js) - Log/Report all transactions.
 
 [Transaction Summary Report To File](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/performance-testing/transaction-summary-report-to-disk.js) - Log/Report all transactions to disk in an HTML format.
@@ -193,6 +142,35 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 [Network Performance Checker](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/performance-testing/network-performance-checker.js) - Validate that all network requests are completed under maxResponseTime milliseconds. 
 
 [Network Performance Summary](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/performance-testing/network-performance-summary.js) - Creates a summary of network requests with min/max/avg duration and request size. 
+
+<br/>
+
+[**Test Reporting and Analysis**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/test-reporting-analysis/)
+
+[Testim Test Result Report Generator](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/test-reporting-analysis/testim-test-result-report-generate.js) - Generate Detailed HTML/PDF Test Report(s) with optional screenshots, test data and network summary performance data
+
+[AfterStep - Extended (Hook Function)](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/hook-functions/afterstep-extended.js) - Collect enhanced step information for AfterTest reporting
+
+[After Test Hook - JSONDBFS (Hook Function)](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/hook-functions/aftertest-jsondbfs.js) - Collect test results gathered during a test run and insert into a JSONDBFS Database Collection (file)
+
+[After Test Hook - SQL Server (Hook Function)](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/hook-functions/aftertest-sqlserver.js) - Collect test results gathered during a test run and insert into a SQL Server database table
+
+[Network Performance Summary](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/performance-testing/network-performance-summary.js) - Creates a summary of network requests with min/max/avg duration and request size that can be included in the test report. 
+
+<br/>
+
+[**Select List Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/select-list/)
+
+[Select List - Items Get](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/select-list/select-list-items-get.js) - Return items (option/li/custom) from a select/ol/ul/custom element
+
+[Select List - Items Select](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/select-list/select-list-items-select.js) - Select an item by value or text (select/option, ul/li)
+
+[Select List - Items Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/select-list/select-list-items-validate.js) - Validate that expected items are in a list/select.
+
+
+[Select List - Items Order Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/select-list/select-list-items-order-validate.js) -  Validate the items (option/li/<custom>) from a (select/ol/ul/<custom>) element are sorted properly.
+
+[Select List - Selected Items Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/select-list/select-list-items-selected-validate.js) - Validate the selected item(s) text, value, misc attribute(s) are correct.
 
 <br/>
 
@@ -209,6 +187,26 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 [Table - Column Order Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/table-functions/table-column-order-validate.js) - Validate the values in a column are sorted properly
 
 [Table - Row Count Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/table-functions/table-row-count-validate.js) - Validate number of rows in a table
+
+<br/>
+
+[**Validation Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/)
+
+[Image Element Capture-Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/image-element-capture-validate.js) - Capture an image of a DOM element and optionally validate (pixel exact match)
+
+[Link Checker](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/link-checker.js) (CLI) - Finds links at the given URL and validates that they are working. 
+
+[Network Validate Request](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/network/network-validate-requests.js) - Validate that network requests were made and optionally validate response status(es) and/or request(s) are not slower than maxDuration (ms).
+
+[Numeric Expression Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/numeric-expression-validate.js) - Validate a value using numeric expressions ">", ">=", "==", "<", "<=".
+
+[Email - Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/email/email-validate.js) -  Process email inbox and validate/parse last message for subject/body and optional regex to pull specific data and links
+
+[Element Computed Style(s) - Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validate-computed-style.js) - Validate a superset/subset of style for an element
+
+[Validate Currency](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/validate-currency.js) - Validate that an element displays an expected value formatted as currency.
+
+[Validate HTML Markup](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/validate-html-markup.js) - Validates the current page's HTML markup contains certain markup.
 
 <br/>
 
