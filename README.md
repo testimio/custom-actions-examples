@@ -188,6 +188,8 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Table - Row Count Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/table-functions/table-row-count-validate.js) - Validate number of rows in a table
 
+[Table - Column Sum Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/table-functions/table-column-sum-validate.js) - Calculate and verify the sum of all numerical values in a specific column
+
 <br/>
 
 [**Validation Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/)
