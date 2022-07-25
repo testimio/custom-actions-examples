@@ -111,6 +111,64 @@ if (select_listitem_groupbox !== undefined && current_listitem_groupbox_selector
 
 /*** Function Specific Logic Below ***/
 
+// Validate list items
+//
+function validateItems(actualValues, expectedValues, matchType) {
+
+    let result = true;
+    let expected_value;
+    let actual_value;
+    let row_differences;
+    let differences = [];
+
+    for (let evid = 0; evid < expectedValues.length; evid++) {
+
+        expected_value = expectedValues[evid];
+
+        let row_id = Object.keys(expected_value).includes("index") ? expected_value["index"] : evid;
+        actual_value = (actualValues?.length >= actualValues && actualValues[row_id] !== null) ? actualValues[row_id] : undefined;
+
+        row_differences = {};
+
+        if (actualValues === undefined) {
+
+            row_differences[evid] = { "index": evid, "Actual": "<<No Selection>>", "Expected": expected_value };
+            result = false;
+
+        }
+        else if (typeof expected_value === 'string') {
+
+            result = false;
+            actualValues.forEach((actual_value) => {
+                if (stringMatch[matchType](actual_value, expected_value)) {
+                    if (!result)
+                        result = true;
+                }
+            });
+            if (!result)
+                row_differences[evid] = { "Actual": "<<No match>>", "Expected": expected_value, "MatchType": matchType };
+
+        }
+
+        if (Object.keys(row_differences).length > 0)
+            differences.push(row_differences);
+
+    }
+
+    // If failed, echo to console and report an error
+    //
+    if (differences?.length > 0) {
+        if (verbose) {
+            console.log("expected_value", JSON.stringify(expectedValues));
+            console.log("actual_value", JSON.stringify(actual_value));
+        }
+        console.log("Validate Select/List Options/Items: ", JSON.stringify(differences, null, 2));
+        throw new Error("Validate Select/List Options/Items\n" + JSON.stringify(differences, null, 2));
+    }
+
+    return result;
+}
+
 let actualValues = selectListItemsGet(select_list, return_type);
 
 let filteredValues = selectListItemsFilter(actualValues);
