@@ -113,6 +113,10 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Validate Current URL](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/browser/validate-current-url.js) - Validates the current page's URL
 
+[Console Log - Override](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/browser/console-log-override.js) - Override Console Log/Warn/Err/Debug and window onerror to capture all subsequent log output.
+
+[Console Log - Validate Text](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/browser/console-log-validate-text.js) - Validates the console log output captured via "Console Log - Override" 
+
 <br/>
 
 [**Hook Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/hook-functions/)
