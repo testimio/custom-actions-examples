@@ -23,6 +23,8 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Element Value Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/element-value-validate.js) - Validate an element's value/text using numeric, statistical or text comparison expressions
 
+[Element Computed Style(s) - Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/validate-computed-style.js) - Validate a superset/subset of style for an element
+
 [isEnabled](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/is-enabled.js) - Vaildate that an element is enabled (or disabled)
 
 [isVisible](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/is-visible.js) - Vaildate that an element is visible
@@ -209,8 +211,6 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 [Numeric Expression Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/numeric-expression-validate.js) - Validate a value using numeric expressions ">", ">=", "==", "<", "<=".
 
 [Email - Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/email/email-validate.js) -  Process email inbox and validate/parse last message for subject/body and optional regex to pull specific data and links
-
-[Element Computed Style(s) - Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validate-computed-style.js) - Validate a superset/subset of style for an element
 
 [Validate Currency](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/validate-currency.js) - Validate that an element displays an expected value formatted as currency.
 
