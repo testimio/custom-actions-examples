@@ -862,6 +862,8 @@ async function JSONDBFS_ResultsGet(jsondbfsCollectionName, criteria, resolve, re
                     reportData.networkRequestStats = document.NetworkRequestStats;
                     reportData.resultUrl = document.ResultURL;
                     reportData.testData = document.TestDataJSON;
+                    if (typeof document?.TestStatus !== 'undefined' && document?.TestStatus !== null)
+                        reportData.TestStatus = document.TestStatus;
                 }
                 resolve(reportData);
 
@@ -897,6 +899,8 @@ async function SQLServer_ResultsGet(query, resolve, reject) {
                 reportData.testName = reportResults[0].TestName; // .replace(/[ ]/, "_");
                 reportData.resultUrl = reportResults[0].ResultURL;
                 reportData.TestRunDate = reportResults[0].TestRunDate;
+                if (typeof reportResults[0]?.TestStatus !== 'undefined' && reportResults[0]?.TestStatus !== null)
+                    reportData.TestStatus = reportResults[0]?.TestStatus;
 
                 if (reportResults[0].TestResultsJSON !== null && reportResults[0].TestResultsJSON !== "")
                     reportData.testResultData = JSON.parse(reportResults[0].TestResultsJSON);
