@@ -15,6 +15,8 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Element(ByXPath) - Click](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/element-byxpath-click.js) - Find an element by XPath and click it
 
+[Element(ByXPath) - Wait Exists](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/element-byxpath-wait-exists.js) - Wait for an element by XPath to be found in the DOM
+
 [Element(ByCSS) - Click](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/element-bycss-click.js) - Find an element by CSS and click it
 
 [Element Neighbor Click/Select](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/element-neighbor-click.js) - Find an element by AI/Text/XPath or CSS and optionally a neighboring element based on xpath or relative position
