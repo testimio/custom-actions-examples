@@ -20,13 +20,13 @@
  *
  *	    numDataSets (JS) : How many instances of fake data to generate.  If undefined then 1 set will be generated
  *
- *      dataVariableName (JS) [optional] : Name of returned data array.  Default "generatedData"
+ *      returnVariableName (JS) [optional] : Name of returned data array.  Default "generatedData"
  * 
- *	    faker (NPM) : Faker NodeJS Package
+ *	    faker (NPM) : Faker NodeJS Package (Version 5.5.3)
  *
  *  Returns
  * 
- *      generatedData
+ *      generatedData (or returnVariableName if defined)
  *      named variables with the same name as the data schema elements requested (firstName, lastName, etc)
  * 
  *   NOTES: 
@@ -48,25 +48,10 @@
  * 
  *  Base Step
  *      CLI Action
- * 
- *  Installation
- *      Create a new "CLI Action"
- *      Name it "Generate Data"
- *      Create parameters
- *          dataSchema (JS)
- *          numDataSets (JS)
- *          faker (NPM) version @latest
- *      Optional - add optional parameters
- *          dataVariableName (JS)  
- *      Set the new custom CLI action's function body to this javascript
- *      Exit the step editor
- *      Share the step if not already done so
- *      Save the test
- *      Bob's your uncle
  *
 **/
 
-/* global faker, dataSchema, numDataSets, dataVariableName */
+/* global faker, dataSchema, numDataSets, returnVariableName */
 
 let generatedData = [];
 let generatedDataInstance = {};
@@ -122,6 +107,10 @@ function generateDatum(value) {
       datum = faker.phone.phoneNumber();
       break;
 
+    case "faxNumber":
+      datum = faker.phone.phoneNumber();
+      break;
+
     case "email":
     case "emailWork":
     case "emailAddr":
@@ -167,6 +156,10 @@ let count = 1;
 if (typeof numDataSets !== 'undefined' && numDataSets > 1)
   count = numDataSets;
 
+let return_variable_name = 'generatedData';
+if (typeof returnVariableName !== 'undefined' && typeof returnVariableName === 'string')
+  return_variable_name = returnVariableName;
+
 // Create count number of instances of faked data 
 //
 for (let i = 0; i < count; i++) {
@@ -180,14 +173,10 @@ for (let i = 0; i < count; i++) {
 }
 console.log("Generated " + generatedData.length + " instances of data for dataSchema " + JSON.stringify(dataSchema) + " into exportsTest.generatedData");
 
-// Store all instances of faked data in a global/test variable (generatedData)
+// Store all instances of faked data in a global/test variable "generatedData" or returnVariableName if defined
 //
-let faked_data_variable_name = "generatedData";
-if (typeof dataVariableName !== 'undefined' && dataVariableName !== null)
-  faked_data_variable_name = dataVariableName;
-
-exportsTest[faked_data_variable_name] = generatedData;
-console.log("Faked data stored in exportsTest." + faked_data_variable_name + " and variable(s) of the same name as there type in dataSchema");
+exportsTest[return_variable_name] = generatedData;
+console.log("Faked data stored in exportsTest." + return_variable_name + " and variable(s) of the same name as there type in dataSchema");
 
 // Take an index and store generatedData[0]'s values as naked top level variables
 //
