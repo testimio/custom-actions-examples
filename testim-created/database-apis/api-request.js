@@ -20,10 +20,10 @@
  *      bodyContent (JS) [optional] 
  *      contentType (JS) [optional] 
  * 
- *      request (NPM) : NPM Package used to make actual call
+ *      statusCode (JS) [optional] : Expected status code(s) from the API call
+ *                                              Examples: 200 or [200, 204]
  * 
- *  Version       Date       Author          Details
- *      2.0.0     08/12/2022 Barry Solomon   Add support for authorization and certificates (pfx and cert/key files)
+ *      request (NPM) : NPM Package used to make actual call
  * 
  *  Notes
  * 
@@ -37,37 +37,13 @@
  * 
  *      https://httpcs.com/en/ssl-converter
  * 
- *      Errors 
- *          node 17.1 verify failure using https with pfx certificate (github.com/nodejs/node/issues/40672)
- *              Error: unsupported at configSecureContext (node:internal/tls/secure-context:276:15)
- *          Cyper for pfx file is old.  Update cypher or drop to nodejs 14 (maybe 16)
- * 
  *      openssl pkcs12 -info -in mycert.pfx -noout
  *      openssl pkcs12 -in oldPfxFile.pfx -nodes -legacy | openssl pkcs12 -export -out newPfxFile.pfx
  * 
+ *  Version       Date       Author          Details
+ *      2.0.0     08/19/2022 Barry Solomon   Added statusCode validation
+ * 
  **/
-
-let verbose = true;
-
-function loadModules(moduleNames) {
-
-    let modulesLoaded = [];
-    function loadModule(moduleName) {
-        let moduleNameVar = moduleName.replace(/\-/g, "_");
-        eval('try { ' + moduleNameVar + ' = (typeof ' + moduleNameVar + ' !== "undefined" && ' + moduleNameVar + ' !== null) ? ' + moduleNameVar + ' : require("' + moduleName + '"); if (moduleNameVar != null) modulesLoaded.push("' + moduleName + '"); } catch { console.log("Module: ' + moduleName + ' is not installed"); } ');
-        if (verbose && modulesLoaded.includes(moduleName)) {
-            console.log("Module " + moduleName + " is loaded.")
-        }
-    }
-
-    moduleNames.forEach((moduleName) => {
-        loadModule(moduleName);
-    });
-
-    console.log("Module(s) " + modulesLoaded + " loaded.");
-
-}
-loadModules(["request", "fs", "path", "https"]);
 
 // var url = "http://localhost:8081/upload/";
 // var method = "POST";
@@ -79,11 +55,28 @@ loadModules(["request", "fs", "path", "https"]);
 // var pfxFile = "alice.p12";
 // var passPhrase = "whatever";
 
+let verbose = false;
+
+function loadModules(moduleNames) {
+    let modulesLoaded = [];
+    function loadModule(moduleName) {
+        let moduleNameVar = moduleName.replace(/\-/g, "_");
+        eval('try { ' + moduleNameVar + ' = (typeof ' + moduleNameVar + ' !== "undefined" && ' + moduleNameVar + ' !== null) ? ' + moduleNameVar + ' : require("' + moduleName + '"); if (moduleNameVar != null) modulesLoaded.push("' + moduleName + '"); } catch { console.log("Module: ' + moduleName + ' is not installed"); } ');
+        if (verbose && modulesLoaded.includes(moduleName)) {
+            console.log("Module " + moduleName + " is loaded.")
+        }
+    }
+    moduleNames.forEach((moduleName) => {
+        loadModule(moduleName);
+    });
+    console.log("Module(s) " + modulesLoaded + " loaded.");
+}
+loadModules(["request", "fs", "path", "https"]);
+
 /* Validate required parameters
  */
 if (typeof (url) === 'undefined' || url === null)
     throw new Error("url has not been specified.");
-
 /* Default optional parameters
  */
 eval('method   = (typeof method   !== "undefined" && method   !== null) ? method   : "GET" ');
@@ -100,14 +93,11 @@ if ((typeof authUsername !== 'undefined' && authUsername !== null)
     let bearer_token = "Basic " + Buffer.from(authUsername + ":" + authPassword).toString('base64');
     headers["Authorization"] = bearer_token;
 }
-
 /* If this is a file upload and fileName is defined 
  *  then create a formdata object and stream the file to it
  */
 if (typeof fileName !== 'undefined' && fileName !== null) {
-
     contenttype = "multipart/form-data";
-
     var filedata = path.parse(fileName);
     formdata = {
         name: filedata.base,
@@ -120,7 +110,6 @@ if (typeof fileName !== 'undefined' && fileName !== null) {
         }
     };
 }
-
 var pfx_file = undefined;
 if (typeof pfxFile !== 'undefined' && pfxFile !== null) {
     if (fs.existsSync(pfxFile)) {
@@ -133,7 +122,6 @@ if (typeof pfxFile !== 'undefined' && pfxFile !== null) {
         throw new Error("pfxFile not found: ", pfxFile);
     }
 }
-
 var cert_file = undefined;
 if (typeof certFile !== 'undefined' && certFile !== null) {
     if (fs.existsSync(certFile)) {
@@ -143,7 +131,6 @@ if (typeof certFile !== 'undefined' && certFile !== null) {
         cert_file = path.join(process.cwd(), certFile);
     }
 }
-
 var key_file = undefined;
 if (typeof keyFile !== 'undefined' && keyFile !== null) {
     if (fs.existsSync(keyFile)) {
@@ -153,7 +140,6 @@ if (typeof keyFile !== 'undefined' && keyFile !== null) {
         key_file = path.join(process.cwd(), keyFile);
     }
 }
-
 if (typeof pfx_file !== 'undefined' && pfx_file !== null) {
     contenttype = "application/x-www-form-urlencoded";
     var https_agent_options = {
@@ -176,24 +162,15 @@ else if (typeof cert_file !== 'undefined' && cert_file !== null) {
 }
 
 async function makeRequest(url, method, options, headers, formData, body, resolve, reject) {
-
-    console.log("\n=================================================================");
-    console.log("============================ REQUEST ============================");
-    console.log("=================================================================");
-
     if (typeof method === 'undefined' || method === null)
-        method = "GET";
+        method = "POST";
     if (typeof body === 'undefined' || body === null)
         body = "";
     if (typeof formData === 'undefined' || formData === null)
         formData = "";
-
     // body if an object must be stringified
     if (typeof body === 'object')
         body = JSON.stringify(body);
-
-    console.log("method ", method);
-
     /* Override, append extra headers defined by headers
     */
     var requestHeaders = {};
@@ -204,27 +181,26 @@ async function makeRequest(url, method, options, headers, formData, body, resolv
             requestHeaders[key] = headers[key]
         }
     }
-
+    console.log("============================ REQUEST ============================");
+    console.log("method ", method);
     if (verbose) {
         console.log("---------------------------- requestHeaders ----------------------------")
         console.log(JSON.stringify(requestHeaders));
         console.log("------------------------------------------------------------------------\n");
     }
-
     let requestOptions = {
         url: url
         , method: method
         , headers: requestHeaders
-        , formData: formData
-        , body: body
+        // , formData: formData
+        // , body: body
         , pretend: false
         , followAllRedirects: true
         , ssl: { rejectUnauthorized: false }
-        //, rejectUnauthorized: false
-        //, strictSSL: false
-        //, secureProtocol: 'TLSv1_method'
+        //     , rejectUnauthorized: false
+        , strictSSL: false
+        //        , secureProtocol: 'TLSv1_method'
     };
-
     /* Override, append extra options defined by optionsEx
      */
     for (let key in options) {
@@ -234,20 +210,16 @@ async function makeRequest(url, method, options, headers, formData, body, resolv
             requestOptions[key] = options[key]
         }
     }
-
     if (verbose) {
         console.log("---------------------------- requestOptions ----------------------------");
         console.log(JSON.stringify(requestOptions));
         console.log("------------------------------------------------------------------------\n");
     }
-
     await request(requestOptions, function (err, response, responseBody) {
-
         if (typeof err !== 'undefined' && err !== null) {
             console.log(err);
             reject(err);
         }
-
         if (response?.statusCode != null && response?.statusCode != 200) {
             console.log("---------------------------- statusCode ----------------------------");
             console.log("response?.statusCode = ", response?.statusCode, "response?.statusMessage = ", response?.statusMessage);
@@ -255,11 +227,7 @@ async function makeRequest(url, method, options, headers, formData, body, resolv
                 exportsTest.response = response;
             reject("statusCode = " + response?.statusCode + ", statusMessage = " + response?.statusMessage + ", body = " + response.body);
         }
-
-        console.log("\n=================================================================");
-        console.log("============================ RESPONSE ===========================");
-        console.log("=================================================================");
-
+        console.log("============================ RESPONSE ============================");
         if (verbose) {
             console.log("---------------------------- response ----------------------------");
             console.log("response: ", JSON.stringify(response));
@@ -273,48 +241,50 @@ async function makeRequest(url, method, options, headers, formData, body, resolv
         catch {
             response_body = response?.body;
         }
-
         console.log("---------------------------- response status ----------------------------");
         console.log("response?.statusCode = ", response?.statusCode, "response?.statusMessage = ", response?.statusMessage);
         console.log("------------------------------------------------------------------------\n");
-
         console.log("---------------------------- response body ----------------------------");
         console.log(JSON.stringify(response_body));
         console.log("------------------------------------------------------------------------\n");
-
         resolve({ response_statuscode, response_body });
-
     });
-
 }
 
+var response_body = null;
+var response_statuscode = null;
+
 return new Promise((resolve, reject) => {
-
     makeRequest(url, method, options, headers, formdata, body, resolve, reject);
-
 })
     .then(response => {
-
-        let response_body = response.response_body;
-        let response_statuscode = response.response_statuscode;
-
+        response_body = response.response_body;
+        response_statuscode = response.response_statuscode;
         if (verbose)
             console.log(response_body);
         try { json = (typeof response_body === "string") ? JSON.parse(response_body) : response_body; Object.keys(json).forEach((key) => { console.log(`==> ${key} = ${json[key]}`); }) } catch (err) { console.log("Warning: " + err.message + ".  Auto variables not created"); };
-
         if (typeof exportsTest !== 'undefined') {
-
             exportsTest.responseBody = response_body;
             exportsTest.responseStatusCode = response_statuscode;
-
             /* Create variables from top root response body json key/value pairs */
             try { json = (typeof response_body === "string") ? JSON.parse(response_body) : response_body; Object.keys(json).forEach((key) => { exportsTest[key] = json[key]; }) } catch (err) { console.log("Warning: " + err.message + ".  Auto variables not created"); };
+            //exportsGlobal.authTok = exportsTest?.access_token;
+        }
+    })
+    .then(() => {
+
+        var status_codes = null;
+        if (typeof statusCode !== 'undefined' && statusCode !== null) {
+
+            status_codes = (typeof statusCode === 'object') ? statusCode : [statusCode];
+            if (!status_codes.includes(response_statuscode)) {
+                throw new Error(`Expected API Status Code: Expected ${status_codes}, Actual ${response_statuscode}`);
+            }
 
         }
 
     })
-    .catch(error => {
-
-        console.error(error);
-
-    });
+    // .catch(error => {
+    //     console.error(error);
+    //     throw new Error(error);
+    // });
