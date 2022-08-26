@@ -204,7 +204,7 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [**Validation Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/)
 
-[Image Element Capture-Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/image-element-capture-validate.js) - Capture an image of a DOM element and optionally validate (pixel exact match)
+[Image Element Capture-Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/image-element-capture-validate.js) - Capture an image of a DOM element and optionally validate
 
 [Link Checker](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/link-checker.js) (CLI) - Finds links at the given URL and validates that they are working. 
 
