@@ -17,6 +17,7 @@
  *
  *    targetLinkText (JS) [optional] : Optionally match text in link for specifying specific links in an email
  * 	  matchType (JS) [optional] : Text match type when searching for text in links (Default: includes)
+ * 	  parseInnerText (JS) [optional] : Search text of email for links in addition to links in anchors <a>
  * 
  *  Returns
  * 
@@ -24,8 +25,7 @@
  *    emailLinks - array of links found in the email
  * 
  *  Version       Date        Author          Details
- *      2.0.2     07/12/2022  Barry Solomon   Update logic to optionally only consider emails of subject <expectedSubject>
- *      2.0.3     07/12/2022  Barry Solomon   Parse links that are simple text and not an href of a link
+ *      2.0.4     09/12/2022  Barry Solomon   When using start/end tags strip HTML tags
  * 
  *  Disclaimer
  * 
@@ -40,9 +40,16 @@
 /* eslint-disable no-var */
 /* eslint-disable camelcase */
 /* eslint-disable no-redeclare */
-/* globals messages, emailAddress, emailExipirationSeconds, expectedSubject, expectedMessage, emailCode, matchType, DOMParser, targetLinkText */
+/* globals messages, emailAddress, emailExipirationSeconds, expectedSubject, expectedMessage, emailCode, matchType, DOMParser, parseInnerText, targetLinkText */
 
 let verbose = false;
+
+/*  Search text of email for links in addition to links in anchors <a>
+ */
+let parse_innertext = true;
+if (typeof parseInnerText !== 'undefined' && parseInnerText !== null) {
+  parse_innertext = parseInnerText;
+}
 
 /* Check that we have emails to validate
  */
@@ -123,7 +130,10 @@ console.log("From    = " + JSON.stringify(email_message.from));
 
 /* VALIDATE EMAIL BODY contains the expected text expectedMessage
  */
-let emailText = email_message.html.replace(/ {2}|\r\n|\n|\r/gm, "");
+let emailText = email_message.html;
+emailText = emailText.replace(/<[^>]*>?/gm, '');
+emailText = emailText.replace(/ {2}|\r\n|\n|\r/gm, "");
+
 if (typeof expectedMessage !== 'undefined' && expectedMessage !== null) {
   if (!emailText.includes(expectedMessage)) {
     throw new Error("Email text not include expected text " + emailText);
@@ -234,19 +244,31 @@ if (typeof (DOMParser) !== 'undefined') {
       }
     }
 
-    var expression = /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/gi;
-    var regex = new RegExp(expression);
-    var urls = emailText.match(regex);
-    if (urls !== undefined) {
-      urls.filter((url) => {
-        if (!linksElements.includes(url)) {
-          if (verbose) {
-            console.log("Found url", url);
+    /* Read HTML and grab all links that are not in <a> hrefs 
+     */
+    if (parse_innertext) {
+
+      var expression = /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/gi;
+      var regex = new RegExp(expression);
+      var urls = doc.documentElement.innerText.match(regex);
+      if (urls !== null) {
+        urls.filter((url) => {
+          let parsed_url = url.split('<')[0].split('"')[0];
+          if (["http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd", "http://www.w3.org/1999/xhtml"].includes(parsed_url))
+            return false
+          if (['png', 'jpeg', 'jpg', 'gif', '.js'].includes(parsed_url.split('.')[parsed_url.split('.').length - 1]))
+            return false;
+          if (stringMatch[matchtype](parsed_url, target_link_text))
+            return;
+          if (!linksElements.includes(parsed_url)) {
+            if (verbose)
+              console.log("Found url", parsed_url);
+            if (typeof (exportsTest) !== 'undefined')
+              exportsTest.emailLinks.push(parsed_url.replace(/'/g, '').replace('>', '').replace('&#x3D;', '='));
           }
-          if (typeof (exportsTest) !== 'undefined')
-            exportsTest.emailLinks.push(url.replace(/'/g, '').replace('>', '').replace('&#x3D;', '='));
-        }
-      });
+        });
+
+      }
 
     }
 
