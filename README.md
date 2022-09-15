@@ -69,6 +69,8 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Postgres Query](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/database-apis/postgres-query.js) - Execute a Postgres DB Query and return results
 
+[Oracle Query](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/database-apis/oracle-query.js) - Execute an Oracle DB Query and return results
+
 <br/>
 
 [**API**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/)
