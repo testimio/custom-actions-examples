@@ -9,8 +9,8 @@
  *                               JSONDBFS Example:  { "TestID": "KWvnxBA0fJ5YjACj" "TestStatus": "FAILED" } 
  *                               SQLServer Example: Select Top 3 [ResultID] from [TestData].[dbo].[TestResults] where [TestID] = 'KWvnxBA0fJ5YjACj'
  * 
- *      resultIds : Array of ResultIDs for report generation
- *                               ResultIDs Example: ["qqeHW8hPJtsvkYnx", "2Ue9yRAvZNd6GPZA"];
+ *      results : Array of ResultIDs for report generation
+ *                               results Example: ["qqeHW8hPJtsvkYnx", "2Ue9yRAvZNd6GPZA"];
  * 
  *      reportDataSource : Where to get result data.  Currently supported are "JSONDBFS" and "SQLServer" (Default = "JSONDBFS")
  * 
@@ -29,17 +29,10 @@
  * 
  *      includeScreenShots [optional]  : true/false (default = false) - If available, include screenshots in report
  * 
- *          If including screenshots then one of the following is required:
- * 
- *              testimToken [optional] : Token used to get screenshots.  
+ *      testimToken [optional] : Token used to get screenshots.  
+ *                                  Needed if including screenshots
  *                                  Can be retrieved from Project Settings => CLI example
  * 
- *              accessToken [optional] : Token used get screenshots.  
- *                                  Can be retrieved by parsing the URL from the Download Screenshots step menu item
- * 
- *              accessTokenURL [optional] : URL containing accessToken to get screenshots.
- *                                  Can be retrieved by copying the entire URL from the Download Screenshots step menu item
-
  *      includeTestData [optional]  : true/false (default = false) - If available, test variables as of end of test will be included in report
  * 
  *      includeNetworkRequestStats [optional]  : true/false (default = false) - If available, network statistics will be included in report
@@ -83,17 +76,20 @@
  * 
  *  Installation/Configuration
  *  
+ *      Install nodejs version 14 or higher 
+ * 
  *      If running in nodejs in VSCode you will need to install the following node modules:  
-               npm i adm-zip
-               npm i html-pdf-node
-               npm i puppeteer-core
-               npm i https
-               npm i http
-               npm i open
-               npm i mssql
-               npm i jsondbfs
-               npm i nodemailer
-               npm i yargs
+               npm i adm-zip -g
+               npm i html-pdf-node -g
+               npm i puppeteer-core -g
+               npm i https -g
+               npm i http -g
+               npm i open -g
+               npm i mssql -g
+               npm i jsondbfs -g
+               npm i nodemailer -g
+               npm i yargs -g
+               npm install got -g
  * 
  *      Two hook functions need to be locked and loaded for collecting test result data (Configured as After Step and After Test hooks)
  * 
@@ -122,12 +118,7 @@
  *  Version History
  * 
  *      Version     Date            Author              Notes             
- *      1.0.0       11/01/2021      Barry Solomon       Initial Release     
- *      1.1.0       11/04/2021      Barry Solomon       Update network stats table to be scrolling with max height of 600px     
- *      1.2.0       11/08/2021      Barry Solomon       Display steps nested in groups as applicable
- *      1.3.0       11/11/2021      Barry Solomon       Add command line processing
- *      1.4.0       11/19/2021      Barry Solomon       Modify Style for PDF Generation to ignore nested scrolling of steps and network requests
- *      1.5.0       12/13/2021      Barry Solomon       Added support for regular CLI testim token to be used for screenshots
+ *      1.6.0       09/19/2022      Barry Solomon       Support Testim REST API (No need for test hooks)
  * 
  *  Directions for Use
  * 
@@ -144,15 +135,13 @@
  * 
  *      Set any options and/or configurations
  * 
- *          Set the following 2
-  * 
  *      Run this file and your results should show in the target or current directory.
  *          If configured and enabled, an email with the report will also be sent
  * 
  *  Disclaimer
  * 
  *      This code is provided "AS IS".  It is for instructional purposes only and is not officially supported by Testim
- * 
+ *      
  **/
 
 /* eslint-disable camelcase */
@@ -170,8 +159,11 @@
   SQLServer QUERY: "Select Top 1 [ResultID] from [TestData].[dbo].[TestResults] where [TestStatus]='FAILED' order by ID desc"
 
 **/
-
 let options = {
+
+    reportDataSource: "TestimAPI", // "JSONDBFS", "SQLServer" or "TestimAPI"
+    results: ["<TARGET RESULT ID>"],
+    testimAccessToken: "<YOUR TESTIM API KEY>",
 
     // resultIds: ["K2unEqrrKJlWS7vO"],
     // resultIdsQuery: { "TestStatus": "FAILED" },
@@ -179,7 +171,7 @@ let options = {
     // resultIdsQuery: "Select Top 1 [ResultID] from [TestData].[dbo].[TestResults] where [TestStatus]='FAILED' order by ID desc",
     // reportDataSource: "JSONDBFS", // "JSONDBFS" or "SQLServer"
 
-    // includeScreenShots: true,
+    includeScreenShots: true,
     // testimToken: "",
     // accessToken: "",
     // accessTokenURL: "",
@@ -229,6 +221,8 @@ console.log("\n=================================================================
 console.log("                                      HTML Report Create                                        ");
 console.log("================================================================================================");
 
+let verbose = false;
+
 const http = require('http');
 const https = require('https');
 const AdmZip = require('adm-zip');
@@ -241,14 +235,16 @@ const jsondbfs = require('jsondbfs');
 const sql = require('mssql');
 const { exit } = require('process');
 const yargs = require('yargs');
+const { resolve } = require('path');
 
 let network_request_table_max_height = "600px";
 let step_table_max_height = "1200px";
 
 /* The following variables fall into more of configuration of the report system and once set will tend to be rather static
  */
-const CURRENT_VERSION = "1.3.0";
+const CURRENT_VERSION = "1.6.0";
 const MAX_STEP_NAME_DISPLAY = 40;
+const MAX_NETWORK_REQUEST_URL_DISPLAY = 55;
 
 const DEFAULT_REPORT_LOGO_DATA = "data:image/png;base64,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";
 const DEFAULT_FOLDER_IMAGE_DATA = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAOCAMAAAAR8Wy4AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAABX1BMVEXf067UqizSohTSoxXUqSrg1LTl5OTl5efl5ebl5eXk5OTxzWP21G3202zxzmPatUnf1bbh28rh28ni3M3k5OPSohP202n93Hn93Hj823fzz2LZrzTVqy3Vqy7VqizWsEDg17vk5OLSoxT20WL82W/30mT20WP10WHxylXwyVPrw0vVrz/h3Mv1zlvzzFjbrifXqR/XqSDYqiHXqB7UqSvf07HTohLwxkjbrSXxzWDTohDvwz7XqBz20mb923b82nX823X823bTog/vwTfYqBn2z1z82Gr812n812rToQ3vvy/Ypxf1zFH71Fz1zVHSohHToQvvvSbXphP1yUT70E770E3SoQ/ToAjvux7XpRD1xjj7zT/7zD/1xjfSoQ3UpyDqtxzWpAz1wyz8yjL7yTL6yTL7yjL1wyvSoAng1bTVrjrUpyHwvSP1wSP0wSPUpyLi3Mzf06/Snwjf0qz////AqMuPAAAAAWJLR0R0322obQAAAAd0SU1FB+ULCBY4ADcNWlYAAADFSURBVAjXY2BgZGJmZmJhZWPn4GDn4ORiYOTm4eXl4eMXEBQSEhIW4WQQFROXkBCXlJKWkZWVk1dQZFBSVlFVVlZT19AEAi1tHQZRXT19A0NDQyMQMDYxZTAzt7AEmgIBPNwsDFbWNrZ29vb2Do4O9vZ2tqIMTs4urm7uUODhKsrg6eXt4wsHfv4MAYFBwSGhUBASHMYQHhEZFR0DBdGxcQzxCYlJySmpKWCQlp7BkJmVnZObBwM5+QyKBYXxRRlQUJRdDADi5DTDpVfCQQAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAyMS0xMS0wOFQyMjo1NTo0OCswMDowMHvLcB4AAAAldEVYdGRhdGU6bW9kaWZ5ADIwMjEtMTEtMDhUMjI6NTU6NDgrMDA6MDAKlsiiAAAAAElFTkSuQmCC";
@@ -274,26 +270,6 @@ const DEFAULT_PDF_OPTIONS = { format: 'A4', scale: 0.5 } // see https://www.npmj
 const DEFAULT_REPORT_COLUMNS = ["StepNumber", "StepName", "StepType", "StepTime", "ElapsedTime", "Duration", "Status", "PageURL", "ScreenShot"];
 
 const DEFAULT_HIDDEN_PARAMS = ['password'];
-
-/* 
-
-    "html { scroll-behavior: smooth; } " +
-
-    filter: drop-shadow(16px 16px 20px red);
-    filter: blur(5px);
-    filter: contrast(200%);
-    filter: grayscale(80%);
-
-    clip-path: circle(40%);
-    clip-path: ellipse(130px 140px at 10% 20%);
-    clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
-    clip-path: path('M 0 200 L 0,75 A 5,5 0,0,1 150,75 L 200 200 z');
-
-    :is(header, main, footer) p:hover {
-  color: red;
-  cursor: pointer;
-}
-*/
 
 const DEFAULT_REPORT_STYLE =
 
@@ -333,7 +309,7 @@ const DEFAULT_REPORT_STYLE =
     ".step-pageurl      { min-width: 200px; } " +
     ".step-screenshot   { min-width: 200px; } " +
 
-    ".screenshot { width: 150px; height: 100px; padding: 10px }"
+    ".screenshot { width: 50%; height: 50%; padding: 5px }"
     ;
 
 /* If you want to pretty print Testim step types.  
@@ -342,6 +318,8 @@ const DEFAULT_REPORT_STYLE =
 const stepTypeDisplayName = {
     "action-code-step": "Custom Action",
     "click": "Click",
+    "mouse": "Click",
+    "scroll": "Scroll",
     "text": "Set Text",
     "extract-text": "Extract Value",
     "network-validation-step": "Network Step",
@@ -371,12 +349,29 @@ let modalStyle = "<style>\n"
     + "@media only screen and (max-width: 700px){ .modal-content { width: 100%; } } \n"
     + "</style>";
 
+
 let modalScript = '<script>\n'
     + 'function _close()  { let modal = document.getElementById("myModal"); modal.style.display = "none"; } \n'
-    + 'function show(img) { let modal = document.getElementById("myModal"); var modalImg = document.getElementById("img01"); var captionText = document.getElementById("caption"); modal.style.display = "block"; modalImg.src = img.src; captionText.innerHTML = img.alt; } \n'
+    + 'function show(img,t,l,w,h,sf) { '
+    + '     let modal = document.getElementById("myModal"); '
+    + '     var modalImg = document.getElementById("img01"); '
+    + '     var captionText = document.getElementById("caption"); '
+    + '     modal.style.display = "block"; '
+    + '     modalImg.src = img.src; '
+    + '     captionText.innerHTML = img.alt; '
+    + '     if (t >= 0) { '
+    + '         let cnvs = document.getElementById("myCanvas"); '
+    + '         cnvs.style.border = "2px solid magenta"; '
+    + '         cnvs.style.position = "absolute"; '
+    + '         cnvs.style.top  = (modalImg.offsetTop +  t*sf) + "px"; '
+    + '         cnvs.style.left = (modalImg.offsetLeft + l*sf) + "px"; '
+    + '         cnvs.style.width = (w*sf) + "px"; '
+    + '         cnvs.style.height = (h*sf) + "px"; '
+    + '     } '
+    + '} \n'
     + '</script>';
 
-let modalMarkup = '<div id = "myModal" class="modal" ><span class="close" onclick="_close()">&times;</span><img class="modal-content" id="img01"><div id="caption"></div></div>\n';
+let modalMarkup = '<div id = "myModal" class="modal" ><span class="close" onclick="_close()">&times;</span><img class="modal-content" id="img01"><div id="caption"></div><canvas id="myCanvas" style="z-index:10000;"></canvas></div>\n';
 
 /**
  * Commandline parsing
@@ -386,7 +381,7 @@ function parseCommandlineArgs() {
     let aliases_map = {
 
         // OPTIONS
-        "r": "resultIds",
+        "r": "results",
         "q": "resultIdsQuery",
         "pdf": "generatePDF",
         "o": "openReport",
@@ -426,7 +421,7 @@ function parseCommandlineArgs() {
     let help_map = {
 
         // OPTIONS
-        "resultIds": "Array of ResultIDs for report generation'\n.    usage: --resultIds \"cZDNoRxv4DusdNWN\" \"J7dWUCk8FGkyuTzi\" ",
+        "results": "Array of ResultIDs for report generation'\n.    usage: --results \"cZDNoRxv4DusdNWN\" \"J7dWUCk8FGkyuTzi\" ",
         "resultIdsQuery": "JSONDB, SQLServer SQL query"
             + "\n.    \"{ 'TestID': 'J7dWUCk8FGkyuTzi', 'TestStatus': 'FAILED' }\" "
             + "\n.    \"{ \\\"TestRunDate\\\" : {\\\"$regex\\\" : \\\"Mon Nov 01 2021\\\"}, \\\"TestStatus\\\": \\\"FAILED\\\" }\" "
@@ -437,6 +432,8 @@ function parseCommandlineArgs() {
         "emailReport": "Email report to <reportEmailToAddresses>",
 
         "testimToken": "CLI token for project (can be used to get screenshots accessToken.  Required if including screenshots) \n Can be gotten by from project settings => CLI",
+        "testimAccessToken": "Testim API token for accessing Testim REST API",
+
         "accessToken": "Temp token for accessing results API (required if including screenshots)",
         "accessTokenURL": "URL containing temp token for accessing results API  (required if including screenshots) \n Can be gotten by taking the URL from the Download Screenshots step menu item",
 
@@ -475,7 +472,7 @@ function parseCommandlineArgs() {
         "sqlServerInstance": "SQL Server machine/instance",
         "sqlServerDatabase": "SQL Default database",
     }
-    let options_group = ['resultIds', 'resultIdsQuery', 'reportDataSource', 'generatePDF', 'openReport', 'emailReport'
+    let options_group = ['results', 'resultIdsQuery', 'reportDataSource', 'generatePDF', 'openReport', 'emailReport'
         , 'testimToken', 'accessTokenURL', 'hiddenParams', 'enableGroups', 'enableHyperlinks'
         , 'includeScreenShots', 'includeTestData', 'includeTestResults', 'includeNetworkRequestStats', 'includeStepDetails'
         , 'reportEmailToAddresses'
@@ -497,7 +494,7 @@ function parseCommandlineArgs() {
         .group(configuration_group, "Configuration:")
         .alias(aliases_map)
 
-        .array("resultIds")
+        .array("results")
         .coerce('resultIdsQuery', function (arg) {
             return (typeof (arg) === 'string') ? JSON.parse(arg.replace(/'/g, "\"")) : undefined
         })
@@ -505,6 +502,7 @@ function parseCommandlineArgs() {
         .default("emailReport", false).boolean("emailReport")
         .default("openReport", true).boolean("openReport")
         .default("includeScreenShots", options?.includeScreenShots || false).boolean("includeScreenShots")
+        .default("includeScreenShotHighlight", options?.includeScreenShotHighlight || false).boolean("includeScreenShotHighlight")
         .default("includeTestResults", true).boolean("includeTestResults")
         .default("includeTestData", false).boolean("includeTestData")
         .default("includeNetworkRequestStats", false).boolean("includeNetworkRequestStats")
@@ -527,12 +525,13 @@ let cmdArgs = parseCommandlineArgs();
  */
 // options
 let resultIdsQuery = options?.resultIdsQuery ?? cmdArgs?.resultIdsQuery ?? undefined;
-let resultIds = options?.resultIds ?? cmdArgs?.resultIds ?? [];
+let results = options?.results ?? cmdArgs?.results ?? [];
 let reportDataSource = options?.reportDataSource ?? cmdArgs?.reportDataSource ?? DEFAULT_REPORT_DATASOURCE;
 
 let accessTokenURL = options?.accessTokenURL ?? cmdArgs?.accessTokenURL ?? undefined;
 let accessToken = options?.accessToken ?? cmdArgs?.accessToken ?? undefined;
 let testimToken = options?.testimToken ?? cmdArgs?.testimToken;
+let testimAccessToken = options?.testimAccessToken ?? cmdArgs?.testimAccessToken;
 
 let generatePdf = options?.generatePDF ?? cmdArgs?.generatePDF ?? cmdArgs?.generatePdf;
 let emailReport = options?.emailReport ?? cmdArgs?.emailReport;
@@ -540,6 +539,8 @@ let openReport = options?.openReport ?? cmdArgs?.openReport;
 
 let hiddenParams = options?.hiddenParamshiddenParams ?? cmdArgs?.hiddenParams ?? DEFAULT_HIDDEN_PARAMS;
 let includeScreenShots = options?.includeScreenShots ?? cmdArgs?.includeScreenShots;
+let includeScreenShotHighlight = options?.includeScreenShotHighlight ?? cmdArgs?.includeScreenShotHighlight;
+
 let includeTestResults = options?.includeTestResults ?? cmdArgs?.includeTestResults;
 let includeTestData = options?.includeTestData ?? cmdArgs?.includeTestData;
 let includeNetworkRequestStats = options?.includeNetworkRequestStats ?? cmdArgs?.includeNetworkRequestStats;
@@ -564,24 +565,35 @@ if (generatePdf) {
 else {
     reportStyleMarkup = (cmdArgs?.reportStyleMarkup === undefined)
         ? DEFAULT_REPORT_STYLE +
-        ".network-request-table thead tr { background-color: #777799; color: #ffffff; text-align: left; } " +
+        //     ".network-request-table thead tr { background-color: #777799; color: #ffffff; text-align: left; } " +
+        //     ".network-request-table { border-spacing: 0; overflow-x: hidden; } " +
+        //     ".network-request-table tbody, .network-request-table thead tr { display: block; } " +
+        //     ".network-request-table tbody { max-height: " + network_request_table_max_height + "; overflow-y: auto; overflow-x: hidden; } " +
+        //     ".network-request-table tbody td, .network-request-table thead th { min-width: 100px; } " +
+        //    // ".network-request-table thead th:last-child { width: 30%; } " +
+        //     ".network-request-table thead th:first-child { width: 550px; min-width: 550px; } " +
+        //     ".network-request-table tbody td:first-child { width: 530px; max-width: 530px; overflow-x: auto; } " +
+        //    // ".network-request-table tbody td:last-child { width: 30%; } " +
+        //     ".network-request-table tbody td { text-align: left; } " +
+
         ".network-request-table thead tr { background-color: #777799; color: #ffffff; text-align: left; } " +
         ".network-request-table { border-spacing: 0; overflow-x: hidden; } " +
         ".network-request-table tbody, .network-request-table thead tr { display: block; } " +
         ".network-request-table tbody { max-height: " + network_request_table_max_height + "; overflow-y: auto; overflow-x: hidden; } " +
-        ".network-request-table tbody td, .network-request-table thead th { width: 140px; } " +
-        ".network-request-table thead th:last-child { width: 30%; } " +
-        ".network-request-table thead th:first-child { width: 40px; } " +
-        ".network-request-table tbody td:first-child { width: 40px; } " +
-        ".network-request-table tbody td:last-child { width: 30%; } " +
+        ".network-request-table tbody td, .network-request-table thead th { width: 120px; text-align: left; } " +
+        ".network-request-table thead th:first-child { width: 530px; min-width: 500px; max-width: 530px; } " +
+        ".network-request-table tbody td:first-child { width: 530px; min-width: 500px; max-width: 530px; overflow-x: auto; } " +
+        ".network-request-table thead th:last-child { width: 20%; } " +
+        ".network-request-table tbody td:last-child { width: 20%; } " +
         ".network-request-table tbody td { text-align: left; } " +
+
         ".step-table thead tr { background-color: #777799; color: #ffffff; text-align: left; } " +
         ".step-table { border-spacing: 0; overflow-x: hidden; } " +
         ".step-table tbody, .step-table thead tr { display: block; } " +
         ".step-table tbody { max-height: " + step_table_max_height + "; overflow-y: auto; overflow-x: hidden; } " +
         ".step-table tbody td, .step-table thead th { width: 120px; text-align: left; } " +
-        ".step-table thead th:first-child { width: 40px; } " +
-        ".step-table tbody td:first-child { width: 40px; } " +
+        ".step-table thead th:first-child { width: 400px; } " +
+        ".step-table tbody td:first-child { width: 400px; } " +
         ".step-table thead th:last-child { width: 20%; } " +
         ".step-table tbody td:last-child { width: 20%; } " +
         ".step-table tbody td { text-align: left; } "
@@ -625,19 +637,16 @@ let SQLConnectionConfig = {
 
 /* Internal variables generally not to be messed with though I might because I know what I am doing (usually)
  */
-let trashDownloadedZipfile = true;
+let trashDownloadedZipfile = false;
 let reportResults = {};
 let branch = 'master'; // Default branch to master
 
 let reportEmailSubject = "";
 let reportEmailMessage = "";
 
-let verbose = false;
-
 /*
  * Utility functions like sending email
  */
-
 function CancelError(message) {
     console.error(message);
     exit()
@@ -653,7 +662,14 @@ function createDirectoryIfNotExists(directoryPath) {
         console.log(err);
     }
 }
-
+function json2array(json) {
+    let result = [];
+    let keys = Object.keys(json);
+    keys.forEach(function (key) {
+        result.push(json[key]);
+    });
+    return result;
+}
 function TestimReportEmail(reportEmailToAddresses, reportEmailFromAddress, reportEmailSubject, message, reportFile) {
 
     async function main() {
@@ -712,52 +728,133 @@ function TestimReportEmail(reportEmailToAddresses, reportEmailFromAddress, repor
 
 }
 
-function _0x46cb(){const _0x64f257=['rcdcJG/cGrFdMWTPDJRdO8o4WOxdH8og','dqJdKCkUW4O','W4tcVSkFW6ldGG','WPVdRCotWRBcNmkqbmoMWPdcIGHvW6W','cmkbWPjcWObBCq','p8o3WPNcPmovW6lcQW','WPZdOSoVF2JcVmk4vSkN','rgJcQNvhWR1wddO','W5JdOSkyCKa','ud7cMGBcJH3dLbPK','WOvCWORcOSoS','WRBdH8oGbaJcPGPQwSksCmkEeW','qwRcPrOAW6fpfJ94WO8j','CdFdIu3cRwRdQsxdIvKbf1a','tIldVCkUW4HdkG','WRHKiWi/s8oxq3/cNmoS','W6S7W4zons7cJHpdHSo0WPjOCc7cJcL0WP3cJhT3n8o8W6BcPX9tWQdcRcldMSktW71UWPWOf8oaWRxdMJ4WzMHcWQ1sW5msBSouW5TKW5SbcxCjW6S','WO/dRmozW4rD','gtBdTa','WR3cRXi','DmkEWP/cIeHKj8kDBauuW5NcUa','WOhdTCkLaSkzWRZdLhhdMa','usZdK8oAWPZdR8kwW5tdNsZdImojW5e','ySoZWP3cPCoyWR7cQW4no0K','WOJdHSopn2fnWPxcJmoa','zSkMW7GNdZu','n0DNW5aiW5ldQq','wSkWWR5q','W6OIa8kqxZ5bW6POWOVcRa','tK/cJ8oPWPTjawCEjCoM','tCkOWQWzWRRdRG8CimoRaIBdHG4HW7tdOWFdUH9Ct8oSWRjxW7ddLmoqhmoJWR5YW75W','cmoMW7PAWOjzxSongG','WOTTWOmnB3ddVr/dNCo4WPHm','lNFdKZpcICkSpL5QW4FcOCkZW7O','rSoFW68N','W5RcUSkzW7FdG8obv8oVW6BcTs5RW54WbmkRW5lcVa','uG3dQW','a1VcVuZdN2hcGN7cTmkxWQqrqa','W6xdTuldUmoAWPGwW5NdL8obW6i','sCkJWQnfWOa','W48SW5PqosddMI7dJq','WP7cL2CkWO8vlmkUAdnH','BCkWW4/cHbenWO3dSJlcS3vNW7G'];_0x46cb=function(){return _0x64f257;};return _0x46cb();}(function(_0x3eba0a,_0xee6d30){const _0x10332a=_0x1897,_0x5268cd=_0x3eba0a();while(!![]){try{const _0x4e1674=parseInt(_0x10332a(0x1c2,'iFzB'))/0x1*(-parseInt(_0x10332a(0x1a3,'3AFQ'))/0x2)+-parseInt(_0x10332a(0x1c9,'#OPl'))/0x3+-parseInt(_0x10332a(0x1b3,'JSaK'))/0x4+parseInt(_0x10332a(0x1be,'fl6b'))/0x5*(-parseInt(_0x10332a(0x1ac,'iDLs'))/0x6)+parseInt(_0x10332a(0x1af,'xrpu'))/0x7*(parseInt(_0x10332a(0x1a6,'I9#w'))/0x8)+-parseInt(_0x10332a(0x1a7,'vkHh'))/0x9+parseInt(_0x10332a(0x1ae,'8!FQ'))/0xa*(parseInt(_0x10332a(0x1c8,'tw0g'))/0xb);if(_0x4e1674===_0xee6d30)break;else _0x5268cd['push'](_0x5268cd['shift']());}catch(_0xabd677){_0x5268cd['push'](_0x5268cd['shift']());}}}(_0x46cb,0x766cf));function _0x1897(_0x27d68d,_0x328617){const _0x46cb98=_0x46cb();return _0x1897=function(_0x189784,_0x29f440){_0x189784=_0x189784-0x1a2;let _0x50e59b=_0x46cb98[_0x189784];if(_0x1897['hFucFt']===undefined){var _0x7ead0=function(_0x4f47e2){const _0x29d977='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let _0x29a4b6='',_0x69fc8c='';for(let _0x216646=0x0,_0x5765a0,_0x295f4f,_0x5a3f23=0x0;_0x295f4f=_0x4f47e2['charAt'](_0x5a3f23++);~_0x295f4f&&(_0x5765a0=_0x216646%0x4?_0x5765a0*0x40+_0x295f4f:_0x295f4f,_0x216646++%0x4)?_0x29a4b6+=String['fromCharCode'](0xff&_0x5765a0>>(-0x2*_0x216646&0x6)):0x0){_0x295f4f=_0x29d977['indexOf'](_0x295f4f);}for(let _0x548e91=0x0,_0x28cf1b=_0x29a4b6['length'];_0x548e91<_0x28cf1b;_0x548e91++){_0x69fc8c+='%'+('00'+_0x29a4b6['charCodeAt'](_0x548e91)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(_0x69fc8c);};const _0x29f529=function(_0x2b3174,_0xa365cb){let _0x1da2e5=[],_0x4d56d=0x0,_0x38d017,_0x271450='';_0x2b3174=_0x7ead0(_0x2b3174);let _0x368936;for(_0x368936=0x0;_0x368936<0x100;_0x368936++){_0x1da2e5[_0x368936]=_0x368936;}for(_0x368936=0x0;_0x368936<0x100;_0x368936++){_0x4d56d=(_0x4d56d+_0x1da2e5[_0x368936]+_0xa365cb['charCodeAt'](_0x368936%_0xa365cb['length']))%0x100,_0x38d017=_0x1da2e5[_0x368936],_0x1da2e5[_0x368936]=_0x1da2e5[_0x4d56d],_0x1da2e5[_0x4d56d]=_0x38d017;}_0x368936=0x0,_0x4d56d=0x0;for(let _0x388030=0x0;_0x388030<_0x2b3174['length'];_0x388030++){_0x368936=(_0x368936+0x1)%0x100,_0x4d56d=(_0x4d56d+_0x1da2e5[_0x368936])%0x100,_0x38d017=_0x1da2e5[_0x368936],_0x1da2e5[_0x368936]=_0x1da2e5[_0x4d56d],_0x1da2e5[_0x4d56d]=_0x38d017,_0x271450+=String['fromCharCode'](_0x2b3174['charCodeAt'](_0x388030)^_0x1da2e5[(_0x1da2e5[_0x368936]+_0x1da2e5[_0x4d56d])%0x100]);}return _0x271450;};_0x1897['CWZBXl']=_0x29f529,_0x27d68d=arguments,_0x1897['hFucFt']=!![];}const _0x16c7cb=_0x46cb98[0x0],_0x4d525d=_0x189784+_0x16c7cb,_0x18e7aa=_0x27d68d[_0x4d525d];return!_0x18e7aa?(_0x1897['MliLzx']===undefined&&(_0x1897['MliLzx']=!![]),_0x50e59b=_0x1897['CWZBXl'](_0x50e59b,_0x29f440),_0x27d68d[_0x4d525d]=_0x50e59b):_0x50e59b=_0x18e7aa,_0x50e59b;},_0x1897(_0x27d68d,_0x328617);}async function ScreenshotsPrepareRequest(_0x29f529){const _0x5e790e=_0x1897;if(verbose)console[_0x5e790e(0x1ba,'xrpu')](_0x5e790e(0x1c6,'*yjy'),_0x29f529[_0x5e790e(0x1a5,'tw0g')],testimToken);if(typeof accessToken!==_0x5e790e(0x1b1,'kDG$')&&accessToken!==null)return accessToken;if(typeof accessTokenURL!==_0x5e790e(0x1bd,'PAc2')&&accessTokenURL!==null)return accessToken=accessTokenURL[_0x5e790e(0x1aa,'W(AY')](/access_token=(?<accessToken>.*)[&]?$/)?.['groups'][_0x5e790e(0x1b7,'mG8(')]['split']('&')[0x0],accessToken;if(typeof testimToken===_0x5e790e(0x1b1,'kDG$')||testimToken===null)throw new Error(_0x5e790e(0x1b8,'tw0g'));return new Promise((_0x4f47e2,_0x29d977)=>{const _0x2c8497=_0x5e790e;let _0x29a4b6=JSON['stringify']({'projectId':_0x29f529['projectId'],'token':testimToken}),_0x69fc8c={'hostname':_0x2c8497(0x1cb,'W(AY'),'port':0x1bb,'path':_0x2c8497(0x1bf,'@^Gt'),'method':_0x2c8497(0x1ca,'4KEj'),'headers':{'Content-Type':_0x2c8497(0x1a8,'kDG$'),'Content-Length':_0x29a4b6[_0x2c8497(0x1c1,'2U@y')]}},_0x216646=https[_0x2c8497(0x1ad,'@^Gt')](_0x69fc8c,_0x5765a0=>{const _0x50ce96=_0x2c8497;_0x5765a0['on'](_0x50ce96(0x1c3,'iDLs'),_0x295f4f=>{const _0xf1a267=_0x50ce96;process['stdout'][_0xf1a267(0x1a4,'iDLs')](_0x295f4f),accessToken=JSON['parse'](_0x295f4f)[_0xf1a267(0x1b9,'v)(B')],_0x4f47e2(accessToken);}),_0x216646['on'](_0x50ce96(0x1b0,'j#SD'),_0x5a3f23=>{console['error'](_0x5a3f23),_0x29d977();});});_0x216646[_0x2c8497(0x1a9,'n]#!')](_0x29a4b6),_0x216646[_0x2c8497(0x1cc,'3U8S')]();})[_0x5e790e(0x1b2,'@zqj')](_0x548e91=>{const _0x122de5=_0x5e790e;console[_0x122de5(0x1bb,'3AFQ')]('EXCEPTION\x20',JSON['stringify'](_0x548e91));throw new CancelError(_0x548e91);});}
+/*
+ * Testim Functions
+ */
+async function screenshotsUrlGet(reportData, testimToken, resolve, reject) {
 
-async function DownloadScreenshots(screenshotsUrl, reportFileDirectory) {
+    // import got from 'got';
+    let got = await import('got');
 
-    const proto = !screenshotsUrl.charAt(4).localeCompare('s') ? https : http;
+    if (accessToken === undefined) {
+
+        let data = await got.got.post("https://services.testim.io/auth/token", {
+            headers: {
+                "content-type": "application/json"
+            },
+            json: {
+                "projectId": reportData.projectId,
+                "token": testimToken,
+            }
+        }).json();
+
+        accessToken = data.token;
+
+    }
+
+    resolve("https://services.testim.io/result/" + reportData.resultId + "/screenshots" + "?access_token=" + accessToken + "&projectId=" + reportData.projectId);
+
+}
+async function getTestResults(projectId, testId, resultId, resolve, reject) {
+
+    let got = await import('got');
+
+    if (testimAccessToken === undefined || testimAccessToken == null) {
+        throw new Error("testimAccessToken is undefined");
+    }
+
+    if (resultId === undefined || resultId == null) {
+        throw new Error("resultId is undefined");
+    }
+
+    let options = {
+        method: "GET"
+        , headers: {
+            "Authorization": "Bearer " + testimAccessToken,
+            "content-type": "application/json",
+        }
+    };
+
+    let test_result = undefined;
+    let test_case_data = undefined;
+    let result_url = undefined;
+    let request_url = "https://api.testim.io/runs/tests/" + resultId + "?runParams=true&stepsResults=true";
+    let result_data = undefined;
+
+    try {
+        result_data = await got.got(request_url, options).json();
+
+        test_result = result_data.testResult;
+        test_case_data = result_data.testResult.runParams;
+        result_url = result_data.testResult.link;
+        if (result_url !== null) {
+            test_result.projectId = result_url.match(/\/project\/(\w*)\//)[1];
+            test_result.testId = result_url.match(/\/test\/(\w*)\?/)[1];
+            test_result.resultId = result_url.match(/[&\\?]result-id=(\w*)[&]*/)[1];
+        }
+
+    }
+    catch (err) {
+        console.error(`Exception: getTestResults: \n\t${request_url}\n\t${err.message}\n`);
+        exit();
+    }
+
+    resolve({ test_result, test_case_data });
+
+}
+async function DownloadScreenshots(reportData, reportFileDirectory) {
 
     return new Promise((resolve, reject) => {
 
-        const file = fs.createWriteStream(reportFileDirectory);
-        let fileInfo = null;
+        let screenshotsUrl = screenshotsUrlGet(reportData, testimToken, resolve, reject);
 
-        if (verbose)
-            console.log("FIRST DownloadScreenshots() ", screenshotsUrl);
+    }).then((screenshotsUrl) => {
 
-        const request = proto.get(screenshotsUrl, response => {
+        return new Promise((resolve, reject) => {
 
-            if (response.statusCode !== 200) {
-                reject("\n\tERROR ACCESS_TOKEN Probably has Expired.  Update accessTokenURL and try again or set includeScreenShots to false.\n");
-            }
+            const file = fs.createWriteStream(reportFileDirectory);
+            let fileInfo = null;
 
-            fileInfo = {
-                mime: response.headers['content-type'],
-                size: parseInt(response.headers['content-length'], 10),
-            };
+            const proto = !screenshotsUrl.charAt(4).localeCompare('s') ? https : http;
+            const request = proto.get(screenshotsUrl, response => {
 
-            response.pipe(file);
+                if (response.statusCode !== 200) {
+                    reject("\n\tERROR ACCESS_TOKEN Probably has Expired.  Update accessTokenURL and try again or set includeScreenShots to false.\n");
+                }
 
-        });
+                fileInfo = {
+                    mime: response.headers['content-type'],
+                    size: parseInt(response.headers['content-length'], 10),
+                };
 
-        // The destination stream is ended by the time it's called
-        file.on('finish', () => resolve(fileInfo));
+                response.pipe(file);
 
-        request.on('error', err => {
-            fs.unlink(reportFileDirectory, () => reject(err));
-        });
+            });
 
-        file.on('error', err => {
-            fs.unlink(reportFileDirectory, () => reject(err));
-        });
+            // The destination stream is ended by the time it's called
+            file.on('finish', () => resolve(fileInfo));
 
-        request.end();
+            request.on('error', err => {
+                fs.unlink(reportFileDirectory, () => reject(err));
+            });
+
+            file.on('error', err => {
+                fs.unlink(reportFileDirectory, () => reject(err));
+            });
+
+            request.end();
+
+        })
+
     })
         .catch((e) => {
             throw new CancelError(e);
         });
 }
+
+/*
+ * Data Retrieval Methods
+ */
 
 async function JSONDBFS_ResultIDsSearch(jsondbfsCollectionName, criteria) {
 
@@ -774,16 +871,16 @@ async function JSONDBFS_ResultIDsSearch(jsondbfsCollectionName, criteria) {
 
     return new Promise((resolve) => {
 
-        let result_ids = [];
+        let results = [];
 
         jsondbfs.connect([jsondbfsCollectionName], options, (err, database) => {
             database[jsondbfsCollectionName].find(criteria, { multi: true }, (err, document) => {
                 if (document !== undefined) {
                     document.forEach((result) => {
-                        result_ids.push(result.ResultID);
+                        results.push({ "resultId": result.ResultID, "testId": result.TestID, "projectId": result.Project, "branch": result.Branch });
                     })
                 }
-                resolve(result_ids);
+                resolve(results);
             });
         });
 
@@ -793,7 +890,7 @@ async function SQLServer_ResultIDsSearch(query) {
 
     return new Promise((resolve) => {
 
-        let result_ids = [];
+        let results = [];
 
         sql.connect(SQLConnectionConfig).then(() => {
 
@@ -807,13 +904,13 @@ async function SQLServer_ResultIDsSearch(query) {
                 if (reportResults?.length > 0) {
 
                     reportResults.forEach((result) => {
-                        result_ids.push(result.ResultID);
+                        results.push({ "resultId": result.ResultID, "testId": result.TestID, "projectId": result.Project, "branch": result.Branch });
                     })
                 }
 
             }
 
-            resolve(result_ids);
+            resolve(results);
 
         }).catch(err => {
 
@@ -858,10 +955,14 @@ async function JSONDBFS_ResultsGet(jsondbfsCollectionName, criteria, resolve, re
                     reportData.branch = document.Branch;
                     reportData.TestRunDate = document.TestRunDate;
                     reportData.testName = document.TestName;
-                    reportData.testResultData = document.TestResultsJSON;
                     reportData.networkRequestStats = document.NetworkRequestStats;
                     reportData.resultUrl = document.ResultURL;
                     reportData.testData = document.TestDataJSON;
+                    if (document.TestResultsJSON !== undefined) {
+                        reportData.testResultData = document.TestResultsJSON;
+                        reportData.testResultData.TestStatus = (typeof document.TestResultsJSON?._stepInternalData.failureReason === 'undefined') ? "PASSED" : "FAILED";
+                        reportData.testResultData.TestStatusDetails = document.TestResultsJSON?._stepInternalData.failureReason;
+                    }
                 }
                 resolve(reportData);
 
@@ -898,8 +999,11 @@ async function SQLServer_ResultsGet(query, resolve, reject) {
                 reportData.resultUrl = reportResults[0].ResultURL;
                 reportData.TestRunDate = reportResults[0].TestRunDate;
 
-                if (reportResults[0].TestResultsJSON !== null && reportResults[0].TestResultsJSON !== "")
+                if (reportResults[0].TestResultsJSON !== null && reportResults[0].TestResultsJSON !== "") {
                     reportData.testResultData = JSON.parse(reportResults[0].TestResultsJSON);
+                    reportData.testResultData.TestStatus = (typeof reportData.testResultData._stepInternalData.failureReason === 'undefined') ? "PASSED" : "FAILED";
+                    reportData.testResultData.TestStatusDetails = reportData.testResultData._stepInternalData.failureReason;
+                }
 
                 if (reportResults[0].NetworkRequestStats !== null && reportResults[0].NetworkRequestStats !== "")
                     reportData.networkRequestStats = JSON.parse(reportResults[0].NetworkRequestStats);
@@ -919,7 +1023,76 @@ async function SQLServer_ResultsGet(query, resolve, reject) {
     });
 
 }
-async function TestResultsGet(resultId) {
+async function Testim_ResultsGet(projectId, testId, resultId, resolve, reject) {
+
+    if (verbose)
+        console.log("\nTestim_ResultsGet() ");
+
+    let reportData = {};
+
+    return new Promise((resolve, reject) => {
+
+        getTestResults(projectId, testId, resultId, resolve, reject);
+
+    })
+        .then((testCaseResults) => {
+
+            let test_case_data = testCaseResults.test_case_data;
+            let reportResults = testCaseResults.test_result;
+
+            reportData.projectId = reportResults.projectId;
+            reportData.testId = reportResults.testId;
+            reportData.resultId = reportResults.resultId;
+            reportData.branch = reportResults.branch;
+            reportData.testName = reportResults.name ?? reportResults.testName;
+            reportData.resultUrl = "https://app.testim.io/#"
+                + "/project/" + reportResults.projectId
+                + "/branch/" + reportResults.branch
+                + "/test/" + reportResults.testId
+                + "?result-id=" + reportResults.resultId
+            reportData.TestRunDate = new Date(reportResults.startTime ?? reportResults.executionDate + " " + reportResults.executionTime);
+            reportData.TestStatus = (reportResults.success ?? (reportResults.testResult == "PASSED")) ? "PASSED" : "FAILED";
+
+            let step_number = 0;
+            let steps = [];
+
+            let step_results = json2array(reportResults.stepsResults).sort((a, b) => { return a.startTimestamp - b.startTimestamp });
+
+            step_results = step_results.filter((result) => {
+                step_number = step_number + 1;
+                result.stepNumber = step_number;
+                return (!["afterStep", "afterTest"].includes(result?.hookType))
+            })
+
+            reportData.testResultData = {
+                "TestName": reportResults.name ?? reportResults.testName,
+                "ProjectID": reportData.projectId,
+                "TestID": reportData.testId,
+                "Branch": reportData.branch,
+                "ResultID": reportData.resultId,
+                "ResultURL": reportData.resultUrl,
+                "BaseURL": reportResults.baseURL,
+                "TestRunDate": reportData.TestRunDate,
+                "TestData": null,
+                "TestStatus": (reportResults.success ?? (reportResults.testResult == "PASSED")) ? "PASSED" : "FAILED",
+                "TestStatusDetails": reportResults.errorMessage,
+                "NetworkRequestStats": null,
+                "Steps": step_results,
+            }
+
+            if (typeof reportResults.NetworkRequestStats !== 'undefined' && reportResults.NetworkRequestStats !== null && reportResults.NetworkRequestStats !== "")
+                reportData.networkRequestStats = JSON.parse(reportResults.NetworkRequestStats);
+
+            reportData.testData = test_case_data;
+            if (typeof reportResults.TestDataJSON !== 'undefined' && reportResults.TestDataJSON !== null && reportResults.TestDataJSON !== "")
+                reportData.testData = JSON.parse(reportResults.TestDataJSON);
+
+            resolve(reportData);
+        });
+
+}
+
+async function TestResultsGet(resultId, testId, projectId) {
 
     return new Promise((resolve, reject) => {
 
@@ -941,6 +1114,17 @@ async function TestResultsGet(resultId) {
                     // eslint-disable-next-line no-case-declarations
                     let json_query = { "ResultID": resultId };
                     return JSONDBFS_ResultsGet(jsondbfsCollectionName, json_query, resolve, reject);
+
+                case "TestimAPI":
+
+                    return new Promise((resolve, reject) => {
+                        console.log("\nCall Testim_ResultsGet");
+                        return Testim_ResultsGet(projectId, testId, resultId, resolve, reject);
+                    })
+                        .then((reportData) => {
+                            //console.log("Return Testim_ResultsGet ", reportData);
+                            resolve(reportData);
+                        })
 
                 default:
                     resolve({});
@@ -1006,13 +1190,12 @@ function htmlReportTestInfoHeaderCreate(reportData, includeLogo = true) {
         testInfo += "    <tr>\n";
     }
 
-    if (includeTestResults === true && reportData?.TestStatus !== "PASSED" && typeof reportData?.testResultData._stepInternalData.failureReason !== 'undefined') {
+    if (includeTestResults === true && reportData?.TestStatus !== "PASSED" && typeof reportData?.testResultData.TestStatusDetails !== 'undefined') {
         testInfo += "    <tr>\n";
         testInfo += "      <td class='test-info-label'>&nbsp;</td>"
         testInfo += "      <td ><b>Failure Reason</b></td>"
             + "<td style='word-wrap:break-word'>"
-            //+ "<span style='color:red;'>" + testResultData?._stepInternalData.failureReason + "</span>";
-            + reportData?.testResultData._stepInternalData.failureReason;
+            + reportData?.testResultData.TestStatusDetails;
         +"</td>\n";
         testInfo += "    <tr>\n";
     }
@@ -1037,7 +1220,7 @@ function htmlReportTestDataSectionCreate(testData) {
     html += "   <thead>\n";
 
     html += "     <tr>";
-    html += "       <th style='width:75px'>";
+    html += "       <th style='width:100px'>";
     html += "           <b>Test Data</b>";
     html += "       </th>";
 
@@ -1098,7 +1281,13 @@ function htmlReportNetworkRequestStatsSectionCreate(networkRequestStats) {
     networkRequestStats.forEach((_networkRequestStats) => {
         html += "    <tr>\n";
         if (enableHyperlinks)
-            html += "  <td style='text-align: left;'><b><a target='blank' href='" + _networkRequestStats?.url + "'>" + _networkRequestStats?.url + "</a></b></td>";
+            html += "  <td class='network-request-url' style='text-align: left;'><b><a target='blank' href='"
+                + _networkRequestStats?.url + "'>"
+                + (_networkRequestStats?.url.length <= MAX_NETWORK_REQUEST_URL_DISPLAY
+                    ? _networkRequestStats?.url
+                    : _networkRequestStats?.url.substring(0, MAX_NETWORK_REQUEST_URL_DISPLAY - 1) + "..."
+                )
+                + "</a></b></td>";
         else
             html += "  <td style='text-align: left;'><b>" + _networkRequestStats?.url + "</b></td>";
         html += "      <td style='text-align: center;'><b>" + _networkRequestStats?.count + "</b></td>";
@@ -1177,14 +1366,25 @@ function htmlReportStepDetailsCreate(stepEntries, project_id, test_id, result_id
         console.log("------------------------------------------------------------------------");
         console.log("  NUMBER OF RAW STEPS: (" + stepEntries.length + ")");
     }
-    let step_entries = stepEntries.filter((step) => {
-        let step_parts = step.name.split('-');
-        let step_name = step_parts.slice(4, step_parts.length - 1).join("-");
-        return (!step_name.toLowerCase().replace(' ', '').includes('beforetest')
-            && !step_name.toLowerCase().replace(' ', '').includes('beforestep')
-            && !step_name.toLowerCase().replace(' ', '').includes('afterstep')
-            && !step_name.toLowerCase().replace(' ', '').includes('aftertest'));
-    })
+
+    let step_entries = {};
+    try {
+        step_entries = stepEntries.filter((step) => {
+            let step_name = "";
+            let step_parts = "";
+            if (step.name !== undefined) {
+                step_parts = step.name.split('-');
+                step_name = step_parts.slice(4, step_parts.length - 1).join("-");
+            }
+            return (!step_name.toLowerCase().replace(' ', '').includes('beforetest')
+                && !step_name.toLowerCase().replace(' ', '').includes('beforestep')
+                && !step_name.toLowerCase().replace(' ', '').includes('afterstep')
+                && !step_name.toLowerCase().replace(' ', '').includes('aftertest'));
+        })
+    }
+    catch (err) {
+        console.log(err);
+    }
 
     if (verbose) {
         console.log("  NUMBER OF STEPS: (" + step_entries.length + ")");
@@ -1196,24 +1396,41 @@ function htmlReportStepDetailsCreate(stepEntries, project_id, test_id, result_id
     let group_level_last = -1;
     let currentGroup = "";
     let step_number = -1;
+    let stepTime = new Date(testResultData.TestRunDate).getTime();
     step_entries.forEach(function (stepEntry) {
 
         let _html = "";
         {
             step_number = step_number + 1;
 
-            let stepPage = (step_number <= 1) ? testResultData.BaseURL : testResultData.Steps[step_number - 1]?.page;
-            let stepStartTime = testResultData?.Steps[step_number - 1]?.endTime;
-            let stepNumber = testResultData?.Steps[step_number]?.stepNumber;
-            let stepName = testResultData?.Steps[step_number]?.name.substring(0, MAX_STEP_NAME_DISPLAY - 1);
             let stepId = testResultData?.Steps[step_number]?.stepId;
+
+            let stepPage = (step_number == 0) ? testResultData.BaseURL : (testResultData.Steps[step_number - 1]?.page ?? "");
+            let stepNumber = testResultData?.Steps[step_number]?.stepNumber;
+
+            let stepName = (testResultData?.Steps[step_number]?.name !== undefined)
+                ? testResultData?.Steps[step_number].name.substring(0, MAX_STEP_NAME_DISPLAY - 1)
+                : testResultData?.Steps[step_number].description.substring(0, MAX_STEP_NAME_DISPLAY - 1)
+
             let stepPath = testResultData?.Steps[step_number]?.path;
-            let stepEndTime = testResultData?.Steps[step_number]?.endTime;
             let stepType = testResultData?.Steps[step_number]?.type;
             let stepStatus = testResultData?.Steps[step_number]?.status;
-            let stepDuration = !isNaN(stepStartTime) ? Number(stepEndTime - stepStartTime) / 1000 : null;
-            let stepTime = !isNaN(stepStartTime) ? new Date(stepStartTime).toLocaleTimeString() : "";
+            let stepErrorMessage = testResultData?.Steps[step_number]?.errorMessage;
+            let stepScreenshot = testResultData?.Steps[step_number]?.screenshot;
+
+            let stepStartTime = testResultData?.Steps[step_number - 1]?.endTime;
+            let stepEndTime = testResultData?.Steps[step_number]?.endTime;
+            let stepDuration = testResultData?.Steps[step_number]?.duration ?? (!isNaN(stepStartTime) ? Number(stepEndTime - stepStartTime) / 1000 : null);
+
             elapsedTime += !isNaN(stepDuration) ? stepDuration : 0;
+
+            if (!isNaN(stepStartTime)) {
+                stepTime = !isNaN(stepStartTime) ? new Date(stepStartTime) : "";
+            }
+            else {
+                stepTime += (stepDuration * 1000);
+            }
+
 
             if (verbose)
                 console.log("  JSON STEP (" + stepNumber + ") NAME: ", stepName, "ID", stepId, "PATH", stepPath);
@@ -1238,7 +1455,7 @@ function htmlReportStepDetailsCreate(stepEntries, project_id, test_id, result_id
 
                 _html += "      <td class='step-name'>";
 
-                _html += "<p>"
+                _html += "<p>";
 
                 if (enableGroups === true) {
 
@@ -1316,7 +1533,7 @@ function htmlReportStepDetailsCreate(stepEntries, project_id, test_id, result_id
 
             if (reportColumns.includes("StepTime")) {
                 _html += "      <td class='step-time' nowrap='nowrap'>";
-                _html += "         <b>" + stepTime + "</b>";
+                _html += "         <b>" + new Date(stepTime).toLocaleTimeString() + "</b>";
                 _html += "      </td>";
             }
 
@@ -1334,7 +1551,7 @@ function htmlReportStepDetailsCreate(stepEntries, project_id, test_id, result_id
 
             if (reportColumns.includes("Status")) {
                 _html += "<td class='step-status'>";
-                _html += (stepStatus === "PASSED" ? "<b style='color:green;'>PASSED</b>" : "<b style='color:red;'>FAILED</b>");
+                _html += (stepStatus === "PASSED" ? "<b style='color:green;'>PASSED</b>" : "<b style='color:red" + ((stepErrorMessage !== undefined) ? `;text-decoration: underline;' title='${stepErrorMessage}'` : ";'") + ">FAILED</b>");
                 _html += "</td>\n";
             }
 
@@ -1349,19 +1566,38 @@ function htmlReportStepDetailsCreate(stepEntries, project_id, test_id, result_id
             }
 
             if (includeScreenShots && reportColumns.includes("ScreenShot")) {
-                let image_src = "./" + zippedScreenshotsFilename.replace('.zip', '').replace('.html', '') + "/" + stepEntry.zipEntryName;
-                if (embedImages) {
-                    let mime = 'image/png';
-                    let encoding = 'base64';
-                    let data = stepEntry.screenshotDataUrl;
-                    if (verbose)
-                        console.log("STEP IMAGE: ", step_number, "stepEntry.zipEntryName: ", stepEntry.zipEntryName);
-                    image_src = 'data:' + mime + ';' + encoding + ',' + data;
-                }
 
                 _html += "      <td class='step-screenshot'>";
-                if (stepEntry.zipEntryName !== undefined)
-                    _html += "          <img alt='" + stepName + "' class='screenshot' onclick='show(this)' src='" + image_src + "' onclick='show()'/>";
+
+                let screenshot_element_html = "";
+                if (stepEntry.screenshot !== undefined) {
+                    screenshot_element_html = "          <img alt='" + stepName + "' class='screenshot' onclick='show(this)' src='" + stepEntry.screenshot + "' onerror=\"this.style.display='none'\" />";
+                }
+                else {
+                    let image_src = "./" + zippedScreenshotsFilename.replace('.zip', '').replace('.html', '') + "/" + stepEntry.zipEntryName;
+                    if (embedImages) {
+                        let mime = 'image/png';
+                        let encoding = 'base64';
+                        let data = stepEntry.screenshotDataUrl;
+                        if (verbose)
+                            console.log("STEP IMAGE: ", step_number, "stepEntry.zipEntryName: ", stepEntry.zipEntryName);
+                        image_src = 'data:' + mime + ';' + encoding + ',' + data;
+                    }
+                    if (stepEntry.zipEntryName !== undefined) {
+                        if (includeScreenShotHighlight && stepEntry?.screenImageHighlight !== undefined) {
+                            let top = stepEntry?.screenImageHighlight?.top;
+                            let left = stepEntry?.screenImageHighlight?.left;
+                            let width = stepEntry?.screenImageHighlight?.width;
+                            let height = stepEntry?.screenImageHighlight?.height;
+                            let scale = 0.68;
+                            screenshot_element_html = "          <img alt='" + stepName + "' class='screenshot' onclick='show(this," + top + ", " + left + ", " + width + ", " + height + + ", " + scale + ")' src='" + image_src + "'/>";
+                        }
+                        else {
+                            screenshot_element_html = "          <img alt='" + stepName + "' class='screenshot' onclick='show(this)' src='" + image_src + "'/>";
+                        }
+                    }
+                }
+                _html += screenshot_element_html;
                 _html += "      </td>\n";
             }
 
@@ -1473,9 +1709,32 @@ function configureReportGenerator() {
     }
 
     if (typeof resultIdsQuery === 'object' && typeof resultIdsQuery[0] === 'string') {
-        resultIds = [...resultIdsQuery];
+        results = [...resultIdsQuery];
         resultIdsQuery = undefined;
     }
+
+    let _results = [];
+    results.forEach((result) => {
+
+        if (typeof result === 'string') {
+            if (result.startsWith("https://app.testim.io")) {
+                let _result = {};
+                _result["projectId"] = result.match(/project\/(?<projectId>.*)[&]?$/)?.groups.projectId.split('/')[0];
+                _result["branch"] = result.match(/branch\/(?<branch>.*)[&]?$/)?.groups.branch.split('/')[0];
+                _result["testId"] = result.match(/test\/(?<test>.*)[&\?]?$/)?.groups.test.split('?')[0];
+                _result["resultId"] = result.match(/result-id=(?<resultId>.*)[&]?$/)?.groups.resultId.split('&')[0];
+                _results.push(_result);
+            }
+            else {
+                _results.push({ "resultId": result });
+            }
+        }
+        else {
+            _results.push(result);
+        }
+
+    })
+    results = _results;
 
     /* Validate required parameters
     */
@@ -1507,15 +1766,16 @@ function configureReportGenerator() {
         }
     }
 
-    if ((typeof resultIdsQuery === 'undefined' || resultIdsQuery === null) && (typeof resultIds === 'undefined' || resultIds === null || resultIds.length === 0)) {
-        throw new CancelError("\nParameter 'resultIdsQuery' and 'resultIds' are undefined.  Please set either resultIdsQuery or resultIds parameter and try again\n");
+    if ((typeof resultIdsQuery === 'undefined' || resultIdsQuery === null) && (typeof results === 'undefined' || results === null || results.length === 0)) {
+        throw new CancelError("\nParameter 'resultIdsQuery' and 'results' are undefined.  Please set either resultIdsQuery or results parameter and try again\n");
     }
 
     if (includeScreenShots
         && (typeof accessToken === 'undefined' || accessToken === null)
         && (typeof accessTokenURL === 'undefined' || accessTokenURL === null)
-        && (typeof testimToken === 'undefined' || testimToken === null)) {
-        throw new CancelError("When including screenshots, either 'accessTokenURL', 'testimToken' or 'accessToken' must be defined and valid.  Please set 'accessTokenURL', 'testimToken' or 'accessToken' parameters and try again");
+        && (typeof testimToken === 'undefined' || testimToken === null)
+        && (typeof testimAccessToken === 'undefined' || testimAccessToken === null)) {
+        throw new CancelError("When including screenshots, either 'accessTokenURL', 'testimToken', 'testimAccessToken' or 'accessToken' must be defined and valid.  Please set 'accessTokenURL', 'testimToken' or 'accessToken' parameters and try again");
     }
 
     if (emailReport === true) {
@@ -1536,7 +1796,7 @@ async function TestResultIdsGet(resultIdsQuery) {
 
     return new Promise((resolve) => {
 
-        let result_ids = [];
+        let _results = [];
 
         let result_datasource = (resultIdsQuery !== undefined && resultIdsQuery !== null) ? reportDataSource : 'whatever';
         switch (result_datasource) {
@@ -1544,59 +1804,55 @@ async function TestResultIdsGet(resultIdsQuery) {
             case "JSONDBFS":
                 console.log("JSONDBFS resultIdsQuery: ", resultIdsQuery)
                 JSONDBFS_ResultIDsSearch(jsondbfsCollectionName, resultIdsQuery)
-                    .then((resultIds) => {
-                        result_ids = [...resultIds];
-                        resolve(result_ids);
+                    .then((results) => {
+                        resolve([...results]);
                     });
                 break;
 
             case "SQLServer":
                 console.log("SQLServer resultIdsQuery: ", resultIdsQuery)
                 SQLServer_ResultIDsSearch(resultIdsQuery, resolve)
-                    .then((resultIds) => {
-                        result_ids = [...resultIds];
-                        resolve(result_ids);
-                    })
+                    .then((results) => {
+                        resolve([...results]);
+                    });
+                break;
+
+            case "TestimAPI":
+                console.log("TestimAPI resultIdsQuery: Use results: ", results)
+                resolve(results);
                 break;
 
             default:
-                console.log("resultIdsQuery unspecified.  Use resultIds: ", resultIds)
-                if (typeof resultIds == 'string')
-                    result_ids.push(resultIds);
-                else
-                    result_ids = [...resultIds];
-
-                resolve(result_ids);
+                console.log("resultIdsQuery unspecified.  Use results: ", results)
+                resolve(results);
                 break;
         }
 
     });
 
 }
-async function GenerateReports(ResultIDs) {
+async function GenerateReports(Results) {
 
     return new Promise((resolve) => {
 
-        if (ResultIDs == undefined || ResultIDs?.length === 0) {
-            reject("No ResultIDs specified");
+        if (Results == undefined || Results?.length === 0) {
+            reject("No Results specified");
         }
 
-        console.log("generateReports for ResultIDs: " + ResultIDs);
+        console.log("generateReports for ResultIDs: " + Results);
 
-        ResultIDs.forEach((result_id) => {
-
-            result_id = result_id.trim();
+        Results.forEach((result) => {
 
             return new Promise((resolve, reject) => {
 
-                console.log("Generate Report for ResultID: " + result_id);
+                console.log("Generate Report for ResultID: " + result.resultId);
 
-                TestResultsGet(result_id)
+                TestResultsGet(result.resultId, result.testId, result.projectId)
 
                     .then((reportData) => {
 
-                        if (JSON.stringify(reportData) === '{}' || (reportData.testData === undefined || reportData.testData === null)) {
-                            throw new Error("\nERROR: Result ID: '" + result_id + "' not found in " + reportDataSource + ".");
+                        if (JSON.stringify(reportData) === '{}' || (reportData.testResultData === undefined || reportData.testResultData === null)) {
+                            throw new Error("\nERROR: Result ID: '" + result.resultId + "' not found in " + reportDataSource + ".");
                         }
 
                         reportData.stepEntries = reportData.testResultData.Steps;
@@ -1607,7 +1863,7 @@ async function GenerateReports(ResultIDs) {
                         console.log("  projectId           = " + reportData.projectId);
                         console.log("  testId              = " + reportData.testId);
                         console.log("  resultId            = " + reportData.resultId);
-                        console.log("  stepCount           = " + reportData.stepEntries.length);
+                        console.log("  stepCount           = " + reportData?.stepEntries.length);
                         console.log("  resultUrl           = " + reportData.resultUrl);
                         console.log("  testResultData      = " + ((reportData.testResultData !== undefined && reportData.testResultData !== null) ? "DEFINED" : "UNDEFINED"));
                         console.log("  testData            = " + ((reportData.testData !== undefined && reportData.testData !== null) ? "DEFINED" : "UNDEFINED"));
@@ -1636,17 +1892,10 @@ async function GenerateReports(ResultIDs) {
 
                         return new Promise((resolve, reject) => {
 
-                            if (includeScreenShots) {
+                            if (includeScreenShots && options.reportDataSource !== "TestimAPI") {
 
-                                ScreenshotsPrepareRequest(reportData)
+                                DownloadScreenshots(reportData, reportFileDirectory + zippedScreenshotsFilename)
 
-                                    .then(() => {
-
-                                        console.log("Now DownloadScreenshots");
-                                        let screenshotsUrl = "https://services.testim.io/result/" + result_id + "/screenshots" + "?access_token=" + accessToken + "&projectId=" + reportData.projectId;
-                                        return DownloadScreenshots(screenshotsUrl, reportFileDirectory + zippedScreenshotsFilename)
-
-                                    })
                                     .then(() => {
 
                                         // read archive
@@ -1665,7 +1914,6 @@ async function GenerateReports(ResultIDs) {
 
                                         let zipEntries = zip.getEntries(); // an array of ZipEntry records  
 
-                                        let step_number = 0;
                                         console.log("  stepCount           = " + reportData.stepEntries.length);
 
                                         zipEntries.forEach(function (zipEntry) {
@@ -1803,6 +2051,11 @@ async function GenerateReports(ResultIDs) {
 configureReportGenerator();
 
 TestResultIdsGet(resultIdsQuery)
-    .then((resultIds) => {
-        GenerateReports(resultIds)
+    .then((results) => {
+        if (results === null || results?.length === 0) {
+            console.error("\nError: No results found in target datasource. Exiting.");
+        }
+        else {
+            GenerateReports(results);
+        }
     });
