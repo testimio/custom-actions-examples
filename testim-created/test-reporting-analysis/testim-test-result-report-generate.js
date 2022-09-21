@@ -5,31 +5,26 @@
  *  
  *  Options
  *  
+ *      results : Array of ResultIDs for report generation
+ *                              Example: 
+ *                                  results : ["qqeHW8hPJtsvkYnx", "2Ue9yRAvZNd6GPZA"]
+ * 
  *      resultIdsQuery : JSONDB, SQLServer SQL query or Array of ResultIDs for report generation
  *                               JSONDBFS Example:  { "TestID": "KWvnxBA0fJ5YjACj" "TestStatus": "FAILED" } 
  *                               SQLServer Example: Select Top 3 [ResultID] from [TestData].[dbo].[TestResults] where [TestID] = 'KWvnxBA0fJ5YjACj'
  * 
- *      results : Array of ResultIDs for report generation
- *                               results Example: ["qqeHW8hPJtsvkYnx", "2Ue9yRAvZNd6GPZA"];
- * 
- *      reportDataSource : Where to get result data.  Currently supported are "JSONDBFS" and "SQLServer" (Default = "JSONDBFS")
- * 
  *      generatePDF [optional]   : true/false (default = false)
- * 
- *      openReport [optional]    : true/false (default = false)
  * 
  *      emailReport [optional]   : true/false (default = false)
  * 
  *      hiddenParams [optional] : Array of Testim variable to hide.  Values are replaced with '********' 
  *                          Example: ['password']
  * 
- *      enableGroups [optional]  : true/false (default = true) - Display steps nested in groups as applicable
+ *      reportDataSource : Where to get result data.  Currently supported are "TestimAPI", "JSONDBFS" and "SQLServer" (Default = "TestimAPI")
  * 
- *      includeTestResults [optional]  : true/false (default = true) - Include Test Results in report
+ *      testimAccessToken [optional] : Testim REST API Access Token.  Required if using the reportDataSource "TestimAPI"
  * 
- *      includeScreenShots [optional]  : true/false (default = false) - If available, include screenshots in report
- * 
- *      testimToken [optional] : Token used to get screenshots.  
+ *      testimToken [optional] : Token used to get screenshots.  Required if using the reportDataSource "JSONDBFS" or "SQLServer"
  *                                  Needed if including screenshots
  *                                  Can be retrieved from Project Settings => CLI example
  * 
@@ -38,12 +33,16 @@
  *      includeNetworkRequestStats [optional]  : true/false (default = false) - If available, network statistics will be included in report
  * 
  *      includeStepDetails [optional]  : true/false (default = true) - Include test steps in report
- *
+ * 
+ *      includeScreenShots [optional]  : true/false (default = true) - If available, include screenshots in report
+ * 
  *      reportEmailToAddresses : Email recipients for a report
  * 
  *      reportEmailFromAddresses : Email from address for a report
  * 
- *      reportColumns [optional] : Array of columns to display in step display 
+ *      openReport [optional]    : true/false (default = false)
+ * 
+ *      reportColumns [optional] : Array of columns to custyomize which step columns to include
  *                     Example: ["StepNumber", "StepName", "StepType", "StepTime", "ElapsedTime", "Duration", "Status", "PageURL", "ScreenShot"]
  * 
  *  Configuration (All are optional)
@@ -60,8 +59,6 @@
  *
  *      enableHyperlinks [optional]  : true/false - Embed links to live Testim results. (default = true)
  * 
- *      embedImages : true/false - Embed images into generated reports of keep separate in local directory. (default = true)
- *  
  *      pdfOptions: Used to tweak PDF file layout.
  *              Example { format: 'A4', scale: 0.5 }
  * 
@@ -91,25 +88,39 @@
                npm i yargs -g
                npm install got -g
  * 
- *      Two hook functions need to be locked and loaded for collecting test result data (Configured as After Step and After Test hooks)
+ *      If using the reportDataSource "JSONDBFS" or "SQLServer"
  * 
- *          1) AfterStep - Extended custom action
- *          2) One of the following custom cli hook functions based on your preference for where to persist test result data.
- *              AfterTest - JOSONDBFS => Uses the filesystem to move/persist data and requires no external systems
- *              AfterTest - SQLServer => Requires a SQL Server instance to store results
+ *         "testimToken" is required
+ *              
+ *              In Testim project settings navigate to the CLI tab
+ *                  copy the token value used to run tests from the example 
+ *                  set "testimToken" to this value.  This can be set using the commandline argument "testimToken" or in options below
+ * 
+ *          Two hook functions need to be locked and loaded for collecting test result data (Configured as After Step and After Test hooks)
+ * 
+ *              1) "AfterStep - Extended" custom action
+ *              2) One of the following custom cli hook functions based on your preference for where to persist test result data.
+ *                  "AfterTest - JOSONDBFS" => Uses the filesystem to move/persist data and requires no external systems
+ *                  "AfterTest - SQLServer" => Requires a SQL Server instance to store results
+ * 
+ *          If using the reportDataSource "JSONDBFS"
+ *              
+ *              Setting jsondbfsPath (path to JSONDB collection files)
+ * 
+ *                  If using Testim CLI to run tests and collect results then this should be set to the directory where the Testim Agent is running.  
+ *                  However, should that the target directory be specified in the 'AfterTest - JOSONDBFS' then would set jsondbfsPath to match
+ *
+ *      If using the reportDataSource "TestimAPI" 
+ *
+ *          "testimAccessToken" is required
+ * 
+ *              Set "testimAccessToken" to a valid API key in options below or as a commandline argument "testimAccessToken"
+ * 
+ *              See https://help.testim.io/docs/api-access for generating an API key
+ * 
  * 
  *  Notes
  * 
- *      Setting jsondbfsPath (path to JSONDB collection files)
- * 
- *          If using Testim CLI to run tests and collect results then this should be set to the directory where the Testim Agent is running.  
- *          However, should that the target directory be specified in the 'AfterTest - JOSONDBFS' then would set jsondbfsPath to match
- *
- *      To include screenshots (includeScreenShots): 
- *  
- *          To download screenshots you will need to provide your project's token.
- *          In your project settings navigate to CLI and copy the token to the token used to run tests and set "token" to this value.
- *    
  *      To include network performance data (includeNetworkRequestStats)
  * 
  *          The test case must include the custom step "Network Performance Summary" available in the git repo.
@@ -119,23 +130,20 @@
  * 
  *      Version     Date            Author              Notes             
  *      1.6.0       09/19/2022      Barry Solomon       Support Testim REST API (No need for test hooks)
+ *      1.6.1       09/20/2022      Barry Solomon       Comments/Documentation updates, set step image modal to 80%
  * 
  *  Directions for Use
  * 
- *      Set configuration options reportFileDirectory and jsondbfsPath
- * 
- *      Get the ResultID of a test run with the afore mentioned hooks engaged
- * 
- *      Copy the result-id from the url in the address 
- * 
- *      Add result-id to the resultIds array
- *          or define resultIdsQuery 
+ *      Set resultIds to a valid result id
+ *          or set resultIdsQuery if using reportDataSource "JSONDBFS" or "SQLServer"
  *               JSONDBFS  Example:  { "TestID": "KWvnxBA0fJ5YjACj" }; 
  *               SQLServer Example: "Select Top 3 [ResultID] from [TestData].[dbo].[TestResults] where [TestID] = 'KWvnxBA0fJ5YjACj'";
  * 
- *      Set any options and/or configurations
+ *      Set 
+ *          reportDataSource, 
+ *          testimToken or testimAccessToken (depending on reportDataSource)
  * 
- *      Run this file and your results should show in the target or current directory.
+ *      Run this file and results should show in the target or current directory.
  *          If configured and enabled, an email with the report will also be sent
  * 
  *  Disclaimer
@@ -159,32 +167,27 @@
   SQLServer QUERY: "Select Top 1 [ResultID] from [TestData].[dbo].[TestResults] where [TestStatus]='FAILED' order by ID desc"
 
 **/
+
 let options = {
 
-    reportDataSource: "TestimAPI", // "JSONDBFS", "SQLServer" or "TestimAPI"
+    reportDataSource: "TestimAPI", // "TestimAPI", "JSONDBFS" or "SQLServer"
+
+    testimAccessToken: "<YOUR TESTIM API KEY>", // Required if reportDataSource = "TestimAPI"
+
+    testimToken: "<YOUR TESTIM RUN KEY>", // Required if reportDataSource = "JSONDBFS" or "SQLServer"
+
     results: ["<TARGET RESULT ID>"],
-    testimAccessToken: "<YOUR TESTIM API KEY>",
 
-    // resultIds: ["K2unEqrrKJlWS7vO"],
-    // resultIdsQuery: { "TestStatus": "FAILED" },
-    // resultIdsQuery: { "ResultID": "m8krl8qujkmWWnqX" },
-    // resultIdsQuery: "Select Top 1 [ResultID] from [TestData].[dbo].[TestResults] where [TestStatus]='FAILED' order by ID desc",
-    // reportDataSource: "JSONDBFS", // "JSONDBFS" or "SQLServer"
+    // hiddenParams: ['password'],
 
-    includeScreenShots: true,
-    // testimToken: "",
-    // accessToken: "",
-    // accessTokenURL: "",
+    //generatePDF: true,
+    // openReport: false,
 
     // emailReport: true,
     // reportEmailToAddresses: "",
     // reportEmailFromAddress: "",
 
-    // hiddenParams: ['password'],
-
-    // generatePDF: true,
-    // openReport: false,
-
+    // includeScreenShots: false,
     // includeTestData: true,
     // includeNetworkRequestStats: true,
 
@@ -195,7 +198,7 @@ let configuration = {
     // jsondbfsCollectionName: "TestResults",
 
     // reportFileDirectory: "C:\\Temp\\TestimReports\\",
-    // jsondbfsPath: "C:\\Users\\barry\\", // "C:\\Users\\barry\\Downloads\\",
+    // jsondbfsPath:        "C:\\Users\\barry\\", 
 
     // reportStyleMarkup: ".screenshot { width: 325px; height: 250px; padding: 10px }",
     // reportColumns: ["StepNumber", "StepName", "ElapsedTime", "Status", "PageURL", "ScreenShot"],
@@ -309,8 +312,8 @@ const DEFAULT_REPORT_STYLE =
     ".step-pageurl      { min-width: 200px; } " +
     ".step-screenshot   { min-width: 200px; } " +
 
-    ".screenshot { width: 50%; height: 50%; padding: 5px }"
-    ;
+    ".screenshot { max-width: 200px; padding: 5px }" +
+    "";
 
 /* If you want to pretty print Testim step types.  
     There are more to add.  These are just the ones I have encountered while making this
@@ -336,7 +339,7 @@ const stepTypeDisplayName = {
 let modalStyle = "<style>\n"
     + "#myImg:hover {opacity: 0.7;} \n"
     + ".modal { display: none; position: fixed; z-index: 1; padding-top: 100px; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgb(0,0,0); background-color: rgba(0,0,0,0.9); } \n"
-    + ".modal-content { margin: auto; display: block; width: 80%; max-width: 700px; } \n"
+    + ".modal-content { margin: auto; display: block; width: 80%; } \n"
     + "#caption { margin: auto; display: block; width: 80%; max-width: 700px; text-align: center; color: #ccc; padding: 10px 0; height: 150px; } \n"
     + ".close { position: absolute; top: 15px; right: 35px; color: #f1f1f1; font-size: 40px; font-weight: bold; transition: 0.3s; } \n"
     + ".close:hover, .close:focus { color: #bbb; text-decoration: none; cursor: pointer; } \n"
@@ -501,7 +504,7 @@ function parseCommandlineArgs() {
         .default("generatePDF", false).boolean("generatePDF")
         .default("emailReport", false).boolean("emailReport")
         .default("openReport", true).boolean("openReport")
-        .default("includeScreenShots", options?.includeScreenShots || false).boolean("includeScreenShots")
+        .default("includeScreenShots", options?.includeScreenShots || true).boolean("includeScreenShots")
         .default("includeScreenShotHighlight", options?.includeScreenShotHighlight || false).boolean("includeScreenShotHighlight")
         .default("includeTestResults", true).boolean("includeTestResults")
         .default("includeTestData", false).boolean("includeTestData")
@@ -1590,7 +1593,7 @@ function htmlReportStepDetailsCreate(stepEntries, project_id, test_id, result_id
                             let width = stepEntry?.screenImageHighlight?.width;
                             let height = stepEntry?.screenImageHighlight?.height;
                             let scale = 0.68;
-                            screenshot_element_html = "          <img alt='" + stepName + "' class='screenshot' onclick='show(this," + top + ", " + left + ", " + width + ", " + height + + ", " + scale + ")' src='" + image_src + "'/>";
+                            screenshot_element_html = "          <img alt='" + stepName + "' class='screenshot' onclick='show(this," + top + ", " + left + ", " + width + ", " + height + ", " + scale + ")' src='" + image_src + "'/>";
                         }
                         else {
                             screenshot_element_html = "          <img alt='" + stepName + "' class='screenshot' onclick='show(this)' src='" + image_src + "'/>";
