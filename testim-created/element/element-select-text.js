@@ -11,6 +11,10 @@
  * 
  *      endPosition (JS) [optional] : String or index of endOffset of selection
  * 
+ *      excludeTags (JS) [optional] : Include or exclude start/end text tags if used
+ * 
+ *      leadingBlanks (JS) [optional] : Include or exclude start/end blanks from tags
+ * 
  *      returnVariableName (JS) : string name of variable to store selected text
  *
  *  Returns
@@ -18,18 +22,30 @@
  *
  *  Notes
  * 
- *      The selection will include the end search string if using string matching
+ *      The selection will include the end search string if using string matching 
+ * 
+ *  Version     Date            Author              Notes             
+ *  1.5.0       09/19/2022      Barry Solomon       Added excludeTags and leadingBlanks handling
+ * 
  */
 
 /* eslint-disable camelcase */
 /* eslint-disable no-var */
-/* globals window, document, element, startPosition, endPosition, returnVariableName, Event */
+/* globals window, document, element, startPosition, endPosition, excludeTags, leadingBlanks, returnVariableName, Event */
 
 let verbose = false;
 
 let return_variable_name = 'selectedText';
 if (typeof returnVariableName !== 'undefined' && returnVariableName !== null)
     return_variable_name = returnVariableName;
+
+let exclude_tags = false;
+if (typeof excludeTags !== 'undefined' && excludeTags !== null)
+    exclude_tags = excludeTags;
+
+let leading_blanks = true;
+if (typeof leadingBlanks !== 'undefined' && leadingBlanks !== null)
+    leading_blanks = leadingBlanks;
 
 function doEvent(element, eventName, lastValue = null) {
     var event = new Event(eventName, { target: element, bubbles: true, composed: true });
@@ -52,14 +68,30 @@ let startOffset = 0;
 let endOffset = textNode.length;
 
 if (typeof startPosition !== 'undefined' && startPosition !== null) {
-    if (typeof startPosition === 'string')
-        startOffset = textNode.data.toLowerCase().indexOf(startPosition.toLowerCase());
+    if (typeof startPosition === 'string') {
+        let start_position = (leading_blanks) ? startPosition.toLowerCase() + " " : startPosition.toLowerCase();
+        startOffset = textNode.data.toLowerCase().indexOf(start_position);
+        if (startOffset == -1) {
+            start_position = startPosition.toLowerCase();
+            startOffset = textNode.data.toLowerCase().indexOf(start_position);
+        }
+        if (exclude_tags)
+            startOffset += start_position.length;
+    }
     else
         startOffset = startPosition;
 }
 if (typeof endPosition !== 'undefined' && endPosition !== null) {
-    if (typeof endPosition === 'string')
-        endOffset = textNode.data.toLowerCase().indexOf(endPosition.toLowerCase()) + endPosition.length;
+    if (typeof endPosition === 'string') {
+        let end_position = (leading_blanks) ? " " + endPosition.toLowerCase() : endPosition.toLowerCase();
+        endOffset = textNode.data.toLowerCase().indexOf(end_position);
+        if (endOffset <= startOffset) {
+            end_position = endPosition.toLowerCase();
+            endOffset = textNode.data.toLowerCase().indexOf(end_position);
+        }
+        if (endOffset > startOffset && !exclude_tags)
+            endOffset += end_position.length;
+    }
     else
         endOffset = endPosition;
 }
