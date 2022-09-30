@@ -7,7 +7,7 @@ If you have an idea for a custom action example feel free to submit a GitHub iss
 
 Initially it includes custom action steps (JavaScript) that we have created for customers. The code can be copied from here and added to a custom step in a Testim test. Instructions on how to use each example are included in the linked file with the JavaScript code needed. Typically it will involve copying the file and code into a custom step, making a change or two to the properties panel, checking your variables, and perhaps pointing to the correct element. 
 
-[**Element Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/)
+[**Element Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element)
 
 [Classes Get](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/classes-get.js) - Get an element's class list as a string array
 
@@ -38,6 +38,14 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 [hasClass](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/has-class.js) - Check if an element's class list includes certain expected classes
 
 [Checkbox - Check](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/checkbox-check.js) - Check/Uncheck/Toggle a checkbox.  Supports custom checkbox controls and states (some assembly required)
+
+<br/>
+
+[**OCR Functions**](https://github.com/testimio/custom-actions-examples/tree/main/testim-created/ocr)
+
+[OCR - Element Text Get](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/ocr/ocr-element-text-get.js) - Read text from an element's image
+
+[OCR - Element Text validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/ocr/ocr-element-text-validate.js) - Read/validate the text from an element's image
 
 <br/>
 
