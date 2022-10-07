@@ -39,6 +39,8 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Checkbox - Check](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/checkbox-check.js) - Check/Uncheck/Toggle a checkbox.  Supports custom checkbox controls and states (some assembly required)
 
+[Checkbox - Validate Checked](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/checkbox-validate-checked.js) - Validate a checkbox is checked/unchecked.  
+
 <br/>
 
 [**OCR Functions**](https://github.com/testimio/custom-actions-examples/tree/main/testim-created/ocr)
