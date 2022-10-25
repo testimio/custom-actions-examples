@@ -65,6 +65,8 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Set Text (Redacted)](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/test-data/text-set-redacted.js) -  Redacts a field and then sets its text
 
+[Set Text Encrypted(Reference)](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/test-data/text-set-encrypted.js) -  Use encrypted test data to set a text field (optionally redact field to protect PII from screenshots
+
 <br/>
 
 [**Database Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/database-apis/)
