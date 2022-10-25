@@ -31,6 +31,8 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [isVisible](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/is-visible.js) - Vaildate that an element is visible
 
+[Element - Wait Not Visible](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/element-wait-not-visible.js) -  Wait for an element to optionally display and then to be hidden. 
+
 [isPlaying](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/is-playing.js) - Validate that a video/media element is currently playing video (or not)
 
 [hasAttribute](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/has-attribute.js) - Validate that an element does/does not have an attribute defined and optionally validate its value
