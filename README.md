@@ -53,7 +53,7 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 <br/>
 
-[**Data Generation and Redaction**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/test-data/)
+[**Data Generation, Encryption and Redaction**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/test-data/)
 
 [Excel - Import Data](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/test-data/excel-import-data.js) - Process Excel download file and save sheet data values as test data variable (testData)
 
@@ -66,6 +66,8 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 [Set Text (Redacted)](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/test-data/text-set-redacted.js) -  Redacts a field and then sets its text
 
 [Set Text Encrypted(Reference)](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/test-data/text-set-encrypted.js) -  Use encrypted test data to set a text field (optionally redact field to protect PII from screenshots
+
+[Text Encrypt (Reference)](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/test-data/text-encrypt.js) -  Encrypts plain text for use by "Set Text Encrypted" sister step
 
 <br/>
 
