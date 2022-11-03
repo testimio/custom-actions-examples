@@ -247,3 +247,6 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 [Java Executor](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/java/java-executor.js) - Execute a java method/function in a given jar file
 
 [Python Program Execute](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/python-program-execute.js) - Execute a Python program and return stdout, exit signal and exit code
+
+[Excel365 - Grid Cell Mapping Get](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/excel365-grid-cell-mapping-get.js) - Using Column and Row Headers Get coordinates of visible cells.  Can be used with Click and Double Click actions to set cell values.
+
