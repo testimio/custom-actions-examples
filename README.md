@@ -69,6 +69,8 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Text Encrypt (Reference)](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/test-data/text-encrypt.js) -  Encrypts plain text for use by "Set Text Encrypted" sister step
 
+[Environment Variables Get](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/test-data/environment-variables-get.js) -  Get process environment variables
+
 <br/>
 
 [**Database Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/database-apis/)
