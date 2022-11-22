@@ -11,7 +11,6 @@
  *      charWhitelist (JS) [optional] : Subset of characters to use.  ex '()[]#.1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz/='
  *      displayImage (JS) [optional] : true/false - display target image for OCR
  *      pixelThreshold (JS) [optional] : 0-255.  Cutoff grey level when converting a pixel to black or white.  Default 120
- *      targetWords (JS) : Array of target words that if found will have an extra param <target word>_coords that can be used to specifiy a click location within the image/canvas
  *      
  *  Returns
  * 
@@ -34,7 +33,7 @@
  *      OCR Engine modes: (see https://github.com/tesseract-ocr/tesseract/wiki#linux)
  * 
  *  Version       Date          Author          Details
- *      2.0.0     09/29/2022    Barry Solomon   Added image binarization and extended found word stats include coordinates
+ *      2.1.0     09/29/2022    Barry Solomon   Remove targetWords and return centerpoint lookup array
  *  
  *  Disclaimer
  *      This Custom Action is provided "AS IS".  It is for instructional purposes only and is not officially supported by Testim
@@ -228,7 +227,8 @@ return new Promise((fresolve, freject) => {
                              */
                             var tsv_json = [];
                             var tsv_headers = ["level", "page_num", "block_num", "par_num", "line_num", "word_num", "left", "top", "width", "height", "conf", "text"];
-                            var words = [];
+                            var words = {};
+
                             var lines = tsv.split("\n");
                             for (var i = 1; i < lines.length; i++) {
                                 var word = {};
@@ -241,20 +241,19 @@ return new Promise((fresolve, freject) => {
 
                                     let _x = (Number(word["left"]) + (Number(word["width"]) / 2));
                                     let _y = (Number(word["top"]) + (Number(word["height"]) / 2))
-                                    word["center"] = {
-                                        x: _x,
-                                        y: _y
-                                    };
-                                    words.push(word);
 
-                                    if (typeof targetWords !== 'undefined' && targetWords !== null && typeof targetWords === 'object' && targetWords.includes(word["text"])) {
-                                        exports[word["text"] + "_coords"] = word["center"];
+                                    words[word["text"]] = {
+                                        "Word" : word["text"],
+                                        "CenterPoint" : {
+                                            x: _x,
+                                            y: _y
+                                        }
                                     }
 
                                 }
 
                             }
-                            exportsTest[return_variable_name + "_words"] = words;
+                            exportsTest[return_variable_name] = words;
                             console.log(words);
 
                             fresolve(text);
