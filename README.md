@@ -71,6 +71,10 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Environment Variables Get](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/test-data/environment-variables-get.js) -  Get process environment variables
 
+[S3 - Bucket Data Get](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/test-data/s3-bucket-data-get.js) -  Retrieve data from an AWS S3 Bucket 
+
+[S3 - Bucket Data Put](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/test-data/s3-bucket-data-put) -  Put data into an AWS S3 bucket
+
 <br/>
 
 [**Database Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/database-apis/)
