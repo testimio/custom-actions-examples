@@ -27,6 +27,8 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Element Computed Style(s) - Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/validate-computed-style.js) - Validate a superset/subset of style for an element
 
+[Element - Image Capture-Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/element-image-capture-validate.js) - Capture an image of a DOM element and optionally validate
+
 [isEnabled](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/is-enabled.js) - Vaildate that an element is enabled (or disabled)
 
 [isVisible](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/is-visible.js) - Vaildate that an element is visible
@@ -229,8 +231,6 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 <br/>
 
 [**Validation Functions**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/)
-
-[Image Element Capture-Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/image-element-capture-validate.js) - Capture an image of a DOM element and optionally validate
 
 [Link Checker](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/validation-functions/link-checker.js) (CLI) - Finds links at the given URL and validates that they are working. 
 

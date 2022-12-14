@@ -1,7 +1,7 @@
 /**
  *  Element - Image Capture-Validate
  * 
- *      Capture an image of a DOM element and optionally validate (pixel exact match)
+ *      Capture an image of a DOM element and optionally validate
  * 
  *  Parameters
  *  
@@ -18,7 +18,6 @@
  * 
  *      If expectedImageData is not defined then this step will pass 
  *      Actual image data is returned in the clipboard and actualImageData
- *      If even a single pixel is different then step validation will fail
  *      If the dom element is an image and has a width/height set then this only gets the width/height part of the original image (if that makes sense to you)
  * 
  *  Version       Date          Author          Details
