@@ -95,6 +95,8 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Oracle Query](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/database-apis/oracle-query.js) - Execute an Oracle DB Query and return results
 
+[indexedDB - Clear](https://github.com/testimio/custom-actions-examples/blob/main/user-created/indexeddb-clear.js) - Clear all ObjectStores from the named indexedDB database
+
 <br/>
 
 [**API**](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/)
