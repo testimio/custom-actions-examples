@@ -91,7 +91,7 @@ if (['exact', 'startswith', 'endswith', 'includes', 'contains', 'notexact', 'not
         actualValue = element?.value;
     copyToClipboard(actualValue);
 
-    if (typeof expectedValue !== 'undefined' && expectedValue === null) {
+    if (typeof expectedValue !== 'undefined' && expectedValue !== null) {
         if (expression.startsWith("not")) {
             result = !stringMatch[expression.replace("not", "")](actualValue, expectedValue);
         }
