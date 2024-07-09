@@ -17,7 +17,7 @@
  *                                    '1,2,4-6'   Pages 1,2,4,5,6
  *                                    4           Page 1-4
  *                                    <unset>     All pages
- *      pdf2json (NPM) - pdf2json NPM Package (Version: 1.3.1)
+ *      pdf2json (NPM) - pdf2json NPM Package 
  * 
  *  Output (The following test level variables will be created on successful execution of this step)
  *      pdfActualFieldValues : actual values that can be used as expected values (baseline)
@@ -36,7 +36,7 @@
  * 
  *  Notes
  * 
- *      npm i pdf2json@1.3.1
+ *      npm i pdf2json@latest
  */
 
 // Used for debugging.  Enable/disable writing interim data to the console
