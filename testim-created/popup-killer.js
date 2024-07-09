@@ -8,6 +8,8 @@
  * 
  *      targetElementCSS (JS) : CSS or CSS Array of target objects to watch and destroy
  * 
+ *      highlightElements (JS) [optional] : Highlight Target Grid, Header, RowGroup, Cells for posterity (and debugging)
+ * 
  *  Notes
  * 
  *		This custom step needs to be run once per page (after the hidden object is defined)
@@ -31,6 +33,9 @@
  *          If you click the "Open Modal" button a modal dialog comes up.
  *          After you run this step and click the button again, it will not display.
  *
+ *  Version       Date       Author          Details
+ *      2.0.0     06/15/2023 Barry Solomon   Handle case where popup already is visible and highlight logic for debugging 
+ *
  *  Disclaimer
  *      This Custom Action is provided "AS IS".  It is for instructional purposes only and is not officially supported by Testim
  * 
@@ -50,52 +55,107 @@
  * 
  **/
 
-/* globals MutationObserver, observer, targetElementCSS, TARGET_ELEMENT_SELECTORS, document */
+/* globals MutationObserver, observer, targetElementCSS, TARGET_ELEMENT_SELECTORS, highlightElements, document */
+
+const ELEMENT_HIGHLIGHT_BORDER = "2px solid Green";
+var highlight_elements = false;
+if (typeof highlightElements !== 'undefined' && highlightElements === true) {
+    highlight_elements = true;
+}
+
+var TARGET_ELEMENT_SELECTORS = [
+      `[id="attentive_overlay"]`
+    , `[class="js-modal-close cx-modal-close-button"]`
+    , `[class="yie-outer-element"]`
+    , `[id^="yie-backdrop"]`
+    , `[class="usabilla__overlay"]`
+    , `[class*="cookie-consent-overlay"]`
+    , `body`
+    , `[y-type="custom-close-button"]`
+];
+
+// Set to a default list of CSS selectors as needed  
+//
+var target_element_selectors = [];
+
+if (typeof TARGET_ELEMENT_SELECTORS !== 'undefined' && TARGET_ELEMENT_SELECTORS !== null) {
+    if (typeof TARGET_ELEMENT_SELECTORS === 'string') {
+        target_element_selectors.push(TARGET_ELEMENT_SELECTORS);
+    }
+    else {
+        target_element_selectors = TARGET_ELEMENT_SELECTORS;
+    }
+}
+if (typeof targetElementCSS !== 'undefined' && targetElementCSS !== null) {
+    if (typeof targetElementCSS === 'string') {
+        target_element_selectors.push(targetElementCSS);
+    }
+    else {
+        target_element_selectors = targetElementCSS;
+    }
+}
 
 // Only add the observer once
 //
 if (typeof observer === 'undefined' || observer === null) {
 
-    const observer = new MutationObserver(function (mutations) {
+    var observer = new MutationObserver(function (mutations) {
+
         mutations.forEach(function (mutation) {
+
             if (mutation.type === 'attributes') {
-                //console.log('target.style.visibility = ' + mutation.target.style.visibility);
-                if (mutation.target.style.visibility !== "hidden") {
-                    mutation.target.style.visibility = "hidden";
+
+                console.log('target.style.visibility = ' + mutation.target.style.visibility);
+                if (highlight_elements)
+                    mutation.target.style.border = ELEMENT_HIGHLIGHT_BORDER;
+
+                if (mutation.target.id.includes("close")) {
+                    try {
+                        mutation.target.firstElementChild.click();
+                    }
+                    catch (err) {
+                        try {
+                            mutation.target.firstChild.click();
+                        }
+                        catch (err) {
+                            mutation.target.click();
+                        }
+                    }
+                } else {
+                    if (mutation.target.tagName.toLowerCase() !== `body`) {
+                        if (mutation.target.style.visibility !== "hidden") {
+                            mutation.target.style.visibility = "hidden";
+                        }
+                        mutation.target.remove();
+                    }
                 }
             }
+            else {
+
+                target_element_selectors.forEach((target_element_selector) => {
+                    if ((target_element_selector !== `body`) 
+                     && !target_element_selector.includes("close")) {
+                        let target_element = document.querySelector(target_element_selector);
+                        if (target_element !== null) {
+                            target_element.remove();
+                        }
+                    }
+                });
+
+            }
+
         });
     });
 
     let observerConfig = {
         attributes: true,
         attributeFilter: ['style'],
-        // childList: true, 
+        childList: true,
+        subtree: false,
         // characterData: true 
         // attributeOldValue: true,
-        // subtree: false,
         // characterDataOldValue: false,
     };
-
-    // Set to a default list of CSS selectors as needed  
-    //
-    let target_element_selectors = [];
-    if (typeof TARGET_ELEMENT_SELECTORS !== 'undefined' && TARGET_ELEMENT_SELECTORS !== null) {
-        if (typeof TARGET_ELEMENT_SELECTORS === 'string') {
-            target_element_selectors.push(TARGET_ELEMENT_SELECTORS);
-        }
-        else {
-            target_element_selectors = TARGET_ELEMENT_SELECTORS;
-        }
-    }
-    if (typeof targetElementCSS !== 'undefined' && targetElementCSS !== null) {
-        if (typeof targetElementCSS === 'string') {
-            target_element_selectors.push(targetElementCSS);
-        }
-        else {
-            target_element_selectors = targetElementCSS;
-        }
-    }
 
     /* Add an observer for all target elements
     */
@@ -107,3 +167,40 @@ if (typeof observer === 'undefined' || observer === null) {
     });
 
 }
+
+/* Handle case where popup already is visible
+*/
+target_element_selectors.forEach((target_element_selector) => {
+
+    let target_element = document.querySelector(target_element_selector);
+    if (target_element !== null) {
+
+        if (highlight_elements)
+            target_element.style.border = ELEMENT_HIGHLIGHT_BORDER;
+
+        console.log('target_element.style.visibility = ' + target_element.style.visibility);
+
+        if (target_element_selector.includes("close")) {
+            try {
+                target_element.firstElementChild.click();
+            }
+            catch (err) {
+                try {
+                    target_element.firstChild.click();
+                }
+                catch (err) {
+                    target_element.click();
+                }
+            }
+        } else if (target_element_selector !== `body`) {
+
+            if (target_element.style.visibility !== "hidden") {
+                target_element.style.visibility = "hidden";
+            }
+            target_element.remove();
+
+        }
+
+    }
+
+});
