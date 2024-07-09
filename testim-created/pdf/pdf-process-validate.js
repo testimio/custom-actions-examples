@@ -10,7 +10,7 @@
  *                          Example:  [ {"Family Name" : "Solomon" }, { "Gender_List_Box": "Man" }, { "Height_Formatted_Field": "150" }, { "Favourite_Colour_List_Box": "Red" } ]
  *                                    [ {"TextBlock": "PDF Form Example" } ]
  *                                    [ {"TextLine": "PDF Form Example" } ]
- *                                    [ "PDF Form Example", "Man" ]
+ *                                    [ "PDF Form Example", "Man" ] - Validated against pdfDocumentTextLines
  *      pages (JS) - Limits processing to just certain pages
  *                          Example:  '1-3'       Pages 1,2,3
  *                                    '3-5'       Pages 3,4,5
@@ -27,6 +27,9 @@
  * 
  *  Disclaimer
  *      This Custom CLI Action is provided "AS IS".  It is for instructional purposes only and is not officially supported by Testim
+ * 
+ *  Version       Date       Author          Details
+ *      1.0.0     07/09/2023 Barry Solomon   Versioned and pdfDocumentTextLines text validate
  * 
  *  Base Step
  *      Validate Download 
@@ -470,9 +473,12 @@ return new Promise((resolve, reject) => {
             else
                 fields_to_validate = fieldsToValidate;
 
-            if (typeof (fields_to_validate[0]) === "string") { // Validate Text pdfDocumentTextLines
+            if (typeof (fields_to_validate[0]) === "string" || Object.keys(fields_to_validate[0])[0] === "TextLine") { // Validate Text pdfDocumentTextLines
 
-                let misses = textMultiMatch(pdfDocumentTextLines, fields_to_validate, matchtype);
+                expected_value = (typeof (fields_to_validate[0]) === "string") ? fields_to_validate[0] : fields_to_validate[0][Object.keys(fields_to_validate[0])[0]];
+
+                let misses = textMultiMatch(pdfDocumentTextLines, expected_value, matchtype);
+                exportsTest.pdfTextMisses = misses;
                 if (misses?.length > 0) {
                     console.error(`textMultiMatch(${JSON.stringify(matchtype)})  DOES NOT include the following: ${JSON.stringify(misses)}`);
                     throw new Error(`textMultiMatch(${JSON.stringify(matchtype)})  DOES NOT include the following: ${JSON.stringify(misses)}`);
@@ -486,6 +492,9 @@ return new Promise((resolve, reject) => {
             else { // Validate pdf form fields/text blocks
 
                 fields_to_validate.forEach(function (field_to_validate) {
+
+                    if (verbose)
+                        console.log("field_to_validate: ", field_to_validate);
 
                     switch (field_to_validate) {
 
@@ -518,5 +527,3 @@ return new Promise((resolve, reject) => {
         }
 
     });
-
-
