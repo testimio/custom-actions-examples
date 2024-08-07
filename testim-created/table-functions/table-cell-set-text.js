@@ -1,7 +1,7 @@
 /**
- *  Table - Cell Click
+ *  Table Cell - Set Text
  *
- *      Click a specific cell within a specific row in a table
+ *      Sets the text of a specific cell within a specific row in a table
  * 
  *  Parameters
  *
@@ -15,6 +15,8 @@
  *      columnSelector  (JS)   : Column name or index to click within a row
  *                       example "Value"
  *                               0
+ *      text  (JS)              : Text string to set the value of the cell
+ *             
  *      matchType [optional] : Text match type when searching for text in lists/selects
  *		            Examples: exact (default), startswith, endswith, includes 
  * 
@@ -58,15 +60,15 @@
 /* eslint-disable-next-line no-unused-vars */
 /* globals document, element, customGridSelectors, returnVariableName, gridTypeSearchOrder, highlightElements, compareExpression, searchText, pageSize, pageNumber, matchType, primaryKey, sortOrder, expectedCount, rowSelector, columnSelector, expectedValues */
 
-/*** START COMMON TABLE FUNCTIONALITY ***/
-
 var localGridSearchOrder = (typeof gridTypeSearchOrder !== 'undefined' && gridTypeSearchOrder !== null) ? gridTypeSearchOrder : ["HTMLTR", "HTMLTABLE", "HTML", "XGRID", "TREEGRID", "ROLETABLE", "KENDO", "AGGRID", "DEVEX", "SALESFORCE", "GRIDRIT", "EVTSHADOW"];
 
-var target_element_xpath = null;
+var target_element_xpath = './/input';
 if (typeof targetElementXPath !== 'undefined' && targetElementXPath !== null)
     target_element_xpath = targetElementXPath;
 
-var verbose = true;
+/*** START COMMON TABLE FUNCTIONALITY ***/
+
+var verbose = false;
 
 var DEFAULT_RETURN_VARIABLE_NAME = 'cellValue';
 
@@ -84,6 +86,9 @@ tableInfo = tableFind(element);
 /* Process the table infomation for use by the specifics ofthis function 
  */
 table = tableInfo?.table;
+if (table === undefined || table === null)
+    throw new Error("table not found");
+
 tableHeaders = tableHeadersGet(table);
 tablePager = tablePagerGet(table);
 tableSearchField = tableSearchFieldGet(table);
@@ -91,12 +96,12 @@ tableRows = tableRowsGet(table, tableHeaders);
 tableCells = tableCellsGet(tableRows, tableHeaders);
 
 if (verbose) {
-    console.log("===> table", table);
-    console.log("===> tablePager", tablePager);
-    console.log("===> tableSearchField", tableSearchField);
-    console.log("===> tableHeaders", tableHeaders);
-    console.log("===> tableRows", tableRows);
-    console.log("===> tableCells", tableCells);
+    console.log("===> table", safeLogObject(table));
+    console.log("===> tablePager", safeLogObject(tablePager));
+    console.log("===> tableSearchField", safeLogObject(tableSearchField));
+    console.log("===> tableHeaders", safeLogObject(tableHeaders));
+    console.log("===> tableRows", safeLogObject(tableRows));
+    console.log("===> tableCells", safeLogObject(tableCells));
 }
 
 table_header_cells = tableHeaders?.table_header_cells;
@@ -174,9 +179,9 @@ if (typeof target_table_cell !== 'undefined' && target_table_cell !== null) {
 
     let target_element = (target_table_cell.children.length == 0) ? target_table_cell : target_table_cell.children[0]
 
-    if (typeof targetElementXPath !== "undefined" && targetElementXPath !== null) {
+    if (typeof target_element_xpath !== "undefined" && target_element_xpath !== null) {
 
-        let matchingElements = document.evaluate(targetElementXPath, target_table_cell, null, XPathResult.ANY_TYPE, null);
+        let matchingElements = document.evaluate(target_element_xpath, target_table_cell, null, XPathResult.ANY_TYPE, null);
         let matching_elements = [];
         try {
             let matchingElement = matchingElements.iterateNext();
@@ -186,7 +191,7 @@ if (typeof target_table_cell !== 'undefined' && target_table_cell !== null) {
                 matchingElement = matchingElements.iterateNext();
             }
         }
-        catch {}
+        catch { }
 
         console.log("matching_elements", matching_elements);
 
@@ -195,6 +200,7 @@ if (typeof target_table_cell !== 'undefined' && target_table_cell !== null) {
 
         if (matching_element !== undefined && matching_element !== null)
             target_element = matching_element;
+
     }
 
     console.log("Target Element", target_element);
@@ -202,7 +208,7 @@ if (typeof target_table_cell !== 'undefined' && target_table_cell !== null) {
     return new Promise((resolve, reject) => {
 
         doEvent(target_element, 'mouseover');
-        setTimeout(resolve(), 1000);
+        setTimeout(resolve, 1000);
 
     })
         .then(() => {
@@ -219,6 +225,43 @@ if (typeof target_table_cell !== 'undefined' && target_table_cell !== null) {
                     target_element.click();
                 }
             }
+
+            return new Promise((resolve, reject) => {
+                setTimeout(resolve, 1000);
+            })
+
+        })
+        .then(() => {
+
+            // Set value and text of target element
+            target_element.value = text;
+            target_element.textContent = text; // Use textContent for setting inner text
+            doEvent(target_element, 'input');
+            doEvent(target_element, 'change');
+
+            // Attempt to set value and text of child elements
+            try {
+                if (target_element.firstElementChild) {
+                    target_element.firstElementChild.value = text;
+                    target_element.firstElementChild.textContent = text; // Use textContent
+                    doEvent(target_element.firstElementChild, 'input');
+                    doEvent(target_element.firstElementChild, 'change');
+                }
+            } catch (err) {
+                console.error("Error setting firstElementChild:", err);
+            }
+
+            try {
+                if (target_element.firstChild) {
+                    target_element.firstChild.value = text;
+                    target_element.firstChild.textContent = text; // Use textContent
+                    doEvent(target_element.firstChild, 'input');
+                    doEvent(target_element.firstChild, 'change');
+                }
+            } catch (err) {
+                console.error("Error setting firstChild:", err);
+            }
+
         })
 
 }
