@@ -76,17 +76,8 @@
  *      Install nodejs version 14 or higher 
  * 
  *      If running in nodejs in VSCode you will need to install the following node modules:  
-               npm i adm-zip -g
-               npm i html-pdf-node -g
-               npm i puppeteer-core -g
-               npm i https -g
-               npm i http -g
-               npm i open -g
-               npm i mssql -g
-               npm i jsondbfs -g
-               npm i nodemailer -g
-               npm i yargs -g
-               npm install got -g
+ * 
+ *          sudo npm i -g adm-zip html-pdf-node puppeteer-core https http open mssql jsondbfs nodemailer yargs got
  * 
  *      If using the reportDataSource "JSONDBFS" or "SQLServer"
  * 
@@ -170,13 +161,13 @@
 
 let options = {
 
-    reportDataSource: "TestimAPI", // "TestimAPI", "JSONDBFS" or "SQLServer"
+    // reportDataSource: "TestimAPI", // "TestimAPI", "JSONDBFS" or "SQLServer"
 
-    testimAccessToken: "<YOUR TESTIM API KEY>", // Required if reportDataSource = "TestimAPI"
+    testimAccessToken: "<your-testim-api-access-token>", // Required if reportDataSource = "TestimAPI"
 
-    testimToken: "<YOUR TESTIM RUN KEY>", // Required if reportDataSource = "JSONDBFS" or "SQLServer"
+    // results: ["RuuaOcLcoRkDLvAl"],
 
-    results: ["<TARGET RESULT ID>"],
+    // testimToken: "", // Required if reportDataSource = "JSONDBFS" or "SQLServer"
 
     // hiddenParams: ['password'],
 
@@ -231,7 +222,6 @@ const https = require('https');
 const AdmZip = require('adm-zip');
 const fs = require('fs');
 const HtmlToPdf = require('html-pdf-node');
-const open = require('open');
 const nodemailer = require("nodemailer");
 const { reject } = require('underscore');
 const jsondbfs = require('jsondbfs');
@@ -1671,7 +1661,7 @@ function htmlReportGenerate(reportData, reportFilename) {
         })
             .then((html) => /* THEN write generated html to file */ {
 
-                let html_file = reportFileDirectory + reportData.zippedScreenshotsFilename.replace('.zip', '.html');
+                let html_file = reportFileDirectory + reportData.zippedScreenshotsFilename.replace('.zip', '.html').replace(/[^\w.-]/g, '_');
 
                 console.log("THEN write generated html to file", html_file);
 
@@ -1836,6 +1826,8 @@ async function TestResultIdsGet(resultIdsQuery) {
 }
 async function GenerateReports(Results) {
 
+    const open = (await import('open')).default;
+
     return new Promise((resolve) => {
 
         if (Results == undefined || Results?.length === 0) {
@@ -1964,7 +1956,7 @@ async function GenerateReports(Results) {
 
                             .then((data) => /* THEN Create PDF file */ {
 
-                                let html_file = reportFileDirectory + reportData.reportFilename;
+                                let html_file = reportFileDirectory + reportData.reportFilename.replace(/[^\w.-]/g, '_');;
                                 let pdf_filepath = reportFileDirectory + reportData.reportFilename.replace('.html', '.pdf');
 
                                 return new Promise((resolve, reject) => {
