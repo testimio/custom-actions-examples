@@ -36,6 +36,13 @@
  * 
  *      includeScreenShots [optional]  : true/false (default = true) - If available, include screenshots in report
  * 
+ *      screenShotStepFilter: [optional]   : String array that defines if a specific step is to have a screenshot included in report.  Defaults to all steps
+ *                                       Example:   screenShotStepFilter : ["errors"],
+ *                                                  screenShotStepFilter : ["screenshots", "errors", "stepnameIncludes:Set", "stepnameExcludes:password"],
+ *                                                  screenShotStepFilter : ["stepnameIncludes:Set", "stepnameExcludes:password"],
+ * 
+ * 
+ *    
  *      reportEmailToAddresses : Email recipients for a report
  * 
  *      reportEmailFromAddresses : Email from address for a report
@@ -122,6 +129,7 @@
  *      Version     Date            Author              Notes             
  *      1.6.0       09/19/2022      Barry Solomon       Support Testim REST API (No need for test hooks)
  *      1.6.1       09/20/2022      Barry Solomon       Comments/Documentation updates, set step image modal to 80%
+ *      1.7.0       09/09/2024      Barry Solomon       Add screenShotStepFilter
  * 
  *  Directions for Use
  * 
@@ -161,17 +169,17 @@
 
 let options = {
 
-    // reportDataSource: "TestimAPI", // "TestimAPI", "JSONDBFS" or "SQLServer"
+    reportDataSource: "TestimAPI", // "TestimAPI", "JSONDBFS" or "SQLServer"
 
-    testimAccessToken: "<your-testim-api-access-token>", // Required if reportDataSource = "TestimAPI"
+    testimAccessToken: "YOUR TESTIM API ACCESS TOKEN", // Required if reportDataSource = "TestimAPI"
 
-    // results: ["RuuaOcLcoRkDLvAl"],
+    // results: ["HRpr7r6a3qNe4MnF"],
 
     // testimToken: "", // Required if reportDataSource = "JSONDBFS" or "SQLServer"
 
     // hiddenParams: ['password'],
 
-    //generatePDF: true,
+    // generatePDF: true,
     // openReport: false,
 
     // emailReport: true,
@@ -179,9 +187,16 @@ let options = {
     // reportEmailFromAddress: "",
 
     // includeScreenShots: false,
+    // screenShotStepFilter : [
+    //     "screenshots", 
+    //     "errors", 
+    //     "validations",
+    //     "stepnameIncludes:Set", 
+    //     "stepnameExcludes:password"
+    // ],
+
     // includeTestData: true,
     // includeNetworkRequestStats: true,
-
 }
 
 let configuration = {
@@ -386,6 +401,7 @@ function parseCommandlineArgs() {
         "groups": "enableGroups",
         "links": "enableHyperlinks",
         "ss": "includeScreenShots",
+        "sssf": "screenShotStepFilter",
         "td": "includeTestData",
         "tr": "includeTestResults",
         "ns": "includeNetworkRequestStats",
@@ -435,6 +451,8 @@ function parseCommandlineArgs() {
         "enableHyperlinks": "Embed links to live Testim results",
 
         "includeScreenShots": "If available, include screenshots in report",
+        "screenShotStepFilter": "Filter for filtering which steps will have screenshots included.  See --help for more details",
+
         "includeTestData": "If available, test variables as of end of test will be included in report",
         "includeTestResults": "Include Test Results in report",
         "includeNetworkRequestStats": "If available, network statistics will be included in report",
@@ -467,7 +485,7 @@ function parseCommandlineArgs() {
     }
     let options_group = ['results', 'resultIdsQuery', 'reportDataSource', 'generatePDF', 'openReport', 'emailReport'
         , 'testimToken', 'accessTokenURL', 'hiddenParams', 'enableGroups', 'enableHyperlinks'
-        , 'includeScreenShots', 'includeTestData', 'includeTestResults', 'includeNetworkRequestStats', 'includeStepDetails'
+        , 'includeScreenShots', 'screenShotStepFilter', 'includeTestData', 'includeTestResults', 'includeNetworkRequestStats', 'includeStepDetails'
         , 'reportEmailToAddresses'
     ];
     let configuration_group = ['reportFileDirectory', 'reportStyleMarkup', 'reportLogoDataUrl', 'pdfOptions', 'embedImages', 'reportColumns'
@@ -479,35 +497,51 @@ function parseCommandlineArgs() {
 
     let cmdArgs = yargs(process.argv.slice(2))
 
-        .version(true, "HTML Report Create", CURRENT_VERSION)
-        .wrap(140)//.wrap(yargs.terminalWidth())
-        .describe(help_map)
+    .version(true, "HTML Report Create", CURRENT_VERSION)
+    .wrap(140) // You can adjust this based on terminal width if needed
+    .describe(help_map)
 
-        .group(options_group, "Options:")
-        .group(configuration_group, "Configuration:")
-        .alias(aliases_map)
+    .group(options_group, "Options:")
+    .group(configuration_group, "Configuration:")
+    .alias(aliases_map)
 
-        .array("results")
-        .coerce('resultIdsQuery', function (arg) {
-            return (typeof (arg) === 'string') ? JSON.parse(arg.replace(/'/g, "\"")) : undefined
-        })
-        .default("generatePDF", false).boolean("generatePDF")
-        .default("emailReport", false).boolean("emailReport")
-        .default("openReport", true).boolean("openReport")
-        .default("includeScreenShots", options?.includeScreenShots || true).boolean("includeScreenShots")
-        .default("includeScreenShotHighlight", options?.includeScreenShotHighlight || false).boolean("includeScreenShotHighlight")
-        .default("includeTestResults", true).boolean("includeTestResults")
-        .default("includeTestData", false).boolean("includeTestData")
-        .default("includeNetworkRequestStats", false).boolean("includeNetworkRequestStats")
-        .default("includeStepDetails", true).boolean("includeStepDetails")
-        .default("embedImages", true).boolean("embedImages")
-        .default("enableHyperlinks", true).boolean("enableHyperlinks")
-        .default("enableGroups", false).boolean("enableGroups")
-        .default("emailHost", DEFAULT_EMAIL_HOST)
-        .default("emailUsername", DEFAULT_EMAIL_USER)
-        .default("emailPassword", DEFAULT_EMAIL_PASS)
+    // For results array handling
+    .array("results")
 
-        .argv;
+    // Coerce resultIdsQuery to ensure proper JSON parsing
+    .coerce('resultIdsQuery', function (arg) {
+        return (typeof (arg) === 'string') ? JSON.parse(arg.replace(/'/g, "\"")) : undefined;
+    })
+
+    // Boolean flags with default values
+    .default("generatePDF", false).boolean("generatePDF")
+    .default("emailReport", false).boolean("emailReport")
+    .default("openReport", true).boolean("openReport")
+    .default("includeScreenShots", options?.includeScreenShots || true).boolean("includeScreenShots")
+
+    // Handle screenShotStepFilter - ensure it always returns an array, splitting by commas if necessary
+    .default("screenShotStepFilter", options?.screenShotStepFilter || [])
+    .coerce('screenShotStepFilter', function (arg) {
+        return typeof arg === 'string' ? arg.split(',').map(item => item.trim()) : arg;
+    })
+    .array("screenShotStepFilter") // Ensure the final form is treated as an array
+
+    // Other boolean flags with default values
+    .default("includeScreenShotHighlight", options?.includeScreenShotHighlight || false).boolean("includeScreenShotHighlight")
+    .default("includeTestResults", true).boolean("includeTestResults")
+    .default("includeTestData", false).boolean("includeTestData")
+    .default("includeNetworkRequestStats", false).boolean("includeNetworkRequestStats")
+    .default("includeStepDetails", true).boolean("includeStepDetails")
+    .default("embedImages", true).boolean("embedImages")
+    .default("enableHyperlinks", true).boolean("enableHyperlinks")
+    .default("enableGroups", false).boolean("enableGroups")
+
+    // Email configurations
+    .default("emailHost", DEFAULT_EMAIL_HOST)
+    .default("emailUsername", DEFAULT_EMAIL_USER)
+    .default("emailPassword", DEFAULT_EMAIL_PASS)
+
+    .argv;
 
     return (cmdArgs);
 }
@@ -532,6 +566,8 @@ let openReport = options?.openReport ?? cmdArgs?.openReport;
 
 let hiddenParams = options?.hiddenParamshiddenParams ?? cmdArgs?.hiddenParams ?? DEFAULT_HIDDEN_PARAMS;
 let includeScreenShots = options?.includeScreenShots ?? cmdArgs?.includeScreenShots;
+let screenShotStepFilter = options?.screenShotStepFilter ?? cmdArgs?.screenShotStepFilter;
+
 let includeScreenShotHighlight = options?.includeScreenShotHighlight ?? cmdArgs?.includeScreenShotHighlight;
 
 let includeTestResults = options?.includeTestResults ?? cmdArgs?.includeTestResults;
@@ -1133,6 +1169,124 @@ async function TestResultsGet(resultId, testId, projectId) {
  * HTML Report Generation Methods
  */
 
+function generateScreenshotHTML(stepEntry, stepName, zippedScreenshotsFilename, embedImages, includeScreenShotHighlight, verbose, step_number, screenShotStepFilter = {}) {
+    let screenshot_element_html = "";
+
+    // Step 1: Apply filtering logic based on stepName and screenShotStepFilter
+    if (!shouldIncludeScreenshot(stepEntry, stepName, screenShotStepFilter)) {
+        return ""; // Skip adding screenshot if it doesn't pass the filter
+    }
+
+    // Step 2: Check if the screenshot is provided as a direct URL
+    if (stepEntry.screenshot !== undefined) {
+        screenshot_element_html = generateImageElement(stepEntry.screenshot, stepName);
+    } else {
+        let image_src = "./" + zippedScreenshotsFilename.replace('.zip', '').replace('.html', '') + "/" + stepEntry.zipEntryName;
+
+        // Step 3: Check if we should embed images directly in HTML
+        if (embedImages) {
+            let mime = 'image/png';
+            let encoding = 'base64';
+            let data = stepEntry.screenshotDataUrl; // Assuming this holds the base64-encoded data
+
+            if (verbose) {
+                console.log("STEP IMAGE: ", step_number, "stepEntry.zipEntryName: ", stepEntry.zipEntryName);
+            }
+            image_src = 'data:' + mime + ';' + encoding + ',' + data;
+        }
+
+        // Step 4: Generate image element if zipEntryName is defined
+        if (stepEntry.zipEntryName !== undefined) {
+            screenshot_element_html = includeScreenShotHighlight && stepEntry?.screenImageHighlight
+                ? generateHighlightedImageElement(image_src, stepName, stepEntry.screenImageHighlight)
+                : generateImageElement(image_src, stepName);
+        }
+    }
+
+    return screenshot_element_html;
+}
+
+// Helper function to decide whether to include the screenshot based on the filter
+function shouldIncludeScreenshot(stepEntry, stepName, screenShotStepFilter) {
+    // Initialize variables for filters
+    let includesErrors = false;
+    let includesScreenshots = false;
+    let includesValidations = false;
+    let stepnameIncludes = [];
+    let stepnameExcludes = [];
+
+    // If the filter is undefined, null, or an empty array, default to including all screenshots
+    if (typeof screenShotStepFilter === 'undefined' || !screenShotStepFilter || screenShotStepFilter.length === 0) {
+        return true;
+    }
+
+    // Parse the filter array
+    screenShotStepFilter.forEach(filter => {
+        if (filter === "errors") {
+            includesErrors = true;
+        } else if (filter === "screenshots") {
+            includesScreenshots = true;
+        } else if (filter === "validations") {
+            includesValidations = true;
+        } else if (filter.startsWith("stepnameIncludes:")) {
+            // Extract the include strings, split by commas
+            stepnameIncludes = filter.split(":")[1].split(",");
+        } else if (filter.startsWith("stepnameExcludes:")) {
+            // Extract the exclude strings, split by commas
+            stepnameExcludes = filter.split(":")[1].split(",");
+        }
+    });
+
+    // Check if the step matches the "errors" filter
+    if (includesErrors && (stepEntry.status === "FAILED" || !!stepEntry.errorMessage)) {
+        return true;
+    }
+
+    // Check if the step matches the "screenshots" filter
+    if (includesScreenshots && stepEntry.type === "screenshot") {
+        return true;
+    }
+
+    // Check if the step matches the "validations" filter (for example, if step name or description contains "validate")
+    if (includesValidations && (stepEntry.type.includes("validat"))) {
+        return true;
+    }
+
+    // Check if the stepName or description matches the "includes" filter
+    const matchesIncludes = (stepnameIncludes.length === 0 && !includesErrors) || stepnameIncludes.some(includeFilter =>
+        stepName.includes(includeFilter) || stepEntry.description.includes(includeFilter)
+    );
+
+    // Check if the stepName or description matches the "excludes" filter
+    const matchesExcludes = stepnameExcludes.some(excludeFilter =>
+        stepName.includes(excludeFilter) || stepEntry.description.includes(excludeFilter)
+    );
+
+    // Allow the screenshot if it matches the "includes" filter and doesn't match the "excludes" filter
+    return matchesIncludes && !matchesExcludes;
+}
+
+// Helper function to extract the array of includes or excludes from the filter string
+function extractArrayFromFilter(filterString) {
+    const matches = filterString.match(/\[([^\]]+)\]/);
+    if (matches) {
+        return matches[1].split(',').map(item => item.trim().replace(/['"]+/g, '')); // Extract the items from the array
+    }
+    return [];
+}
+
+// Helper function to generate the standard image element
+function generateImageElement(src, alt) {
+    return `<img alt='${alt}' class='screenshot' onclick='show(this)' src='${src}' onerror="this.style.display='none'" />`;
+}
+
+// Helper function to generate an image element with highlight parameters
+function generateHighlightedImageElement(src, alt, highlight) {
+    let { top, left, width, height } = highlight;
+    let scale = 0.68;
+    return `<img alt='${alt}' class='screenshot' onclick='show(this, ${top}, ${left}, ${width}, ${height}, ${scale})' src='${src}' />`;
+}
+
 function htmlReportTestInfoHeaderCreate(reportData, includeLogo = true) {
 
     let testInfo = "";
@@ -1558,41 +1712,17 @@ function htmlReportStepDetailsCreate(stepEntries, project_id, test_id, result_id
                 _html += "      </td>\n";
             }
 
+            // TODO: screenShotStepFilter : "validation|screenshot|error|stepnameIncludes:['','']|stepnameExcludes:['','']"
+
+            // Example usage inside your main logic
             if (includeScreenShots && reportColumns.includes("ScreenShot")) {
-
-                _html += "      <td class='step-screenshot'>";
-
-                let screenshot_element_html = "";
-                if (stepEntry.screenshot !== undefined) {
-                    screenshot_element_html = "          <img alt='" + stepName + "' class='screenshot' onclick='show(this)' src='" + stepEntry.screenshot + "' onerror=\"this.style.display='none'\" />";
-                }
-                else {
-                    let image_src = "./" + zippedScreenshotsFilename.replace('.zip', '').replace('.html', '') + "/" + stepEntry.zipEntryName;
-                    if (embedImages) {
-                        let mime = 'image/png';
-                        let encoding = 'base64';
-                        let data = stepEntry.screenshotDataUrl;
-                        if (verbose)
-                            console.log("STEP IMAGE: ", step_number, "stepEntry.zipEntryName: ", stepEntry.zipEntryName);
-                        image_src = 'data:' + mime + ';' + encoding + ',' + data;
-                    }
-                    if (stepEntry.zipEntryName !== undefined) {
-                        if (includeScreenShotHighlight && stepEntry?.screenImageHighlight !== undefined) {
-                            let top = stepEntry?.screenImageHighlight?.top;
-                            let left = stepEntry?.screenImageHighlight?.left;
-                            let width = stepEntry?.screenImageHighlight?.width;
-                            let height = stepEntry?.screenImageHighlight?.height;
-                            let scale = 0.68;
-                            screenshot_element_html = "          <img alt='" + stepName + "' class='screenshot' onclick='show(this," + top + ", " + left + ", " + width + ", " + height + ", " + scale + ")' src='" + image_src + "'/>";
-                        }
-                        else {
-                            screenshot_element_html = "          <img alt='" + stepName + "' class='screenshot' onclick='show(this)' src='" + image_src + "'/>";
-                        }
-                    }
-                }
-                _html += screenshot_element_html;
-                _html += "      </td>\n";
+                _html += "<td class='step-screenshot'>";
+                _html += generateScreenshotHTML(stepEntry, stepName, zippedScreenshotsFilename, embedImages, includeScreenShotHighlight, verbose, step_number, screenShotStepFilter);
+                _html += "</td>\n";
             }
+
+            // TODO: screenShotStepFilter : "validation|screenshot|error|stepnameIncludes:['','']|stepnameExcludes:['','']"
+
 
             _html += "    </tr>\n";
 
@@ -1956,7 +2086,7 @@ async function GenerateReports(Results) {
 
                             .then((data) => /* THEN Create PDF file */ {
 
-                                let html_file = reportFileDirectory + reportData.reportFilename.replace(/[^\w.-]/g, '_');;
+                                let html_file = reportFileDirectory + reportData.reportFilename.replace(/[^\w.-]/g, '_');
                                 let pdf_filepath = reportFileDirectory + reportData.reportFilename.replace('.html', '.pdf');
 
                                 return new Promise((resolve, reject) => {
