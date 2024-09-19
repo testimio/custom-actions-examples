@@ -29,7 +29,7 @@
  * 
  *  Base Step
  * 
- *      Custom Action
+ *      CLI Action
  * 
  */
 
