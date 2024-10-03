@@ -116,7 +116,7 @@ return new Promise((resolve, reject) => {
         results = selectListFind(foundElement);
 
         select_list = results?.select_list;
-        select_list_tagname - results?.select_list.tagName.toLowerCase();
+        select_list_tagname = results?.select_list.tagName.toLowerCase();
         select_list_opener = results?.select_list_opener;
         select_listitem_groupbox = results?.select_listitem_groupbox;
         selected_item_indexes = [];
