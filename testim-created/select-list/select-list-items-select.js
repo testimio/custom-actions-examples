@@ -18,7 +18,7 @@
  *                    		"className === 'selected'"
  *		    		 		"querySelector(\"input[type='checkbox']\").checked"
  * 
- *      clickToOpen (JS) [optional] : If select is triggered by an action then element is the trigger
+ *      clickToOpen (JS) [optional] : If select is triggered by an action then element is the trigger. Default (true)
  *
  *      matchType [optional] : Text match type when searching for text in lists/selects
  *		    Examples: exact, startswith, endswith, includes (default)
@@ -42,15 +42,7 @@
  * 
 **/
 
-var click_to_open = false;
-if (typeof clickToOpen !== 'undefined' && clickToOpen !== null)
-    click_to_open = clickToOpen;
-
-var match_type = 'includes';
-if (typeof matchType !== 'undefined' && matchType !== null)
-    match_type = matchType;
-
-var verbose = true;
+var verbose = false;
 
 /*** START COMMON LIST FUNCTIONALITY ***/
 
@@ -62,6 +54,14 @@ var result_filter = "All";
 var result_regex = null;
 var target_state = undefined;
 var popup_timeout = 2000;
+
+var click_to_open = true;
+if (typeof clickToOpen !== 'undefined' && clickToOpen !== null)
+    click_to_open = clickToOpen;
+
+var match_type = 'exact';
+if (typeof matchType !== 'undefined' && matchType !== null)
+    match_type = matchType;
 
 var DEFAULT_RETURN_VARIABLE_NAME = 'actualItems';
 
@@ -113,7 +113,7 @@ return new Promise((resolve, reject) => {
             .then(result => {
                 foundElement = select_list ?? result;
                 console.log('New element detected:', foundElement);
-                resolve(foundElement.select_list_instance);  // Pass the found element to the next .then()
+                resolve(foundElement.select_list_instance ?? foundElement.select_list);  // Pass the found element to the next .then()
             })
     }
     else {
