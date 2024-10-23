@@ -20,12 +20,14 @@
  *		    		 		"getAttribute('aria-checked') === 'true'"
  *                          'classList.contains("x-menu-item-checked")'
  * 
- *      clickToOpen (JS) [optional] : If select is triggered by an action then element is the trigger. Default (true)
+ *      clickToOpen (JS) [optional] : If select is triggered by an action then element is the trigger. Default (false)
  *
  *      matchType [optional] : Text match type when searching for text in lists/selects
  *		    Examples: exact, startswith, endswith, includes (default)
  *
  *      highlightElements (JS) [optional] : Highlight Target Grid, Header, RowGroup, Cells for posterity (and debugging)
+ *
+ *      highlightDuration (JS) [optional] : Time to highlight item(s)
  *
  *  Returns
  *      selectedIndex
@@ -35,6 +37,7 @@
  *  Version       Date          Author            Details
  *      3.2.1     10/15/2024    Barry Solomon     Support popup x-menu and figure out target state.  (P&G Exclusive, though I have code in select-find.js, but not deployed anywhere else)
  *      3.3.1     10/23/2024    Barry Solomon     Add support for "blDashboardList" custom list
+ *      3.3.2     10/23/2024    Barry Solomon     Default click_to_open = false
  *
  *  Disclaimer
  *      This Custom Action is provided "AS IS".  It is for instructional purposes only and is not officially supported by Testim
@@ -57,7 +60,7 @@ var result_regex = null;
 var target_state = undefined;
 var popup_timeout = 2000;
 
-var click_to_open = true;
+var click_to_open = false;
 if (typeof clickToOpen !== 'undefined' && clickToOpen !== null)
     click_to_open = clickToOpen;
 
