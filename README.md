@@ -259,3 +259,5 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 [Excel365 - Grid Cell Mapping Get](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/excel365-grid-cell-mapping-get.js) - Using Column and Row Headers Get coordinates of visible cells.  Can be used with Click and Double Click actions to set cell values.
 
 [File Upload - Set File](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/element/file-upload-override.js) - Create/Set a file upload with custom data.  
+
+File upload 
