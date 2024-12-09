@@ -222,6 +222,8 @@ Initially it includes custom action steps (JavaScript) that we have created for 
 
 [Table - Cell Click](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/table-functions/table-cell-click.js) - Click on a specific cell within a specific row in a table
 
+[Table Cell - Set Text](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/table-functions/table-cell-set-text.js) - Sets the text of a specific cell within a specific row in a table
+
 [Table - Column Order Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/table-functions/table-column-order-validate.js) - Validate the values in a column are sorted properly
 
 [Table - Row Count Validate](https://github.com/testimio/custom-actions-examples/blob/main/testim-created/table-functions/table-row-count-validate.js) - Validate number of rows in a table
